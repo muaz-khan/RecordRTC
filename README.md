@@ -4,6 +4,18 @@ It is experimental repository for RecordRTC.js which means that every single upd
 
 <ol>
     <li>
+        MRecordRTC is fixed to record audio+video in single stream in Firefox.
+        <pre>
+// MRecordRTC auto sets "mRecordRTC.mediaType.audio=false"
+// if MediaStream has both audio and video tracks
+// it supports audio+video recording in single file for Firefox
+mRecordRTC.mediaType = {
+    audio: true,
+    video: true
+};
+</pre>
+    </li>
+    <li>
         "<code>save</code>" method has been added in <a href="https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/MRecordRTC">MRecordRTC</a>:
         <pre>
 mRecordRTC.save();
@@ -18,6 +30,13 @@ mRecordRTC.save({
     audio: true,
     video: true
 });
+</pre>
+    </li>
+    
+    <li>
+        If you're recording GIF, you must link:
+        <pre>
+https://cdn.webrtc-experiment.com/gif-recorder.js
 </pre>
     </li>
 </ol>

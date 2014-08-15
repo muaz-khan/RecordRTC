@@ -4,6 +4,20 @@ It is experimental repository for RecordRTC.js which means that every single upd
 
 <ol>
     <li>
+        "save" method now accepts file-name optional parameter:
+        <pre>
+recordRTC.save('file-name');
+
+// or
+mRecordRTC.save({
+    audio: 'audio-name',
+    video: 'video-name',
+    gif:   'gif-name'
+});
+</pre>
+    </li>
+    
+    <li>
         MRecordRTC is fixed to record audio+video in single stream in Firefox.
         <pre>
 // MRecordRTC auto sets "mRecordRTC.mediaType.audio=false"

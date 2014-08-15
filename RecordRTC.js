@@ -1,9 +1,10 @@
-// Last time updated at July 30, 2014, 08:32:23
+// Last time updated at August 15, 2014, 08:32:23
 
 // updates?
 /*
 -. if you're recording GIF, you must link: https://cdn.webrtc-experiment.com/gif-recorder.js
 -. "save" method added in MRecordRTC.
+-. "save" method accepts file-name.
 */
 
 // issues?
@@ -174,7 +175,7 @@ function RecordRTC(mediaStream, config) {
             if (!mediaRecorder) return console.warn(WARNING);
             return URL.createObjectURL(mediaRecorder.recordedBlob);
         },
-        save: function () {
+        save: function (fileName) {
             if (!mediaRecorder) return console.warn(WARNING);
 
             // bug: should we use "getBlob" instead; to handle aww-snaps!
@@ -182,7 +183,7 @@ function RecordRTC(mediaStream, config) {
                 var hyperlink = document.createElement('a');
                 hyperlink.href = dataURL;
                 hyperlink.target = '_blank';
-                hyperlink.download = (Math.round(Math.random() * 9999999999) + 888888888) + '.' + mediaRecorder.recordedBlob.type.split('/')[1];
+                hyperlink.download = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.recordedBlob.type.split('/')[1];
 
                 var evt = new MouseEvent('click', {
                     view: window,
@@ -429,15 +430,15 @@ function MRecordRTC(mediaStream) {
             gif: true
         };
         
-        if(args.audio && this.audioRecorder) {
-            this.audioRecorder.save();
+        if(!!args.audio && this.audioRecorder) {
+            this.audioRecorder.save(typeof args.audio == 'string' ? args.audio : '');
         }
         
-        if(args.video && this.videoRecorder) {
-            this.videoRecorder.save();
+        if(!!args.video && this.videoRecorder) {
+            this.videoRecorder.save(typeof args.video == 'string' ? args.video : '');
         }
-        if(args.gif && this.gifRecorder) {
-            this.gifRecorder.save();
+        if(!!args.gif && this.gifRecorder) {
+            this.gifRecorder.save(typeof args.gif == 'string' ? args.gif : '');
         }
     };
 }
@@ -799,10 +800,7 @@ function StereoAudioRecorder(mediaStream, root) {
     var volume = Storage.VolumeGainNode;
 
     // creates an audio node from the microphone incoming stream
-    if (!Storage.AudioInput)
-        Storage.AudioInput = context.createMediaStreamSource(mediaStream);
-
-    var audioInput = Storage.AudioInput;
+    var audioInput = context.createMediaStreamSource(mediaStream);
 
     // connect the stream to the gain node
     audioInput.connect(volume);
@@ -891,7 +889,7 @@ function StereoAudioRecorder(mediaStream, root) {
 // CanvasRecorder.js
 
 function CanvasRecorder(htmlElement) {
-    if (!window.html2canvas) throw 'Please link: //www.webrtc-experiment.com/screenshot.js';
+    if (!window.html2canvas) throw 'Please link: //cdn.webrtc-experiment.com/screenshot.js';
 
     var isRecording;
     this.record = function () {

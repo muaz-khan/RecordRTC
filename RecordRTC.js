@@ -1,4 +1,4 @@
-// Last time updated at August 15, 2014, 08:32:23
+// Last time updated at August 22, 2014, 08:32:23
 
 // updates?
 /*
@@ -176,25 +176,28 @@ function RecordRTC(mediaStream, config) {
             return URL.createObjectURL(mediaRecorder.recordedBlob);
         },
         save: function (fileName) {
-            if (!mediaRecorder) return console.warn(WARNING);
+            if (!mediaRecorder) {
+                var that = this;
+                setTimeout(function() {
+                    that.save(fileName);
+                }, 2000);
+                return console.warn(WARNING);
+            }
 
-            // bug: should we use "getBlob" instead; to handle aww-snaps!
-            this.getDataURL(function (dataURL) {
-                var hyperlink = document.createElement('a');
-                hyperlink.href = dataURL;
-                hyperlink.target = '_blank';
-                hyperlink.download = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.recordedBlob.type.split('/')[1];
+            var hyperlink = document.createElement('a');
+            hyperlink.href = URL.createObjectURL(mediaRecorder.recordedBlob);
+            hyperlink.target = '_blank';
+            hyperlink.download = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.recordedBlob.type.split('/')[1];
 
-                var evt = new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                });
-
-                hyperlink.dispatchEvent(evt);
-
-                (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
+            var evt = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
             });
+
+            hyperlink.dispatchEvent(evt);
+
+            (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
         },
         getFromDisk: function (callback) {
             if (!mediaRecorder) return console.warn(WARNING);

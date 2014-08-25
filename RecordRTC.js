@@ -66,15 +66,13 @@ function RecordRTC(mediaStream, config) {
         // html2canvas recording!
         if (config.type == 'canvas') Recorder = window.CanvasRecorder;
 
-        if(!mediaRecorder) {
-            mediaRecorder = new Recorder(mediaStream);
-            
-            // Merge all data-types except "function"
-            mediaRecorder = mergeProps(mediaRecorder, config);
-            mediaRecorder.onAudioProcessStarted = function () {
-                if (config.onAudioProcessStarted) config.onAudioProcessStarted();
-            };
-        }
+        mediaRecorder = new Recorder(mediaStream);
+
+        // Merge all data-types except "function"
+        mediaRecorder = mergeProps(mediaRecorder, config);
+        mediaRecorder.onAudioProcessStarted = function () {
+            if (config.onAudioProcessStarted) config.onAudioProcessStarted();
+        };
 
         mediaRecorder.record();
 
@@ -607,9 +605,7 @@ function MediaStreamRecorder(mediaStream) {
 
 function StereoRecorder(mediaStream) {
     this.record = function () {
-        if(!mediaRecorder) {
-            mediaRecorder = new StereoAudioRecorder(mediaStream, this);
-        }
+        mediaRecorder = new StereoAudioRecorder(mediaStream, this);
 
         var self = this;
         mediaRecorder.onAudioProcessStarted = function () {
@@ -664,6 +660,9 @@ function StereoAudioRecorder(mediaStream, root) {
         function onRecordingStopped() {
             // stop recording
             recording = false;
+            
+            audioInput.disconnect();
+            volume.disconnect();
             
             requestAnimationFrame(function() {
 
@@ -855,7 +854,7 @@ function StereoAudioRecorder(mediaStream, root) {
     var isAudioProcessStarted = false,
         self = this;
     __stereoAudioRecorderJavacriptNode.onaudioprocess = function (e) {
-        // if MediaStream().stop() or MediaStreamTrack().stop() is invoked.
+        // if MediaStream().stop() or MediaStreamTrack.stop() is invoked.
         if (mediaStream.ended) {
             __stereoAudioRecorderJavacriptNode.onaudioprocess = function () {};
             return;

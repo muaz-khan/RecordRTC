@@ -1,10 +1,8 @@
-// Last time updated at August 22, 2014, 08:32:23
+// Last time updated at August 25, 2014, 08:32:23
 
 // updates?
 /*
 -. if you're recording GIF, you must link: https://cdn.webrtc-experiment.com/gif-recorder.js
--. "save" method added in MRecordRTC.
--. "save" method accepts file-name.
 */
 
 // issues?
@@ -15,7 +13,7 @@
 //------------------------------------
 
 // Browsers Support::
-// Chrome (all versions) [ audio/video individually ]
+// Chrome (all versions) [ audio/video separately ]
 // Firefox ( >= 29 ) [ audio/video in single webm/mp4 container or only audio in ogg ]
 // Opera (all versions) [ same as chrome ]
 // Android (Chrome) [ only video ]
@@ -68,13 +66,15 @@ function RecordRTC(mediaStream, config) {
         // html2canvas recording!
         if (config.type == 'canvas') Recorder = window.CanvasRecorder;
 
-        mediaRecorder = new Recorder(mediaStream);
-
-        // Merge all data-types except "function"
-        mediaRecorder = mergeProps(mediaRecorder, config);
-        mediaRecorder.onAudioProcessStarted = function () {
-            if (config.onAudioProcessStarted) config.onAudioProcessStarted();
-        };
+        if(!mediaRecorder) {
+            mediaRecorder = new Recorder(mediaStream);
+            
+            // Merge all data-types except "function"
+            mediaRecorder = mergeProps(mediaRecorder, config);
+            mediaRecorder.onAudioProcessStarted = function () {
+                if (config.onAudioProcessStarted) config.onAudioProcessStarted();
+            };
+        }
 
         mediaRecorder.record();
 
@@ -607,7 +607,9 @@ function MediaStreamRecorder(mediaStream) {
 
 function StereoRecorder(mediaStream) {
     this.record = function () {
-        mediaRecorder = new StereoAudioRecorder(mediaStream, this);
+        if(!mediaRecorder) {
+            mediaRecorder = new StereoAudioRecorder(mediaStream, this);
+        }
 
         var self = this;
         mediaRecorder.onAudioProcessStarted = function () {
@@ -797,10 +799,7 @@ function StereoAudioRecorder(mediaStream, root) {
     var context = Storage.AudioContextConstructor;
 
     // creates a gain node
-    if (!Storage.VolumeGainNode)
-        Storage.VolumeGainNode = context.createGain();
-
-    var volume = Storage.VolumeGainNode;
+    var volume = context.createGain();
 
     // creates an audio node from the microphone incoming stream
     var audioInput = context.createMediaStreamSource(mediaStream);

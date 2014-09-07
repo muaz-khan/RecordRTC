@@ -1,7 +1,7 @@
 {
   "name": "recordrtc",
   "preferGlobal": true,
-  "version": "4.0.3",
+  "version": "4.0.4",
   "author": {
     "name": "Muaz Khan",
     "email": "muazkh@gmail.com",
@@ -32,6 +32,6 @@
     "email": "muazkh@gmail.com"
   },
   "homepage": "https://www.webrtc-experiment.com/RecordRTC/",
-  "_id": "recordrtc@4.0.3",
+  "_id": "recordrtc@4.0.4",
   "_from": "recordrtc@"
 }

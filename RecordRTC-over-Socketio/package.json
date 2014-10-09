@@ -1,0 +1,56 @@
+{
+  "name": "recordrtc-socketio",
+  "preferGlobal": true,
+  "version": "1.0.5",
+  "author": {
+    "name": "Muaz Khan",
+    "email": "muazkh@gmail.com"
+  },
+  "description": "Records audio/video separately as wav/webm. Emits both files using socket.io. Socket.io server end receives emitted data; and writes wav/web files to disk. Node.js code invokes ffmpeg to merge wav/webm in single webm file. Socket.io server emits merged event; and passes-back the URL of the merged file",
+  "contributors": [
+    {
+      "name": "Muaz Khan",
+      "email": "muazkh@gmail.com"
+    }
+  ],
+  "scripts": {
+    "start": "node server.js"
+  },
+  "main": "./server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/muaz-khan/WebRTC-Experiment.git"
+  },
+  "keywords": [
+    "webrtc",
+    "javascript",
+    "RecordRTC",
+    "socket.io",
+    "Node.js",
+    "ffmpeg",
+    "audio-recording",
+    "video-recording",
+    "gif-recording",
+    "audio/video recording",
+    "webp",
+    "webm",
+    "wav"
+  ],
+  "analyze": false,
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.6"
+  },
+  "dependencies": {
+    "socket.io": "^1.0.6",
+    "fluent-ffmpeg": "^1.7.2",
+    "node-uuid": "^1.4.1"
+  },
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/muaz-khan/WebRTC-Experiment/issues"
+  },
+  "homepage": "https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/RecordRTC-to-Nodejs",
+  "_id": "recordrtc-socketio@1.0.5",
+  "_from": "recordrtc-socketio@"
+}

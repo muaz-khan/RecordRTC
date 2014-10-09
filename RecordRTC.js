@@ -1,4 +1,4 @@
-// Last time updated at Sep 07, 2014, 08:32:23
+// Last time updated at August 25, 2014, 08:32:23
 
 // updates?
 /*
@@ -681,9 +681,9 @@ function StereoAudioRecorder(mediaStream, root) {
             // RIFF chunk descriptor/identifier 
             writeUTFBytes(view, 0, 'RIFF');
             
-            // RIFF chunk length
+            // file length 
             // view.setUint32(4, 44 + interleaved.length * 2, true);
-            view.setUint32(4, 36 + interleaved.length * 2, true);
+            view.setUint32(4, 8 + interleaved.length * 2, true);
             
             // RIFF type 
             writeUTFBytes(view, 8, 'WAVE');
@@ -721,10 +721,21 @@ function StereoAudioRecorder(mediaStream, root) {
             view.setUint32(40, interleaved.length * 2, true);
 
             // write the PCM samples
-            var offset = 44;
-            for (var i = 0; i < interleaved.length; i++, offset+=2){
-               var s = Math.max(-1, Math.min(1, interleaved[i]));
-               view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            var lng = interleaved.length;
+            
+            var index = 44;
+            volume = 1;
+            
+            for (var i = 0; i < lng; i++) {
+                // dataView.setInt16(byteOffset, value, littleEndian); 
+                
+                // The literals 0x7FFF and 32767 are identical to the compiler in every way.
+                // The maximum that it can hold (signed, positive) is 0x7FFFFFFF.
+                // 32767 is the positive signed max for 16 bits
+                // each base 16 digit occupies exactly 4 bits
+                view.setInt16(index, interleaved[i] * (32767 * volume), true);
+                
+                index += 2;
             }
 
             // final binary blob

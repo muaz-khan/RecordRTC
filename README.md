@@ -4,6 +4,8 @@
 
 [RecordRTC](https://www.webrtc-experiment.com/RecordRTC/) is a server-less (entire client-side) JavaScript library can be used to record WebRTC audio/video media streams. It supports cross-browser audio/video recording.
 
+> Documentation & Demos: http://RecordRTC.org
+
 ```javascript
 // Browsers Support::
 // Chrome (all versions) [ audio/video individually ]
@@ -52,6 +54,9 @@ There are some other NPM packages regarding RecordRTC:
 =
 
 ```html
+<script src="http://RecordRTC.org/latest.js"></script>
+
+<!-- or -->
 <script src="//cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
 ```
 

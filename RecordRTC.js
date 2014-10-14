@@ -1,15 +1,18 @@
-// Last time updated at Oct 10, 2014, 08:32:23
+// Last time updated at Oct 13, 2014, 08:32:23
 
 // updates?
 /*
+-. onGifPreview added.
+-. You can set options.video = HTMLVideoElement;
+-. You can get blob directly using "recordRTC.blob" property
+-. You can get "ArrayBuffer" as well using "recordRTC.buffer" property
+-. You can get "DataView" as well using "recordRTC.view" property
+-. You can get "Sample-Rates" using "recordRTC.sampleRate" property
+-. You can get "Buffer-Size" using "recordRTC.bufferSize" property
+
 -. if you're recording GIF, you must link: https://cdn.webrtc-experiment.com/gif-recorder.js
 */
 
-// issues?
-/*
--. audio self-playback (ehco/noise/etc.)
--. it seems that RecordRTC is cutting off the last couple of seconds of recordings
-*/
 //------------------------------------
 
 // Browsers Support::
@@ -73,6 +76,9 @@ function RecordRTC(mediaStream, config) {
         mediaRecorder.onAudioProcessStarted = function() {
             if (config.onAudioProcessStarted) config.onAudioProcessStarted();
         };
+        mediaRecorder.onGifPreview = function(gif) {
+            if (config.onGifPreview) config.onGifPreview(gif);
+        };
 
         mediaRecorder.record();
 
@@ -81,6 +87,8 @@ function RecordRTC(mediaStream, config) {
 
     function stopRecording(callback) {
         if (!mediaRecorder) return console.warn(WARNING);
+
+        var recordRTC = this;
 
         console.warn('stopped recording ' + config.type + ' stream.');
 
@@ -92,29 +100,34 @@ function RecordRTC(mediaStream, config) {
         }
 
         function _callback() {
-            var blob = mediaRecorder.recordedBlob;
+            for (var item in mediaRecorder) {
+                recordRTC[item] = mediaRecorder[item];
+            }
+
+            var blob = mediaRecorder.blob;
             if (callback) {
                 var url = URL.createObjectURL(blob);
                 callback(url);
             }
+
             console.debug(blob.type, '->', bytesToSize(blob.size));
 
-            if (config.autoWriteToDisk) {
-                getDataURL(function(dataURL) {
-                    var parameter = {};
-                    parameter[config.type + 'Blob'] = dataURL;
-                    DiskStorage.Store(parameter);
-                });
-            }
+            if (!config.autoWriteToDisk) return;
+
+            getDataURL(function(dataURL) {
+                var parameter = {};
+                parameter[config.type + 'Blob'] = dataURL;
+                DiskStorage.Store(parameter);
+            });
         }
     }
 
     function getDataURL(callback, _mediaRecorder) {
         if (!callback) throw 'Pass a callback function over getDataURL.';
 
-        var recordedBlob = _mediaRecorder ? _mediaRecorder.recordedBlob : mediaRecorder.recordedBlob;
+        var blob = _mediaRecorder ? _mediaRecorder.blob : mediaRecorder.blob;
 
-        if (!recordedBlob) {
+        if (!blob) {
             console.warn('Blob encoder did not yet finished its job.');
             setTimeout(function() {
                 getDataURL(callback, _mediaRecorder)
@@ -134,10 +147,10 @@ function RecordRTC(mediaStream, config) {
                     callback(event.data);
                 };
 
-                webWorker.postMessage(recordedBlob);
+                webWorker.postMessage(blob);
             } else {
                 var reader = new FileReader();
-                reader.readAsDataURL(recordedBlob);
+                reader.readAsDataURL(blob);
                 reader.onload = function(event) {
                     callback(event.target.result);
                 };
@@ -166,12 +179,12 @@ function RecordRTC(mediaStream, config) {
         stopRecording: stopRecording,
         getBlob: function() {
             if (!mediaRecorder) return console.warn(WARNING);
-            return mediaRecorder.recordedBlob;
+            return mediaRecorder.blob;
         },
         getDataURL: getDataURL,
         toURL: function() {
             if (!mediaRecorder) return console.warn(WARNING);
-            return URL.createObjectURL(mediaRecorder.recordedBlob);
+            return URL.createObjectURL(mediaRecorder.blob);
         },
         save: function(fileName) {
             if (!mediaRecorder) {
@@ -183,9 +196,9 @@ function RecordRTC(mediaStream, config) {
             }
 
             var hyperlink = document.createElement('a');
-            hyperlink.href = URL.createObjectURL(mediaRecorder.recordedBlob);
+            hyperlink.href = URL.createObjectURL(mediaRecorder.blob);
             hyperlink.target = '_blank';
-            hyperlink.download = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.recordedBlob.type.split('/')[1];
+            hyperlink.download = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.blob.type.split('/')[1];
 
             var evt = new MouseEvent('click', {
                 view: window,
@@ -552,12 +565,8 @@ function MediaStreamRecorder(mediaStream) {
                 return;
             }
 
-            // todo: need to check who commented following two lines and why?
-            // pull #118
-            // if (self.recordedBlob) self.recordedBlob = new Blob([self.recordedBlob, e.data], { type: e.data.type || 'audio/ogg' });
-
             dataAvailable = true;
-            self.recordedBlob = new Blob([e.data], {
+            self.blob = new Blob([e.data], {
                 type: e.data.type || 'audio/ogg'
             });
             self.callback();
@@ -603,23 +612,22 @@ function MediaStreamRecorder(mediaStream) {
 // StereoRecorder.js
 
 function StereoRecorder(mediaStream) {
+    var self = this;
+
     this.record = function() {
         mediaRecorder = new StereoAudioRecorder(mediaStream, this);
-
-        var self = this;
         mediaRecorder.onAudioProcessStarted = function() {
             if (self.onAudioProcessStarted) self.onAudioProcessStarted();
         };
-
         mediaRecorder.record();
     };
 
     this.stop = function(callback) {
         if (!mediaRecorder) return;
-
-        var self = this;
         mediaRecorder.stop(function() {
-            self.recordedBlob = mediaRecorder.recordedBlob;
+            for (var item in mediaRecorder) {
+                self[item] = mediaRecorder[item];
+            }
             callback();
         });
     };
@@ -655,7 +663,7 @@ function StereoAudioRecorder(mediaStream, root) {
     this.stop = function(callback) {
         // stop recording
         recording = false;
-        
+
         // to make sure onaudioprocess stops firing
         audioInput.disconnect();
         volume.disconnect();
@@ -722,9 +730,12 @@ function StereoAudioRecorder(mediaStream, root) {
         }
 
         // final binary blob
-        this.recordedBlob = new Blob([view], {
+        this.blob = new Blob([view], {
             type: 'audio/wav'
         });
+
+        this.buffer = new ArrayBuffer(view);
+        this.view = view;
 
         // recorded audio length
         this.length = recordingLength;
@@ -818,6 +829,9 @@ function StereoAudioRecorder(mediaStream, root) {
         throw 'sample-rate must be under range 22050 and 96000.';
     }
 
+    this.sampleRate = sampleRate;
+    this.bufferSize = bufferSize;
+
     console.log('sample-rate', sampleRate);
     console.log('buffer-size', bufferSize);
 
@@ -880,10 +894,10 @@ function CanvasRecorder(htmlElement) {
         isRecording = false;
         whammy.frames = dropFirstFrame(frames);
 
-        this.recordedBlob = whammy.compile();
+        this.blob = whammy.compile();
 
         frames = [];
-        if (callback) callback(this.recordedBlob);
+        if (callback) callback(this.blob);
     };
 
     var frames = [];
@@ -917,8 +931,8 @@ function CanvasRecorder(htmlElement) {
 
 function WhammyRecorder(mediaStream) {
     this.record = function() {
-        if (!this.width) this.width = video.offsetWidth || 320;
-        if (!this.height) this.height = video.offsetHeight || 240;
+        if (!this.width) this.width = 320;
+        if (!this.height) this.height = 240;
 
         if (!this.video) {
             this.video = {
@@ -937,16 +951,28 @@ function WhammyRecorder(mediaStream) {
         canvas.width = this.canvas.width;
         canvas.height = this.canvas.height;
 
-        video.width = this.video.width;
-        video.height = this.video.height;
-
-        console.log('canvas width', canvas.width);
-        console.log('canvas height', canvas.height);
-
-        console.log('video width', video.width);
-        console.log('video height', video.height);
-
         context = canvas.getContext('2d');
+
+        // setting defaults
+        if (this.video && this.video instanceof HTMLVideoElement) {
+            video = this.video.cloneNode();
+        } else {
+            video = document.createElement('video');
+            video.src = URL.createObjectURL(mediaStream);
+
+            video.width = this.video.width;
+            video.height = this.video.height;
+        }
+
+        video.muted = true;
+        video.play();
+
+        lastTime = new Date().getTime();
+        whammy = new Whammy.Video()
+        frames = [];
+
+        console.log('canvas resolutions', canvas.width, '*', canvas.height);
+        console.log('video width/height', video.width, '*', video.height);
 
         drawFrames();
     };
@@ -981,26 +1007,18 @@ function WhammyRecorder(mediaStream) {
     this.stop = function(callback) {
         isStopDrawing = true;
         whammy.frames = dropFirstFrame(frames);
-        frames = [];
 
-        this.recordedBlob = whammy.compile();
+        this.blob = whammy.compile();
 
-        if (callback) callback(this.recordedBlob);
+        if (callback) callback(this.blob);
     };
 
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
 
-    var video = document.createElement('video');
-    video.muted = true;
-    video.volume = 0;
-    video.autoplay = true;
-    video.src = URL.createObjectURL(mediaStream);
-    video.play();
-
-    var lastTime = new Date().getTime();
-
-    var whammy = new Whammy.Video();
+    var video;
+    var lastTime;
+    var whammy;
 }
 
 // https://github.com/antimatter15/whammy/blob/master/LICENSE
@@ -1015,6 +1033,9 @@ var Whammy = (function() {
 
     function toWebM(frames) {
         var info = checkFrames(frames);
+        if (!info) {
+            return [];
+        }
 
         var CLUSTER_MAX_DURATION = 30000;
 
@@ -1494,6 +1515,8 @@ function GifRecorder(mediaStream) {
 
         startTime = Date.now();
 
+        var self = this;
+
         function drawVideoFrame(time) {
             lastAnimationFrame = requestAnimationFrame(drawVideoFrame);
 
@@ -1505,6 +1528,11 @@ function GifRecorder(mediaStream) {
             if (time - lastFrameTime < 90) return;
 
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            if (self.onGifPreview) {
+                self.onGifPreview(canvas.toDataURL('image/png'));
+            }
+
             gifEncoder.addFrame(context);
             lastFrameTime = time;
         }
@@ -1517,7 +1545,7 @@ function GifRecorder(mediaStream) {
 
         endTime = Date.now();
 
-        this.recordedBlob = new Blob([new Uint8Array(gifEncoder.stream().bin)], {
+        this.blob = new Blob([new Uint8Array(gifEncoder.stream().bin)], {
             type: 'image/gif'
         });
 
@@ -1545,7 +1573,9 @@ function GifRecorder(mediaStream) {
 // See: https://github.com/muaz-khan/WebRTC-Experiment/issues/94
 
 function dropFirstFrame(arr) {
-    arr.shift();
+    for (var i = 0; i < 60; i++) {
+        arr.shift();
+    }
     return arr;
 }
 

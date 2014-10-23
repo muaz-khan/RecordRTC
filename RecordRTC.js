@@ -1,15 +1,7 @@
-// Last time updated at Oct 13, 2014, 08:32:23
+// Last time updated at Oct 23, 2014, 08:32:23
 
 // updates?
 /*
--. onGifPreview added.
--. You can set options.video = HTMLVideoElement;
--. You can get blob directly using "recordRTC.blob" property
--. You can get "ArrayBuffer" as well using "recordRTC.buffer" property
--. You can get "DataView" as well using "recordRTC.view" property
--. You can get "Sample-Rates" using "recordRTC.sampleRate" property
--. You can get "Buffer-Size" using "recordRTC.bufferSize" property
-
 -. if you're recording GIF, you must link: https://cdn.webrtc-experiment.com/gif-recorder.js
 */
 
@@ -1009,6 +1001,11 @@ function WhammyRecorder(mediaStream) {
         whammy.frames = dropFirstFrame(frames);
 
         this.blob = whammy.compile();
+        if(this.blob.forEach) {
+            this.blob = new Blob([], {
+                type: 'video/webm'
+            });
+        }
 
         if (callback) callback(this.blob);
     };

@@ -1,4 +1,4 @@
-// Last time updated at Oct 23, 2014, 08:32:23
+// Last time updated at Oct 24, 2014, 08:32:23
 
 // updates?
 /*
@@ -884,7 +884,7 @@ function CanvasRecorder(htmlElement) {
 
     this.stop = function(callback) {
         isRecording = false;
-        whammy.frames = dropFirstFrame(frames);
+        whammy.frames = frames;
 
         this.blob = whammy.compile();
 
@@ -964,7 +964,7 @@ function WhammyRecorder(mediaStream) {
         frames = [];
 
         console.log('canvas resolutions', canvas.width, '*', canvas.height);
-        console.log('video width/height', video.width, '*', video.height);
+        console.log('video width/height', video.width || canvas.width, '*', video.height || canvas.height);
 
         drawFrames();
     };
@@ -998,7 +998,7 @@ function WhammyRecorder(mediaStream) {
 
     this.stop = function(callback) {
         isStopDrawing = true;
-        whammy.frames = dropFirstFrame(frames);
+        whammy.frames = frames;
 
         this.blob = whammy.compile();
         if(this.blob.forEach) {
@@ -1563,17 +1563,6 @@ function GifRecorder(mediaStream) {
     var startTime, endTime, lastFrameTime;
 
     var gifEncoder;
-}
-
-// This method is taken from a modified version of MediaStreamRecorder.js!
-// To solve first frame that is always blank. 
-// See: https://github.com/muaz-khan/WebRTC-Experiment/issues/94
-
-function dropFirstFrame(arr) {
-    for (var i = 0; i < 60; i++) {
-        arr.shift();
-    }
-    return arr;
 }
 
 if (location.href.indexOf('file:') == 0) {

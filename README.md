@@ -58,6 +58,9 @@ There are some other NPM packages regarding RecordRTC:
 
 <!-- or -->
 <script src="//cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+<!-- or -->
+<script src="//www.WebRTC-Experiment.com/RecordRTC.js"></script>
 ```
 
 ## Record audio+video in Firefox

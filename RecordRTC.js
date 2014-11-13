@@ -2174,7 +2174,7 @@ var DiskStorage = {
         var self = this;
         var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB;
         var dbVersion = 1;
-        var dbName = location.href.replace(/\/|:|#|%|\.|\[|\]/g, ''),
+        var dbName = this.dbName || location.href.replace(/\/|:|#|%|\.|\[|\]/g, ''),
             db;
         var request = indexedDB.open(dbName, dbVersion);
 
@@ -2292,7 +2292,8 @@ var DiskStorage = {
     * @example
     * DiskStorage.dataStoreName = 'recordRTC';
     */
-    dataStoreName: 'recordRTC'
+    dataStoreName: 'recordRTC',
+    dbName: null
 };
 
 // ______________

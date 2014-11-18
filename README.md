@@ -53,6 +53,12 @@
 npm install recordrtc
 ```
 
+or using [Bower](http://bower.io):
+
+```
+bower install recordrtc
+```
+
 To use it:
 
 ```html

@@ -406,6 +406,8 @@ function RecordRTC(mediaStream, config) {
     for (var prop in returnObject) {
         this[prop] = returnObject[prop];
     }
+
+    return returnObject;
 }
 
 /**

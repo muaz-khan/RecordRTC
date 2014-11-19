@@ -62,7 +62,7 @@ function MRecordRTC(mediaStream) {
      * recorder.startRecording();
      */
     this.startRecording = function() {
-        if (!IsChrome && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+        if (!isChrome && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
             // Firefox is supporting both audio/video in single blob
             this.mediaType.audio = false;
         }
@@ -188,7 +188,7 @@ function MRecordRTC(mediaStream) {
         function getDataURL(blob, callback00) {
             if (!!window.Worker) {
                 var webWorker = processInWebWorker(function readFile(_blob) {
-                    window.postMessage(new window.FileReaderSync().readAsDataURL(_blob));
+                    postMessage(new FileReaderSync().readAsDataURL(_blob));
                 });
 
                 webWorker.onmessage = function(event) {

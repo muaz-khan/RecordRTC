@@ -22,7 +22,7 @@ if (window.webkitMediaStream) {
     window.MediaStream = window.webkitMediaStream;
 }
 
-IsChrome = !!navigator.webkitGetUserMedia;
+var isChrome = !!navigator.webkitGetUserMedia;
 
 // Merge all other data-types except "function"
 

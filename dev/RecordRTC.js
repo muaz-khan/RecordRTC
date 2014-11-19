@@ -37,10 +37,10 @@ function RecordRTC(mediaStream, config) {
 
         // Media Stream Recording API has not been implemented in chrome yet;
         // That's why using WebAudio API to record stereo audio in WAV format
-        var Recorder = IsChrome ? window.StereoRecorder : window.MediaStreamRecorder;
+        var Recorder = isChrome ? window.StereoRecorder : window.MediaStreamRecorder;
 
         // video recorder (in WebM format)
-        if (config.type === 'video' && IsChrome) {
+        if (config.type === 'video' && isChrome) {
             Recorder = window.WhammyRecorder;
         }
 
@@ -95,7 +95,13 @@ function RecordRTC(mediaStream, config) {
 
         function _callback() {
             for (var item in mediaRecorder) {
-                self[item] = recordRTC[item] = mediaRecorder[item];
+                if (self) {
+                    self[item] = mediaRecorder[item];
+                }
+
+                if (recordRTC) {
+                    recordRTC[item] = mediaRecorder[item];
+                }
             }
 
             var blob = mediaRecorder.blob;
@@ -135,7 +141,7 @@ function RecordRTC(mediaStream, config) {
 
         if (!!window.Worker) {
             var webWorker = processInWebWorker(function readFile(_blob) {
-                window.postMessage(new window.FileReaderSync().readAsDataURL(_blob));
+                postMessage(new FileReaderSync().readAsDataURL(_blob));
             });
 
             webWorker.onmessage = function(event) {
@@ -392,12 +398,14 @@ function RecordRTC(mediaStream, config) {
         view: null
     };
 
+    if (!this) {
+        return returnObject;
+    }
+
     // if someone wanna use RecordRTC with "new" keyword.
     for (var prop in returnObject) {
         this[prop] = returnObject[prop];
     }
-
-    return returnObject;
 }
 
 /**

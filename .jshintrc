@@ -26,6 +26,8 @@
     "IsChrome": true,
     "mergeProps": true,
     "reformatProps": true,
-    "bytesToSize": true
+    "bytesToSize": true,
+    "FileReaderSync": true,
+    "postMessage": true
   }
 }

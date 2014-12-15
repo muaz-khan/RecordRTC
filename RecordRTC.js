@@ -1,4 +1,5 @@
 // Last time updated at Dec 14, 2014, 08:32:23
+// Most recent version: 5.0.5
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC

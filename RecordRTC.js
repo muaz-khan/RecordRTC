@@ -1,4 +1,4 @@
-// Last time updated at Dec 14, 2014, 08:32:23
+// Last time updated at Jan 21, 2014, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -11,6 +11,7 @@
 // updates?
 /*
 -. Fixed echo.
+-. If MediaStream is suddenly stopped in Firefox.
 -. Added "disableLogs"         - RecordRTC(stream, { disableLogs: true });
 -. You can pass "bufferSize:0" - RecordRTC(stream, { bufferSize: 0 });
 -. You can set "leftChannel"   - RecordRTC(stream, { leftChannel: true });
@@ -1074,7 +1075,9 @@ function MediaStreamRecorder(mediaStream) {
                     type: e.data.type || self.mimeType || 'audio/ogg'
                 });
 
-                self.callback();
+                if (self.callback) {
+                    self.callback();
+                }
             };
 
             mediaRecorder.onerror = function(error) {
@@ -1183,7 +1186,10 @@ function StereoRecorder(mediaStream) {
                 for (var item in mediaRecorder) {
                     self[item] = mediaRecorder[item];
                 }
-                callback();
+
+                if (callback) {
+                    callback();
+                }
             });
         };
 
@@ -1373,7 +1379,9 @@ function StereoAudioRecorder(mediaStream, config) {
             // recorded audio length
             this.length = recordingLength;
 
-            callback();
+            if (callback) {
+                callback();
+            }
 
             isAudioProcessStarted = false;
         };

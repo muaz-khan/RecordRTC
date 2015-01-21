@@ -181,7 +181,9 @@ function StereoAudioRecorder(mediaStream, config) {
         // recorded audio length
         this.length = recordingLength;
 
-        callback();
+        if (callback) {
+            callback();
+        }
 
         isAudioProcessStarted = false;
     };

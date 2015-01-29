@@ -1,4 +1,4 @@
-// Last time updated at Jan 21, 2015, 08:32:23
+// Last time updated at Jan 29, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -183,6 +183,40 @@ function RecordRTC(mediaStream, config) {
         }
     }
 
+    function pauseRecording() {
+        if (!mediaRecorder) {
+            return console.warn(WARNING);
+        }
+
+        // not all libs yet having  this method
+        if (mediaRecorder.pause) {
+            mediaRecorder.pause();
+
+            if (!config.disableLogs) {
+                console.debug('Paused recording.');
+            }
+        } else if (!config.disableLogs) {
+            console.warn('This recording library is having no "pause" method.');
+        }
+    }
+
+    function resumeRecording() {
+        if (!mediaRecorder) {
+            return console.warn(WARNING);
+        }
+
+        // not all libs yet having  this method
+        if (mediaRecorder.resume) {
+            mediaRecorder.resume();
+
+            if (!config.disableLogs) {
+                console.debug('Resumed recording.');
+            }
+        } else if (!config.disableLogs) {
+            console.warn('This recording library is having no "resume" method.');
+        }
+    }
+
     function getDataURL(callback, _mediaRecorder) {
         if (!callback) {
             throw 'Pass a callback function over getDataURL.';
@@ -258,9 +292,28 @@ function RecordRTC(mediaStream, config) {
          *     video.src = videoURL;
          *     recordRTC.blob; recordRTC.buffer;
          * });
-         * @todo Implement <code class="str">recordRTC.stopRecording().getDataURL(callback);</code>
          */
         stopRecording: stopRecording,
+
+        /**
+         * This method pauses the recording process.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.pauseRecording();
+         */
+        pauseRecording: pauseRecording,
+
+        /**
+         * This method resumes the recording process.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.resumeRecording();
+         */
+        resumeRecording: resumeRecording,
 
         /**
          * It is equivalent to <code class="str">"recordRTC.blob"</code> property.
@@ -1193,6 +1246,22 @@ function StereoRecorder(mediaStream) {
         });
     };
 
+    this.pause = function() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        mediaRecorder.pause();
+    };
+
+    this.resume = function() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        mediaRecorder.resume();
+    };
+
     // Reference to "StereoAudioRecorder" object
     var mediaRecorder;
 }
@@ -1540,9 +1609,36 @@ function StereoAudioRecorder(mediaStream, config) {
         console.log('buffer-size', bufferSize);
     }
 
+    var isPaused = false;
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder.pause();
+     */
+    this.pause = function() {
+        isPaused = true;
+    };
+
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder.resume();
+     */
+    this.resume = function() {
+        isPaused = false;
+    };
+
     var isAudioProcessStarted = false;
-    
+
     __stereoAudioRecorderJavacriptNode.onaudioprocess = function(e) {
+        if (isPaused) {
+            return;
+        }
+
         // if MediaStream().stop() or MediaStreamTrack.stop() is invoked.
         if (mediaStream.ended) {
             __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};

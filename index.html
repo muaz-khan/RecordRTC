@@ -53,9 +53,9 @@
     </script>
 
     <!-- script used for audio/video/gif recording -->
-    <script src="//cdn.webrtc-experiment.com/RecordRTC.js">
+    <script src="https://cdn.webrtc-experiment.com/RecordRTC.js">
     </script>
-    <script src="//cdn.webrtc-experiment.com/gif-recorder.js">
+    <script src="https://cdn.webrtc-experiment.com/gif-recorder.js">
     </script>
 </head>
 
@@ -87,6 +87,7 @@
             <div class="inner" style="height: 5em;">
                 <audio id="audio" autoplay controls></audio>
                 <button id="record-audio">Record</button>
+                <button id="pause-resume-audio" disabled>Pause</button>
                 <button id="stop-recording-audio" disabled>Stop</button>
                 <h2 id="audio-url-preview"></h2>
             </div>
@@ -187,6 +188,7 @@
             recordVideo = getByID('record-video'),
             recordGIF = getByID('record-gif'),
             stopRecordingAudio = getByID('stop-recording-audio'),
+            pauseResumeAudio = getByID('pause-resume-audio'),
             stopRecordingVideo = getByID('stop-recording-video'),
             stopRecordingGIF = getByID('stop-recording-gif');
 
@@ -227,14 +229,10 @@
                     if (window.IsChrome) stream = new window.MediaStream(stream.getAudioTracks());
                     audioStream = stream;
 
-                    audio.src = URL.createObjectURL(audioStream);
-                    audio.muted = true;
-                    audio.play();
-
                     // "audio" is a default type
                     recorder = window.RecordRTC(stream, {
                         type: 'audio',
-                        bufferSize: typeof params.bufferSize == 'undefined' ? 4096 : params.bufferSize,
+                        bufferSize: typeof params.bufferSize == 'undefined' ? 16384 : params.bufferSize,
                         sampleRate: typeof params.sampleRate == 'undefined' ? 44100 : params.sampleRate,
                         leftChannel: params.leftChannel || false,
                         disableLogs: params.disableLogs || false
@@ -252,6 +250,7 @@
 
             this.disabled = true;
             stopRecordingAudio.disabled = false;
+            pauseResumeAudio.disabled = false;
         };
 
         var screen_constraints;
@@ -340,6 +339,19 @@
 
                     document.getElementById('audio-url-preview').innerHTML = '<a href="' + url + '" target="_blank">Recorded Audio URL</a>';
                 });
+        };
+        
+        pauseResumeAudio.onclick =  function() {
+            if(!recorder) return;
+            
+            if(this.innerHTML === 'Pause') {
+                this.innerHTML = 'Resume';
+                recorder.pauseRecording();
+                return;
+            }
+            
+            this.innerHTML = 'Pause';
+            recorder.resumeRecording();
         };
 
         stopRecordingVideo.onclick = function() {

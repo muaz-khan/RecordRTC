@@ -61,6 +61,22 @@ function StereoRecorder(mediaStream) {
         });
     };
 
+    this.pause = function() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        mediaRecorder.pause();
+    };
+
+    this.resume = function() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        mediaRecorder.resume();
+    };
+
     // Reference to "StereoAudioRecorder" object
     var mediaRecorder;
 }

@@ -342,9 +342,36 @@ function StereoAudioRecorder(mediaStream, config) {
         console.log('buffer-size', bufferSize);
     }
 
+    var isPaused = false;
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder.pause();
+     */
+    this.pause = function() {
+        isPaused = true;
+    };
+
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder.resume();
+     */
+    this.resume = function() {
+        isPaused = false;
+    };
+
     var isAudioProcessStarted = false;
 
     __stereoAudioRecorderJavacriptNode.onaudioprocess = function(e) {
+        if (isPaused) {
+            return;
+        }
+
         // if MediaStream().stop() or MediaStreamTrack.stop() is invoked.
         if (mediaStream.ended) {
             __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};

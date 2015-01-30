@@ -138,10 +138,6 @@ function RecordRTC(mediaStream, config) {
         // not all libs yet having  this method
         if (mediaRecorder.pause) {
             mediaRecorder.pause();
-
-            if (!config.disableLogs) {
-                console.debug('Paused recording.');
-            }
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "pause" method.');
         }
@@ -155,10 +151,6 @@ function RecordRTC(mediaStream, config) {
         // not all libs yet having  this method
         if (mediaRecorder.resume) {
             mediaRecorder.resume();
-
-            if (!config.disableLogs) {
-                console.debug('Resumed recording.');
-            }
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "resume" method.');
         }

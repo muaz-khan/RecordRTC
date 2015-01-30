@@ -352,6 +352,10 @@ function StereoAudioRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPaused = true;
+
+        if (!config.disableLogs) {
+            console.debug('Paused recording.');
+        }
     };
 
     /**
@@ -363,6 +367,10 @@ function StereoAudioRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPaused = false;
+
+        if (!config.disableLogs) {
+            console.debug('Resumed recording.');
+        }
     };
 
     var isAudioProcessStarted = false;

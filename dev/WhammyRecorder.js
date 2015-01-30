@@ -79,7 +79,12 @@ function WhammyRecorder(mediaStream) {
     function drawFrames() {
         var duration = new Date().getTime() - lastTime;
         if (!duration) {
-            return drawFrames();
+            return setTimeout(drawFrames, 10);
+        }
+
+        if (isPausedRecording) {
+            lastTime = new Date().getTime();
+            return setTimeout(drawFrames, 100);
         }
 
         // via #206, by Jack i.e. @Seymourr
@@ -229,6 +234,38 @@ function WhammyRecorder(mediaStream) {
                 callback(_this.blob);
             }
         }, 10);
+    };
+
+    var isPausedRecording = false;
+
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof WhammyRecorder
+     * @example
+     * recorder.pause();
+     */
+    this.pause = function() {
+        isPausedRecording = true;
+
+        if (!this.disableLogs) {
+            console.debug('Paused recording.');
+        }
+    };
+
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof WhammyRecorder
+     * @example
+     * recorder.resume();
+     */
+    this.resume = function() {
+        isPausedRecording = false;
+
+        if (!this.disableLogs) {
+            console.debug('Resumed recording.');
+        }
     };
 
     var canvas = document.createElement('canvas');

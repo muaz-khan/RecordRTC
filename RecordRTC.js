@@ -1,4 +1,4 @@
-// Last time updated at Jan 29, 2015, 08:32:23
+// Last time updated at Jan 30, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -191,10 +191,6 @@ function RecordRTC(mediaStream, config) {
         // not all libs yet having  this method
         if (mediaRecorder.pause) {
             mediaRecorder.pause();
-
-            if (!config.disableLogs) {
-                console.debug('Paused recording.');
-            }
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "pause" method.');
         }
@@ -208,10 +204,6 @@ function RecordRTC(mediaStream, config) {
         // not all libs yet having  this method
         if (mediaRecorder.resume) {
             mediaRecorder.resume();
-
-            if (!config.disableLogs) {
-                console.debug('Resumed recording.');
-            }
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "resume" method.');
         }
@@ -1137,6 +1129,12 @@ function MediaStreamRecorder(mediaStream) {
             if (!self.disableLogs) {
                 console.warn(error);
             }
+            
+            // When the stream is "ended" set recording to 'inactive' 
+            // and stop gathering data. Callers should not rely on 
+            // exactness of the timeSlice value, especially 
+            // if the timeSlice value is small. Callers should 
+            // consider timeSlice as a minimum value
 
             mediaRecorder.stop();
             self.record(0);
@@ -1169,6 +1167,10 @@ function MediaStreamRecorder(mediaStream) {
      * });
      */
     this.stop = function(callback) {
+        if (!mediaRecorder) {
+            return;
+        }
+
         this.callback = callback;
         // mediaRecorder.state === 'recording' means that media recorder is associated with "session"
         // mediaRecorder.state === 'stopped' means that media recorder is detached from the "session" ... in this case; "session" will also be deleted.
@@ -1177,6 +1179,48 @@ function MediaStreamRecorder(mediaStream) {
             // "stop" method auto invokes "requestData"!
             // mediaRecorder.requestData();
             mediaRecorder.stop();
+        }
+    };
+
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof MediaStreamRecorder
+     * @example
+     * recorder.pause();
+     */
+    this.pause = function() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        if (mediaRecorder.state === 'recording') {
+            mediaRecorder.pause();
+
+            if (!this.disableLogs) {
+                console.debug('Paused recording.');
+            }
+        }
+    };
+
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof MediaStreamRecorder
+     * @example
+     * recorder.resume();
+     */
+    this.resume = function() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        if (mediaRecorder.state === 'paused') {
+            mediaRecorder.resume();
+
+            if (!this.disableLogs) {
+                console.debug('Resumed recording.');
+            }
         }
     };
 
@@ -1246,6 +1290,13 @@ function StereoRecorder(mediaStream) {
         });
     };
 
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof StereoRecorder
+     * @example
+     * recorder.pause();
+     */
     this.pause = function() {
         if (!mediaRecorder) {
             return;
@@ -1254,6 +1305,13 @@ function StereoRecorder(mediaStream) {
         mediaRecorder.pause();
     };
 
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof StereoRecorder
+     * @example
+     * recorder.resume();
+     */
     this.resume = function() {
         if (!mediaRecorder) {
             return;
@@ -1619,6 +1677,10 @@ function StereoAudioRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPaused = true;
+
+        if (!config.disableLogs) {
+            console.debug('Paused recording.');
+        }
     };
 
     /**
@@ -1630,6 +1692,10 @@ function StereoAudioRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPaused = false;
+
+        if (!config.disableLogs) {
+            console.debug('Resumed recording.');
+        }
     };
 
     var isAudioProcessStarted = false;
@@ -1742,7 +1808,44 @@ function CanvasRecorder(htmlElement) {
         }
     };
 
+    var isPausedRecording = false;
+
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof CanvasRecorder
+     * @example
+     * recorder.pause();
+     */
+    this.pause = function() {
+        isPausedRecording = true;
+
+        if (!this.disableLogs) {
+            console.debug('Paused recording.');
+        }
+    };
+
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof CanvasRecorder
+     * @example
+     * recorder.resume();
+     */
+    this.resume = function() {
+        isPausedRecording = false;
+
+        if (!this.disableLogs) {
+            console.debug('Resumed recording.');
+        }
+    };
+
     function drawCanvasFrame() {
+        if (isPausedRecording) {
+            lastTime = new Date().getTime();
+            return setTimeout(drawCanvasFrame, 100);
+        }
+
         window.html2canvas(htmlElement, {
             onrendered: function(canvas) {
                 var duration = new Date().getTime() - lastTime;
@@ -1850,7 +1953,12 @@ function WhammyRecorder(mediaStream) {
     function drawFrames() {
         var duration = new Date().getTime() - lastTime;
         if (!duration) {
-            return drawFrames();
+            return setTimeout(drawFrames, 10);
+        }
+
+        if (isPausedRecording) {
+            lastTime = new Date().getTime();
+            return setTimeout(drawFrames, 100);
         }
 
         // via #206, by Jack i.e. @Seymourr
@@ -2000,6 +2108,38 @@ function WhammyRecorder(mediaStream) {
                 callback(_this.blob);
             }
         }, 10);
+    };
+
+    var isPausedRecording = false;
+
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof WhammyRecorder
+     * @example
+     * recorder.pause();
+     */
+    this.pause = function() {
+        isPausedRecording = true;
+
+        if (!this.disableLogs) {
+            console.debug('Paused recording.');
+        }
+    };
+
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof WhammyRecorder
+     * @example
+     * recorder.resume();
+     */
+    this.resume = function() {
+        isPausedRecording = false;
+
+        if (!this.disableLogs) {
+            console.debug('Resumed recording.');
+        }
     };
 
     var canvas = document.createElement('canvas');
@@ -2668,6 +2808,12 @@ function GifRecorder(mediaStream) {
         var self = this;
 
         function drawVideoFrame(time) {
+            if (isPausedRecording) {
+                return setTimeout(function() {
+                    drawVideoFrame(time);
+                }, 100);
+            }
+
             lastAnimationFrame = requestAnimationFrame(drawVideoFrame);
 
             if (typeof lastFrameTime === undefined) {
@@ -2723,6 +2869,38 @@ function GifRecorder(mediaStream) {
 
         // bug: find a way to clear old recorded blobs
         gifEncoder.stream().bin = [];
+    };
+
+    var isPausedRecording = false;
+
+    /**
+     * This method pauses the recording process.
+     * @method
+     * @memberof GifRecorder
+     * @example
+     * recorder.pause();
+     */
+    this.pause = function() {
+        isPausedRecording = true;
+
+        if (!this.disableLogs) {
+            console.debug('Paused recording.');
+        }
+    };
+
+    /**
+     * This method resumes the recording process.
+     * @method
+     * @memberof GifRecorder
+     * @example
+     * recorder.resume();
+     */
+    this.resume = function() {
+        isPausedRecording = false;
+
+        if (!this.disableLogs) {
+            console.debug('Resumed recording.');
+        }
     };
 
     var canvas = document.createElement('canvas');

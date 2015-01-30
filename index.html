@@ -116,6 +116,7 @@
                 <br />
                 <div>
                     <button id="record-video">Record</button>
+                    <button id="pause-resume-video" disabled>Pause</button>
                     <button id="stop-recording-video" disabled>Stop</button>
                     <hr>
                     <h2 id="video-url-preview"></h2>
@@ -140,6 +141,7 @@
             <div class="inner">
                 <button id="record-gif">
                     Record</button>
+                <button id="pause-resume-gif" disabled>Pause</button>
                 <button id="stop-recording-gif" disabled>
                     Stop</button>
             </div>
@@ -189,6 +191,8 @@
             recordGIF = getByID('record-gif'),
             stopRecordingAudio = getByID('stop-recording-audio'),
             pauseResumeAudio = getByID('pause-resume-audio'),
+            pauseResumeVideo = getByID('pause-resume-video'),
+            pauseResumeGif = getByID('pause-resume-gif'),
             stopRecordingVideo = getByID('stop-recording-video'),
             stopRecordingGIF = getByID('stop-recording-gif');
 
@@ -320,9 +324,11 @@
             if (isRecordVideo) {
                 recordVideo.disabled = true;
                 stopRecordingVideo.disabled = false;
+                pauseResumeVideo.disabled = false;
             } else {
                 recordGIF.disabled = true;
                 stopRecordingGIF.disabled = false;
+                pauseResumeGif.disabled = false;
             }
         }
 
@@ -341,7 +347,7 @@
                 });
         };
         
-        pauseResumeAudio.onclick =  function() {
+        pauseResumeAudio.onclick = pauseResumeVideo.onclick = pauseResumeGif.onclick =  function() {
             if(!recorder) return;
             
             if(this.innerHTML === 'Pause') {

@@ -90,6 +90,12 @@ function WhammyRecorder(mediaStream) {
         // via #206, by Jack i.e. @Seymourr
         lastTime = new Date().getTime();
 
+        if (video.paused) {
+            // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
+            // Tweak for Android Chrome
+            video.play();
+        }
+
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         whammy.frames.push({
             duration: duration,

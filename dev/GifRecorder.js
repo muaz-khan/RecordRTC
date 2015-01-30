@@ -104,6 +104,12 @@ function GifRecorder(mediaStream) {
                 return;
             }
 
+            if (video.paused) {
+                // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
+                // Tweak for Android Chrome
+                video.play();
+            }
+
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             if (self.onGifPreview) {

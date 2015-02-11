@@ -1,4 +1,4 @@
-// Last time updated at Jan 30, 2015, 08:32:23
+// Last time updated at Feb 11, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -1377,7 +1377,7 @@ function StereoAudioRecorder(mediaStream, config) {
     };
 
     function mergeLeftRightBuffers(config, callback) {
-        var webWorker = processInWebWorker(function mergeAudioBuffers(config) {
+        function mergeAudioBuffers(config) {
             var leftBuffers = config.leftBuffers;
             var rightBuffers = config.rightBuffers;
             var sampleRate = config.sampleRate;
@@ -1496,7 +1496,8 @@ function StereoAudioRecorder(mediaStream, config) {
                 buffer: buffer,
                 view: view
             });
-        });
+        }
+        var webWorker = processInWebWorker(mergeAudioBuffers);
 
         webWorker.onmessage = function(event) {
             callback(event.data.buffer, event.data.view);
@@ -1507,7 +1508,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
     function processInWebWorker(_function) {
         var blob = URL.createObjectURL(new Blob([_function.toString(),
-            'this.onmessage =  function (e) {mergeAudioBuffers(e.data);}'
+            'this.onmessage =  function (e) {' + _function.name + '(e.data);}'
         ], {
             type: 'application/javascript'
         }));
@@ -1963,8 +1964,8 @@ function WhammyRecorder(mediaStream) {
 
         // via #206, by Jack i.e. @Seymourr
         lastTime = new Date().getTime();
-        
-        if(video.paused) {
+
+        if (video.paused) {
             // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
             // Tweak for Android Chrome
             video.play();
@@ -2234,7 +2235,7 @@ var Whammy = (function() {
                         'id': 0xd7 // TrackNumber
                     }, {
                         'data': 1,
-                        'id': 0x63c5 // TrackUID
+                        'id': 0x73c5 // TrackUID
                     }, {
                         'data': 0,
                         'id': 0x9c // FlagLacing
@@ -2830,8 +2831,8 @@ function GifRecorder(mediaStream) {
             if (time - lastFrameTime < 90) {
                 return;
             }
-            
-            if(video.paused) {
+
+            if (video.paused) {
                 // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
                 // Tweak for Android Chrome
                 video.play();

@@ -56,6 +56,10 @@ function RecordRTC(mediaStream, config) {
             Recorder = window.CanvasRecorder;
         }
 
+        if (config.recorderType) {
+            Recorder = config.recorderType;
+        }
+
         mediaRecorder = new Recorder(mediaStream);
 
         // Merge all data-types except "function"

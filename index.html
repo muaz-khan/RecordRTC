@@ -333,11 +333,14 @@
                             width: canvasWidth_input.value,
                             height: canvasHeight_input.value
                         },
-                        disableLogs: params.disableLogs || false
+                        disableLogs: params.disableLogs || false,
+                        recorderType: null // to let RecordRTC choose relevant types itself
                     };
 
                     recorder = window.RecordRTC(stream, options);
                     recorder.startRecording();
+                    
+                    video.onloadedmetadata = false;
                 };
                 video.src = URL.createObjectURL(stream);
             }, function() {

@@ -228,17 +228,19 @@ function WhammyRecorder(mediaStream) {
              *     var blob = recorder.blob;
              * });
              */
-            _this.blob = whammy.compile();
+            whammy.compile(function(blob) {
+                _this.blob = blob;
 
-            if (_this.blob.forEach) {
-                _this.blob = new Blob([], {
-                    type: 'video/webm'
-                });
-            }
+                if (_this.blob.forEach) {
+                    _this.blob = new Blob([], {
+                        type: 'video/webm'
+                    });
+                }
 
-            if (callback) {
-                callback(_this.blob);
-            }
+                if (callback) {
+                    callback(_this.blob);
+                }
+            });
         }, 10);
     };
 

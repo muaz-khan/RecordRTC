@@ -111,35 +111,31 @@ Demo: [AudioVideo-on-Firefox.html](https://www.webrtc-experiment.com/RecordRTC/A
 
 ## Record only Audio
 
-```javascript
-var recordRTC = RecordRTC(mediaStream);
-recordRTC.startRecording();
-recordRTC.stopRecording(function(audioURL) {
-    audio.src = audioURL;
-   
-    var recordedBlob = recordRTC.getBlob();
-    recordRTC.getDataURL(function(dataURL) { });
-});
+```html
+<audio id="audioelement" controls></audio>
+<button id="stopbutton">Stop</button>
 ```
 
-Remember, you need to invoke `navigator.getUserMedia` method yourself; it is too easy to use!
-
 ```javascript
-var recordRTC;
+    var recorder;
+    var audio = document.getElementById("audioelement");
+    var btnStopRecording = document.getElementById("stopbutton");
+    
 
-navigator.getUserMedia({audio: true}, function(mediaStream) {
-   recordRTC = RecordRTC(MediaStream);
-   recordRTC.startRecording();
-});
+    navigator.getUserMedia({audio: true}, function(stream) {
+       recorder = window.RecordRTC(stream, { type: 'audio' });
+       recorder.startRecording();
+    }, function(event) { console.log(event); });
 
-btnStopRecording.onclick = function() {
-   recordRTC.stopRecording(function(audioURL) {
-        audio.src = audioURL;
-        
-        var recordedBlob = recordRTC.getBlob();
-        recordRTC.getDataURL(function(dataURL) { });
-   });
-};
+    btnStopRecording.onclick = function() {
+       recorder.stopRecording(function(audioURL) {
+            console.log(audioURL);
+            audio.src = audioURL;
+
+            var recordedBlob = recorder.getBlob();
+            recorder.getDataURL(function(dataURL) { });
+       });
+    };
 ```
 
 Also, you don't need to use prefixed versions of `getUserMedia` and `URL` objects. RecordRTC auto handles such things for you! Just use non-prefixed version:

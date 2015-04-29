@@ -1,4 +1,4 @@
-// Last time updated at March 13, 2015, 08:32:23
+// Last time updated at April 29, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -253,7 +253,7 @@ function RecordRTC(mediaStream, config) {
 
         function processInWebWorker(_function) {
             var blob = URL.createObjectURL(new Blob([_function.toString(),
-                'this.onmessage =  function (e) {readFile(e.data);}'
+                'this.onmessage =  function (e) {' + _function.name + '(e.data);}'
             ], {
                 type: 'application/javascript'
             }));
@@ -700,8 +700,7 @@ function MRecordRTC(mediaStream) {
             this.audioRecorder = new RecordRTC(mediaStream, {
                 type: 'audio',
                 bufferSize: this.bufferSize,
-                sampleRate: this.sampleRate,
-                disableLogs: this.disableLogs
+                sampleRate: this.sampleRate
             });
             this.audioRecorder.startRecording();
         }
@@ -710,8 +709,7 @@ function MRecordRTC(mediaStream) {
             this.videoRecorder = new RecordRTC(mediaStream, {
                 type: 'video',
                 video: this.video,
-                canvas: this.canvas,
-                disableLogs: this.disableLogs
+                canvas: this.canvas
             });
             this.videoRecorder.startRecording();
         }
@@ -720,8 +718,7 @@ function MRecordRTC(mediaStream) {
             this.gifRecorder = new RecordRTC(mediaStream, {
                 type: 'gif',
                 frameRate: this.frameRate || 200,
-                quality: this.quality || 10,
-                disableLogs: this.disableLogs
+                quality: this.quality || 10
             });
             this.gifRecorder.startRecording();
         }
@@ -839,7 +836,7 @@ function MRecordRTC(mediaStream) {
 
         function processInWebWorker(_function) {
             var blob = URL.createObjectURL(new Blob([_function.toString(),
-                'this.onmessage =  function (e) {readFile(e.data);}'
+                'this.onmessage =  function (e) {' + _function.name + '(e.data);}'
             ], {
                 type: 'application/javascript'
             }));
@@ -1802,7 +1799,7 @@ function CanvasRecorder(htmlElement) {
      */
     this.stop = function(callback) {
         isRecording = false;
-        
+
         var that = this;
 
         /**
@@ -1815,13 +1812,13 @@ function CanvasRecorder(htmlElement) {
          */
         whammy.compile(function(blob) {
             that.blob = blob;
-            
+
             if (that.blob.forEach) {
                 that.blob = new Blob([], {
                     type: 'video/webm'
                 });
             }
-            
+
             if (callback) {
                 callback(that.blob);
             }

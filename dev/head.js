@@ -1,4 +1,4 @@
-// Last time updated at March 13, 2015, 08:32:23
+// Last time updated at April 29, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC

@@ -2971,3 +2971,5 @@ function GifRecorder(mediaStream) {
 
     var gifEncoder;
 }
+
+module.exports = RecordRTC;

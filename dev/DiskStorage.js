@@ -36,7 +36,27 @@ var DiskStorage = {
      */
     init: function() {
         var self = this;
-        var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB;
+
+        if (typeof 'indexedDB' === 'undefined') {
+            var indexedDB = {}; // todo?
+        }
+
+        if (typeof webkitIndexedDB !== 'undefined') {
+            indexedDB = webkitIndexedDB;
+        }
+
+        if (typeof mozIndexedDB !== 'undefined') {
+            indexedDB = mozIndexedDB;
+        }
+
+        if (typeof OIndexedDB !== 'undefined') {
+            indexedDB = OIndexedDB;
+        }
+
+        if (typeof msIndexedDB !== 'undefined') {
+            indexedDB = msIndexedDB;
+        }
+
         var dbVersion = 1;
         var dbName = this.dbName || location.href.replace(/\/|:|#|%|\.|\[|\]/g, ''),
             db;

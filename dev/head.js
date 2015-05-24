@@ -1,15 +1,15 @@
-// Last time updated at April 29, 2015, 08:32:23
+// Last time updated at May 23, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 // http://cdn.WebRTC-Experiment.com/RecordRTC.js
 // http://www.WebRTC-Experiment.com/RecordRTC.js (for China users)
-// http://RecordRTC.org/latest.js (for China users)
 // npm install recordrtc
 // http://recordrtc.org/
 
 // updates?
 /*
+-. bowserify/nodejs support added.
 -. Fixed echo.
 -. CanvasRecorder fixed.
 -. You can pass "recorderType" - RecordRTC(stream, { recorderType: window.WhammyRecorder });

@@ -53,6 +53,10 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 
 ```
 npm install recordrtc
+
+# you can use with "require" (browserify/nodejs)
+var RecordRTC = require('recordrtc');
+var recorder = RecordRTC(mediaStream, { type: 'audio'});
 ```
 
 or using [Bower](http://bower.io):

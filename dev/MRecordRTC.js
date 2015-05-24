@@ -186,7 +186,7 @@ function MRecordRTC(mediaStream) {
         });
 
         function getDataURL(blob, callback00) {
-            if (!!window.Worker) {
+            if (typeof Worker !== 'undefined') {
                 var webWorker = processInWebWorker(function readFile(_blob) {
                     postMessage(new FileReaderSync().readAsDataURL(_blob));
                 });
@@ -213,7 +213,15 @@ function MRecordRTC(mediaStream) {
             }));
 
             var worker = new Worker(blob);
-            URL.revokeObjectURL(blob);
+            var url;
+            if (typeof URL !== 'undefined') {
+                url = URL;
+            } else if (typeof webkitURL !== 'undefined') {
+                url = webkitURL;
+            } else {
+                throw 'Neither URL nor webkitURL detected.';
+            }
+            url.revokeObjectURL(blob);
             return worker;
         }
     };

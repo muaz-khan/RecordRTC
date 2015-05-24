@@ -1,15 +1,15 @@
-// Last time updated at April 29, 2015, 08:32:23
+// Last time updated at May 23, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 // http://cdn.WebRTC-Experiment.com/RecordRTC.js
 // http://www.WebRTC-Experiment.com/RecordRTC.js (for China users)
-// http://RecordRTC.org/latest.js (for China users)
 // npm install recordrtc
 // http://recordrtc.org/
 
 // updates?
 /*
+-. bowserify/nodejs support added.
 -. Fixed echo.
 -. CanvasRecorder fixed.
 -. You can pass "recorderType" - RecordRTC(stream, { recorderType: window.WhammyRecorder });
@@ -92,23 +92,43 @@ function RecordRTC(mediaStream, config) {
             console.debug('started recording ' + config.type + ' stream.');
         }
 
-        // Media Stream Recording API has not been implemented in chrome yet;
-        // That's why using WebAudio API to record stereo audio in WAV format
-        var Recorder = isChrome ? window.StereoRecorder : window.MediaStreamRecorder;
+        var Recorder;
+
+        if (typeof StereoRecorder !== 'undefined' && isChrome) {
+            // Media Stream Recording API has not been implemented in chrome yet;
+            // That's why using WebAudio API to record stereo audio in WAV format
+            Recorder = StereoRecorder;
+        }
+
+        if (typeof MediaStreamRecorder !== 'undefined' && !isChrome) {
+            Recorder = MediaStreamRecorder;
+        }
 
         // video recorder (in WebM format)
         if (config.type === 'video' && isChrome) {
-            Recorder = window.WhammyRecorder;
+            if (typeof WhammyRecorder !== 'undefined') {
+                Recorder = WhammyRecorder;
+            } else {
+                throw 'WhammyRecorder.js seems NOT linked.';
+            }
         }
 
         // video recorder (in Gif format)
         if (config.type === 'gif') {
-            Recorder = window.GifRecorder;
+            if (typeof GifRecorder !== 'undefined') {
+                Recorder = GifRecorder;
+            } else {
+                throw 'GifRecorder.js seems NOT linked.';
+            }
         }
 
         // html2canvas recording!
         if (config.type === 'canvas') {
-            Recorder = window.CanvasRecorder;
+            if (typeof CanvasRecorder !== 'undefined') {
+                Recorder = CanvasRecorder;
+            } else {
+                throw 'CanvasRecorder.js seems NOT linked.';
+            }
         }
 
         if (config.recorderType) {
@@ -233,7 +253,7 @@ function RecordRTC(mediaStream, config) {
             return;
         }
 
-        if (!!window.Worker) {
+        if (typeof Worker !== 'undefined') {
             var webWorker = processInWebWorker(function readFile(_blob) {
                 postMessage(new FileReaderSync().readAsDataURL(_blob));
             });
@@ -399,7 +419,16 @@ function RecordRTC(mediaStream, config) {
 
             hyperlink.dispatchEvent(evt);
 
-            (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
+            var url;
+            if (typeof URL !== 'undefined') {
+                url = URL;
+            } else if (typeof webkitURL !== 'undefined') {
+                url = webkitURL;
+            } else {
+                throw 'Neither URL nor webkitURL detected.';
+            }
+
+            url.revokeObjectURL(hyperlink.href);
         },
 
         /**
@@ -627,6 +656,10 @@ RecordRTC.writeToDisk = function(options) {
         });
     }
 };
+
+if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
+    module.exports = RecordRTC;
+}
 // _____________
 // MRecordRTC.js
 
@@ -815,7 +848,7 @@ function MRecordRTC(mediaStream) {
         });
 
         function getDataURL(blob, callback00) {
-            if (!!window.Worker) {
+            if (typeof Worker !== 'undefined') {
                 var webWorker = processInWebWorker(function readFile(_blob) {
                     postMessage(new FileReaderSync().readAsDataURL(_blob));
                 });
@@ -842,7 +875,15 @@ function MRecordRTC(mediaStream) {
             }));
 
             var worker = new Worker(blob);
-            URL.revokeObjectURL(blob);
+            var url;
+            if (typeof URL !== 'undefined') {
+                url = URL;
+            } else if (typeof webkitURL !== 'undefined') {
+                url = webkitURL;
+            } else {
+                throw 'Neither URL nor webkitURL detected.';
+            }
+            url.revokeObjectURL(blob);
             return worker;
         }
     };
@@ -926,27 +967,70 @@ MRecordRTC.writeToDisk = RecordRTC.writeToDisk;
 // Cross-Browser-Declarations.js
 
 // animation-frame used in WebM recording
-if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+if (typeof requestAnimationFrame === 'undefined') {
+    if (typeof webkitRequestAnimationFrame !== 'undefined') {
+        /*global requestAnimationFrame:true */
+        var requestAnimationFrame = webkitRequestAnimationFrame;
+    }
+
+    if (typeof mozRequestAnimationFrame !== 'undefined') {
+        /*global requestAnimationFrame:true */
+        var requestAnimationFrame = mozRequestAnimationFrame;
+    }
 }
 
-if (!window.cancelAnimationFrame) {
-    window.cancelAnimationFrame = window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame;
+if (typeof cancelAnimationFrame === 'undefined') {
+    if (typeof webkitCancelAnimationFrame !== 'undefined') {
+        /*global cancelAnimationFrame:true */
+        var cancelAnimationFrame = webkitCancelAnimationFrame;
+    }
+
+    if (typeof mozCancelAnimationFrame !== 'undefined') {
+        /*global cancelAnimationFrame:true */
+        var cancelAnimationFrame = mozCancelAnimationFrame;
+    }
 }
 
 // WebAudio API representer
-if (!window.AudioContext) {
-    window.AudioContext = window.webkitAudioContext || window.mozAudioContext;
+if (typeof AudioContext === 'undefined') {
+    if (typeof webkitAudioContext !== 'undefined') {
+        /*global AudioContext:true */
+        var AudioContext = webkitAudioContext;
+    }
+
+    if (typeof mozAudioContext !== 'undefined') {
+        /*global AudioContext:true */
+        var AudioContext = mozAudioContext;
+    }
 }
 
-window.URL = window.URL || window.webkitURL;
-navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-if (window.webkitMediaStream) {
-    window.MediaStream = window.webkitMediaStream;
+if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
+    /*global URL:true */
+    var URL = webkitURL;
 }
 
-var isChrome = !!navigator.webkitGetUserMedia;
+var isChrome = true;
+
+if (typeof navigator !== 'undefined') {
+    if (typeof navigator.webkitGetUserMedia !== 'undefined') {
+        navigator.getUserMedia = navigator.webkitGetUserMedia;
+    }
+
+    if (typeof navigator.mozGetUserMedia !== 'undefined') {
+        navigator.getUserMedia = navigator.mozGetUserMedia;
+    }
+
+    isChrome = typeof navigator.webkitGetUserMedia !== 'undefined';
+} else {
+    /*global navigator:true */
+    var navigator = {
+        getUserMedia: {}
+    };
+}
+
+if (typeof webkitMediaStream !== 'undefined') {
+    var MediaStream = webkitMediaStream;
+}
 
 // Merge all other data-types except "function"
 
@@ -997,8 +1081,10 @@ function reformatProps(obj) {
     return output;
 }
 
-if (location.href.indexOf('file:') === 0) {
-    console.error('Please load this HTML file on HTTP or HTTPS.');
+if (typeof location !== 'undefined') {
+    if (location.href.indexOf('file:') === 0) {
+        console.error('Please load this HTML file on HTTP or HTTPS.');
+    }
 }
 
 // below function via: http://goo.gl/B3ae8c
@@ -1027,9 +1113,13 @@ function bytesToSize(bytes) {
  * @property {webkitAudioContext} AudioContext - Keeps a reference to AudioContext object.
  */
 
-var Storage = {
-    AudioContext: window.AudioContext || window.webkitAudioContext
-};
+var Storage = {};
+
+if (typeof AudioContext !== 'undefined') {
+    Storage.AudioContext = AudioContext;
+} else if (typeof webkitAudioContext !== 'undefined') {
+    Storage.AudioContext = webkitAudioContext;
+}
 // ______________________
 // MediaStreamRecorder.js
 
@@ -1097,7 +1187,7 @@ function MediaStreamRecorder(mediaStream) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new window.MediaRecorder(mediaStream);
+        mediaRecorder = new MediaRecorder(mediaStream);
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
@@ -1768,7 +1858,7 @@ function StereoAudioRecorder(mediaStream, config) {
  */
 
 function CanvasRecorder(htmlElement) {
-    if (!window.html2canvas) {
+    if (typeof html2canvas === 'undefined') {
         throw 'Please link: //cdn.webrtc-experiment.com/screenshot.js';
     }
 
@@ -1863,7 +1953,7 @@ function CanvasRecorder(htmlElement) {
             return setTimeout(drawCanvasFrame, 100);
         }
 
-        window.html2canvas(htmlElement, {
+        html2canvas(htmlElement, {
             onrendered: function(canvas) {
                 var duration = new Date().getTime() - lastTime;
                 if (!duration) {
@@ -2642,7 +2732,27 @@ var DiskStorage = {
      */
     init: function() {
         var self = this;
-        var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB;
+
+        if (typeof 'indexedDB' === 'undefined') {
+            var indexedDB = {}; // todo?
+        }
+
+        if (typeof webkitIndexedDB !== 'undefined') {
+            indexedDB = webkitIndexedDB;
+        }
+
+        if (typeof mozIndexedDB !== 'undefined') {
+            indexedDB = mozIndexedDB;
+        }
+
+        if (typeof OIndexedDB !== 'undefined') {
+            indexedDB = OIndexedDB;
+        }
+
+        if (typeof msIndexedDB !== 'undefined') {
+            indexedDB = msIndexedDB;
+        }
+
         var dbVersion = 1;
         var dbName = this.dbName || location.href.replace(/\/|:|#|%|\.|\[|\]/g, ''),
             db;
@@ -2784,7 +2894,7 @@ var DiskStorage = {
  */
 
 function GifRecorder(mediaStream) {
-    if (!window.GIFEncoder) {
+    if (typeof GIFEncoder === 'undefined') {
         throw 'Please link: https://cdn.webrtc-experiment.com/gif-recorder.js';
     }
 
@@ -2825,7 +2935,7 @@ function GifRecorder(mediaStream) {
         video.height = this.video.height;
 
         // external library to record as GIF images
-        gifEncoder = new window.GIFEncoder();
+        gifEncoder = new GIFEncoder();
 
         // void setRepeat(int iter) 
         // Sets the number of times the set of GIF frames should be played. 

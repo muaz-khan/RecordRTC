@@ -65,7 +65,7 @@ function MediaStreamRecorder(mediaStream) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new window.MediaRecorder(mediaStream);
+        mediaRecorder = new MediaRecorder(mediaStream);
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {

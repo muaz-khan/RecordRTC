@@ -15,7 +15,7 @@
  */
 
 function GifRecorder(mediaStream) {
-    if (!window.GIFEncoder) {
+    if (typeof GIFEncoder === 'undefined') {
         throw 'Please link: https://cdn.webrtc-experiment.com/gif-recorder.js';
     }
 
@@ -56,7 +56,7 @@ function GifRecorder(mediaStream) {
         video.height = this.video.height;
 
         // external library to record as GIF images
-        gifEncoder = new window.GIFEncoder();
+        gifEncoder = new GIFEncoder();
 
         // void setRepeat(int iter) 
         // Sets the number of times the set of GIF frames should be played. 

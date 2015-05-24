@@ -16,7 +16,7 @@
  */
 
 function CanvasRecorder(htmlElement) {
-    if (!window.html2canvas) {
+    if (typeof html2canvas === 'undefined') {
         throw 'Please link: //cdn.webrtc-experiment.com/screenshot.js';
     }
 
@@ -111,7 +111,7 @@ function CanvasRecorder(htmlElement) {
             return setTimeout(drawCanvasFrame, 100);
         }
 
-        window.html2canvas(htmlElement, {
+        html2canvas(htmlElement, {
             onrendered: function(canvas) {
                 var duration = new Date().getTime() - lastTime;
                 if (!duration) {

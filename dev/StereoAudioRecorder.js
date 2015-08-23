@@ -52,7 +52,7 @@ function StereoAudioRecorder(mediaStream, config) {
     };
 
     function mergeLeftRightBuffers(config, callback) {
-        function mergeAudioBuffers(config) {
+        function mergeAudioBuffers(config, cb) {
             var leftBuffers = config.leftBuffers;
             var rightBuffers = config.rightBuffers;
             var sampleRate = config.sampleRate;
@@ -167,11 +167,28 @@ function StereoAudioRecorder(mediaStream, config) {
                 }
             }
 
+            if (cb) {
+                return cb({
+                    buffer: buffer,
+                    view: view
+                });
+            }
+
             postMessage({
                 buffer: buffer,
                 view: view
             });
         }
+
+        if (!isChrome) {
+            // its Microsoft Edge
+            mergeAudioBuffers(config, function(data) {
+                callback(data.buffer, data.view);
+            });
+            return;
+        }
+
+
         var webWorker = processInWebWorker(mergeAudioBuffers);
 
         webWorker.onmessage = function(event) {
@@ -382,9 +399,16 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         // if MediaStream().stop() or MediaStreamTrack.stop() is invoked.
-        if (mediaStream.ended) {
-            __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
-            return;
+        if ('active' in mediaStream) {
+            if (!mediaStream.active) {
+                __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
+                return;
+            }
+        } else if ('ended' in mediaStream) { // old hack
+            if (mediaStream.ended) {
+                __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
+                return;
+            }
         }
 
         if (!recording) {

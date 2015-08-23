@@ -80,7 +80,7 @@ function RecordRTC(mediaStream, config) {
             Recorder = config.recorderType;
         }
 
-        mediaRecorder = new Recorder(mediaStream);
+        mediaRecorder = new Recorder(mediaStream, config);
 
         // Merge all data-types except "function"
         mediaRecorder = mergeProps(mediaRecorder, config);
@@ -351,10 +351,18 @@ function RecordRTC(mediaStream, config) {
                 return console.warn(WARNING);
             }
 
+            var fileFullName = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.blob.type.split('/')[1];
+
+            if (typeof navigator.msSaveOrOpenBlob !== 'undefined') {
+                return navigator.msSaveOrOpenBlob(mediaRecorder.blob, fileFullName);
+            } else if (typeof navigator.msSaveBlob !== 'undefined') {
+                return navigator.msSaveBlob(mediaRecorder.blob, fileFullName);
+            }
+
             var hyperlink = document.createElement('a');
             hyperlink.href = URL.createObjectURL(mediaRecorder.blob);
             hyperlink.target = '_blank';
-            hyperlink.download = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.blob.type.split('/')[1];
+            hyperlink.download = fileFullName;
 
             var evt = new MouseEvent('click', {
                 view: window,
@@ -364,16 +372,7 @@ function RecordRTC(mediaStream, config) {
 
             hyperlink.dispatchEvent(evt);
 
-            var url;
-            if (typeof URL !== 'undefined') {
-                url = URL;
-            } else if (typeof webkitURL !== 'undefined') {
-                url = webkitURL;
-            } else {
-                throw 'Neither URL nor webkitURL detected.';
-            }
-
-            url.revokeObjectURL(hyperlink.href);
+            URL.revokeObjectURL(hyperlink.href);
         },
 
         /**

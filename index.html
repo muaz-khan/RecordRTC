@@ -82,6 +82,9 @@
     <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
     <script src="https://cdn.webrtc-experiment.com/gif-recorder.js"></script>
     <script src="https://cdn.webrtc-experiment.com/getScreenId.js"></script>
+
+    <!-- for Edige/FF/Chrome/Opera/etc. getUserMedia support -->
+    <script src="https://cdn.rawgit.com/webrtc/adapter/master/adapter.js"></script>
 </head>
 
 <body>
@@ -131,7 +134,7 @@
             
             <br>
 
-            <video controls></video>
+            <video controls muted></video>
         </section>
         
         <script>
@@ -261,7 +264,34 @@
                             bufferSize: typeof params.bufferSize == 'undefined' ? 16384 : params.bufferSize,
                             sampleRate: typeof params.sampleRate == 'undefined' ? 44100 : params.sampleRate,
                             leftChannel: params.leftChannel || false,
-                            disableLogs: params.disableLogs || false
+                            disableLogs: params.disableLogs || false,
+                            recorderType: webrtcDetectedBrowser === 'edge' ? StereoAudioRecorder : null
+                        });
+                        
+                        button.recordingEndedCallback = function(url) {
+                            var audio = new Audio();
+                            audio.src = url;
+                            audio.controls = true;
+                            audio.autoplay = true;
+                            recordingPlayer.parentNode.appendChild(document.createElement('hr'));
+                            recordingPlayer.parentNode.appendChild(audio);
+
+                            if(audio.paused) audio.play();
+                        };
+                        
+                        button.recordRTC.startRecording();
+                    };
+                }
+
+                if(recordingMedia.value === 'record-audio-plus-video') {
+                    captureAudioPlusVideo(commonConfig);
+                    
+                    button.mediaCapturedCallback = function() {
+                        button.recordRTC = RecordRTC(button.stream, {
+                            type: 'video',
+                            disableLogs: params.disableLogs || false,
+                            // we can't pass bitrates or framerates here
+                            // Firefox MediaRecorder API lakes these features
                         });
                         
                         button.recordingEndedCallback = function(url) {
@@ -301,11 +331,31 @@
                         button.recordRTC.startRecording();
                     };
                 }
+
+                if(recordingMedia.value === 'record-audio-plus-screen') {
+                    captureAudioPlusScreen(commonConfig);
+                    
+                    button.mediaCapturedCallback = function() {
+                        button.recordRTC = RecordRTC(button.stream, {
+                            type: 'video',
+                            disableLogs: params.disableLogs || false,
+                            // we can't pass bitrates or framerates here
+                            // Firefox MediaRecorder API lakes these features
+                        });
+                        
+                        button.recordingEndedCallback = function(url) {
+                            recordingPlayer.src = url;
+                            recordingPlayer.play();
+                        };
+                        
+                        button.recordRTC.startRecording();
+                    };
+                }
             };
             
             function captureVideo(config) {
                 captureUserMedia({video: true}, function(videoStream) {
-                    recordingPlayer.src = URL.createObjectURL(videoStream);
+                    recordingPlayer.srcObject = videoStream;
                     recordingPlayer.play();
                     
                     config.onMediaCaptured(videoStream);
@@ -320,12 +370,27 @@
             
             function captureAudio(config) {
                 captureUserMedia({audio: true}, function(audioStream) {
-                    recordingPlayer.src = URL.createObjectURL(audioStream);
+                    recordingPlayer.srcObject = audioStream;
                     recordingPlayer.play();
                     
                     config.onMediaCaptured(audioStream);
                     
                     audioStream.onended = function() {
+                        config.onMediaStopped();
+                    };
+                }, function(error) {
+                    config.onMediaCapturingFailed(error);
+                });
+            }
+
+            function captureAudioPlusVideo(config) {
+                captureUserMedia({video: true, audio: true}, function(audioVideoStream) {
+                    recordingPlayer.srcObject = audioVideoStream;
+                    recordingPlayer.play();
+                    
+                    config.onMediaCaptured(audioVideoStream);
+                    
+                    audioVideoStream.onended = function() {
                         config.onMediaStopped();
                     };
                 }, function(error) {
@@ -353,7 +418,43 @@
                     }
 
                     captureUserMedia(screenConstraints, function(screenStream) {
-                        recordingPlayer.src = URL.createObjectURL(screenStream);
+                        recordingPlayer.srcObject = screenStream;
+                        recordingPlayer.play();
+                        
+                        config.onMediaCaptured(screenStream);
+                        
+                        screenStream.onended = function() {
+                            config.onMediaStopped();
+                        };
+                    }, function(error) {
+                        config.onMediaCapturingFailed(error);
+                    });
+                });
+            }
+
+            function captureAudioPlusScreen(config) {
+                getScreenId(function(error, sourceId, screenConstraints) {
+                    if (error === 'not-installed') {
+                        document.write('<h1><a target="_blank" href="https://chrome.google.com/webstore/detail/screen-capturing/ajhifddimkapgcifgcodmmfdlknahffk">Please install this chrome extension then reload the page.</a></h1>');
+                    }
+
+                    if (error === 'permission-denied') {
+                        alert('Screen capturing permission is denied.');
+                    }
+
+                    if (error === 'installed-disabled') {
+                        alert('Please enable chrome screen capturing extension.');
+                    }
+                    
+                    if(error) {
+                        config.onMediaCapturingFailed(error);
+                        return;
+                    }
+
+                    screenConstraints.audio = true;
+
+                    captureUserMedia(screenConstraints, function(screenStream) {
+                        recordingPlayer.srcObject = screenStream;
                         recordingPlayer.play();
                         
                         config.onMediaCaptured(screenStream);
@@ -368,19 +469,7 @@
             }
             
             function captureUserMedia(mediaConstraints, successCallback, errorCallback) {
-                if(navigator.getUserMedia) {
-                    navigator.captureUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia || navigator.getUserMedia;
-                    navigator.captureUserMedia(mediaConstraints, successCallback, errorCallback);
-                    return;
-                }
-                
-                if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices = navigator.bind(navigator.mediaDevices);
-                }
-                    
-                navigator.mediaDevices.captureUserMedia = navigator.mediaDevices.mozGetUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mediaDevices.msGetUserMedia || navigator.mediaDevices.getUserMedia;
-                
-                navigator.mediaDevices.captureUserMedia(mediaConstraints, successCallback, errorCallback);
+                navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
             }
             
             function setMediaContainerFormat(arrayOfOptionsSupported) {
@@ -410,6 +499,27 @@
                 }
                 setMediaContainerFormat(['WebM', /*'Mp4',*/ 'Gif']);
             };
+
+            if(webrtcDetectedBrowser === 'edge') {
+                // webp isn't supported in Microsoft Edge
+                // neither MediaRecorder API
+                // so lets disable both video/screen recording options
+
+                console.warn('Neither MediaRecorder API nor webp is supported in Microsoft Edge. You cam merely record audio.');
+
+                recordingMedia.innerHTML = '<option value="record-audio">Audio</option>';
+                setMediaContainerFormat(['WAV']);
+            }
+
+            if(webrtcDetectedBrowser === 'firefox') {
+                // Firefox implemented both MediaRecorder API as well as WebAudio API
+                // Their MediaRecorder implementation supports both audio/video recording in single container format
+                // Remember, we can't currently pass bit-rates or frame-rates values over MediaRecorder API (their implementation lakes these features)
+
+                recordingMedia.innerHTML = '<option value="record-audio-plus-video">Audio+Video</option>' 
+                                            + '<option value="record-audio-plus-screen">Audio+Screen</option>' 
+                                            + recordingMedia.innerHTML;
+            }
             
             function saveToDiskOrOpenNewTab(recordRTC) {
                 recordingDIV.querySelector('#save-to-disk').parentNode.style.display = 'block';

@@ -27,6 +27,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Google Chrome | [Stable](https://www.google.com/intl/en_uk/chrome/browser/) / [Canary](https://www.google.com/intl/en/chrome/browser/canary.html) / [Beta](https://www.google.com/intl/en/chrome/browser/beta.html) / [Dev](https://www.google.com/intl/en/chrome/browser/index.html?extra=devchannel#eula) |
 | Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  |
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) |
+| Microsoft Edge | [Edge](https://www.microsoft.com/en-us/windows/microsoft-edge) |
 
 ## How RecordRTC encodes wav/webm?
 
@@ -71,9 +72,6 @@ To use it:
 <script src="./node_modules/recordrtc/RecordRTC.js"></script>
 
 <!-- or -->
-<script src="http://RecordRTC.org/latest.js"></script>
-
-<!-- or -->
 <script src="//cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
 
 <!-- or -->
@@ -84,22 +82,47 @@ There are some other NPM packages regarding RecordRTC:
 
 * [https://www.npmjs.org/search?q=RecordRTC](https://www.npmjs.org/search?q=RecordRTC)
 
+## How to capture stream?
+
+```html
+<script src="https://cdn.rawgit.com/webrtc/adapter/master/adapter.js"></script>
+
+<script>
+function successCallback(stream) {
+    // RecordRTC usage goes here
+}
+
+function errorCallback(errror) {
+    // maybe another application is using the device
+}
+
+var mediaConstraints = { video: true, audio: true };
+
+navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
+</script>
+```
+
 ## Record audio+video in Firefox
 
 You'll be recording both audio/video in single WebM container. Though you can edit RecordRTC.js to record in mp4.
 
 ```javascript
-var session = {
-    audio: true,
-    video: true
-};
-
 var recordRTC;
 
-navigator.getUserMedia(session, function (mediaStream) {
+function successCallback(stream) {
+    // RecordRTC usage goes here
+
     recordRTC = RecordRTC(MediaStream);
     recordRTC.startRecording();
-}, onError);
+}
+
+function errorCallback(errror) {
+    // maybe another application is using the device
+}
+
+var mediaConstraints = { video: true, audio: true };
+
+navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
 
 btnStopRecording.onclick = function () {
     recordRTC.stopRecording(function (audioVideoWebMURL) {
@@ -126,55 +149,41 @@ recordRTC.stopRecording(function(audioURL) {
 });
 ```
 
-Remember, you need to invoke `navigator.getUserMedia` method yourself; it is too easy to use!
-
-```javascript
-var recordRTC;
-
-navigator.getUserMedia({audio: true}, function(mediaStream) {
-   recordRTC = RecordRTC(MediaStream);
-   recordRTC.startRecording();
-});
-
-btnStopRecording.onclick = function() {
-   recordRTC.stopRecording(function(audioURL) {
-        audio.src = audioURL;
-        
-        var recordedBlob = recordRTC.getBlob();
-        recordRTC.getDataURL(function(dataURL) { });
-   });
-};
-```
-
-Also, you don't need to use prefixed versions of `getUserMedia` and `URL` objects. RecordRTC auto handles such things for you! Just use non-prefixed version:
-
-```javascript
-navigator.getUserMedia(media_constraints, onsuccess, onfailure);
-URL.createObjectURL(MediaStream);
-```
-
 ## Echo Issues
 
-Simply set `volume=0` or `muted=true`:
+Simply set `volume=0` or `muted=true` over `<audio>` or `<video>` element:
 
 ```javascript
-navigator.getUserMedia({
+videoElement.muted = true;
+audioElement.muted = true;
+```
+
+Otherwise, you can pass some media constraints:
+
+```javascript
+function successCallback(stream) {
+    // RecordRTC usage goes here
+}
+
+function errorCallback(errror) {
+    // maybe another application is using the device
+}
+
+var mediaConstraints = {
     audio: {
         mandatory: {
-            googEchoCancellation: false,
+            echoCancellation: false,
             googAutoGainControl: false,
             googNoiseSuppression: false,
             googHighpassFilter: false
         },
-        optional: []
+        optional: [{
+          googAudioMirroring: false
+        }]
     },
-}, onSuccess, onFailure);
+};
 
-var recordRTC;
-function onSuccess(mediaStream) {
-    recordRTC = RecordRTC(mediaStream);
-    recordRTC.startRecording();
-}
+navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
 ```
 
 * [Constraints Reference](https://chromium.googlesource.com/external/webrtc/+/master/talk/app/webrtc/mediaconstraintsinterface.cc)

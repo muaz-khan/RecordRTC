@@ -1,4 +1,4 @@
-// Last time updated at May 23, 2015, 08:32:23
+// Last time updated at August 23, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. Microsoft Edge support added (only-audio-yet).
 -. bowserify/nodejs support added.
 -. Fixed echo.
 -. CanvasRecorder fixed.
@@ -31,6 +32,7 @@
 // Android (Chrome) [ only video ]
 // Android (Opera) [ only video ]
 // Android (Firefox) [ only video ]
+// Microsoft Edge (Only Audio)
 
 //------------------------------------
 // Muaz Khan     - www.MuazKhan.com
@@ -135,7 +137,7 @@ function RecordRTC(mediaStream, config) {
             Recorder = config.recorderType;
         }
 
-        mediaRecorder = new Recorder(mediaStream);
+        mediaRecorder = new Recorder(mediaStream, config);
 
         // Merge all data-types except "function"
         mediaRecorder = mergeProps(mediaRecorder, config);
@@ -406,10 +408,18 @@ function RecordRTC(mediaStream, config) {
                 return console.warn(WARNING);
             }
 
+            var fileFullName = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.blob.type.split('/')[1];
+
+            if (typeof navigator.msSaveOrOpenBlob !== 'undefined') {
+                return navigator.msSaveOrOpenBlob(mediaRecorder.blob, fileFullName);
+            } else if (typeof navigator.msSaveBlob !== 'undefined') {
+                return navigator.msSaveBlob(mediaRecorder.blob, fileFullName);
+            }
+
             var hyperlink = document.createElement('a');
             hyperlink.href = URL.createObjectURL(mediaRecorder.blob);
             hyperlink.target = '_blank';
-            hyperlink.download = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.blob.type.split('/')[1];
+            hyperlink.download = fileFullName;
 
             var evt = new MouseEvent('click', {
                 view: window,
@@ -419,16 +429,7 @@ function RecordRTC(mediaStream, config) {
 
             hyperlink.dispatchEvent(evt);
 
-            var url;
-            if (typeof URL !== 'undefined') {
-                url = URL;
-            } else if (typeof webkitURL !== 'undefined') {
-                url = webkitURL;
-            } else {
-                throw 'Neither URL nor webkitURL detected.';
-            }
-
-            url.revokeObjectURL(hyperlink.href);
+            URL.revokeObjectURL(hyperlink.href);
         },
 
         /**
@@ -1473,7 +1474,7 @@ function StereoAudioRecorder(mediaStream, config) {
     };
 
     function mergeLeftRightBuffers(config, callback) {
-        function mergeAudioBuffers(config) {
+        function mergeAudioBuffers(config, cb) {
             var leftBuffers = config.leftBuffers;
             var rightBuffers = config.rightBuffers;
             var sampleRate = config.sampleRate;
@@ -1588,11 +1589,28 @@ function StereoAudioRecorder(mediaStream, config) {
                 }
             }
 
+            if (cb) {
+                return cb({
+                    buffer: buffer,
+                    view: view
+                });
+            }
+
             postMessage({
                 buffer: buffer,
                 view: view
             });
         }
+
+        if (!isChrome) {
+            // its Microsoft Edge
+            mergeAudioBuffers(config, function(data) {
+                callback(data.buffer, data.view);
+            });
+            return;
+        }
+
+
         var webWorker = processInWebWorker(mergeAudioBuffers);
 
         webWorker.onmessage = function(event) {
@@ -1803,9 +1821,16 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         // if MediaStream().stop() or MediaStreamTrack.stop() is invoked.
-        if (mediaStream.ended) {
-            __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
-            return;
+        if ('active' in mediaStream) {
+            if (!mediaStream.active) {
+                __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
+                return;
+            }
+        } else if ('ended' in mediaStream) { // old hack
+            if (mediaStream.ended) {
+                __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
+                return;
+            }
         }
 
         if (!recording) {
@@ -2037,7 +2062,12 @@ function WhammyRecorder(mediaStream) {
             video = this.video.cloneNode();
         } else {
             video = document.createElement('video');
-            video.src = URL.createObjectURL(mediaStream);
+
+            if (typeof video.srcObject !== 'undefined') {
+                video.srcObject = mediaStream;
+            } else {
+                video.src = URL.createObjectURL(mediaStream);
+            }
 
             video.width = this.video.width;
             video.height = this.video.height;
@@ -3073,7 +3103,11 @@ function GifRecorder(mediaStream) {
     var video = document.createElement('video');
     video.muted = true;
     video.autoplay = true;
-    video.src = URL.createObjectURL(mediaStream);
+    if (typeof video.srcObject !== 'undefined') {
+        video.srcObject = mediaStream;
+    } else {
+        video.src = URL.createObjectURL(mediaStream);
+    }
     video.play();
 
     var lastAnimationFrame = null;

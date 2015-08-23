@@ -56,7 +56,12 @@ function WhammyRecorder(mediaStream) {
             video = this.video.cloneNode();
         } else {
             video = document.createElement('video');
-            video.src = URL.createObjectURL(mediaStream);
+
+            if (typeof video.srcObject !== 'undefined') {
+                video.srcObject = mediaStream;
+            } else {
+                video.src = URL.createObjectURL(mediaStream);
+            }
 
             video.width = this.video.width;
             video.height = this.video.height;

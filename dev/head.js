@@ -1,4 +1,4 @@
-// Last time updated at May 23, 2015, 08:32:23
+// Last time updated at August 23, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. Microsoft Edge support added (only-audio-yet).
 -. bowserify/nodejs support added.
 -. Fixed echo.
 -. CanvasRecorder fixed.
@@ -31,6 +32,7 @@
 // Android (Chrome) [ only video ]
 // Android (Opera) [ only video ]
 // Android (Firefox) [ only video ]
+// Microsoft Edge (Only Audio)
 
 //------------------------------------
 // Muaz Khan     - www.MuazKhan.com

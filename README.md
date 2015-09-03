@@ -282,7 +282,7 @@ videoRecorder.initRecorder(function() {
 
 After using `stopRecording`, you'll see that both WAV/WebM blobs are having following charachteristics:
 
-1. Both are having same recording duration i.e. size
+1. Both are having same recording duration i.e. length
 2. Video recorder is having no blank frames
 3. Audio recorder is having no empty buffers
 
@@ -359,7 +359,7 @@ var recorder = RecordRTC(mediaStream, {
 
 ## `numberOfAudioChannels`
 
-You can force [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) to record single-audio-channels only. It allows you reduce WAV file size to half.
+You can force [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) to record single-audio-channel only. It allows you reduce WAV file size to half.
 
 ```javascript
 var audioRecorder = RecordRTC(audioStream, {
@@ -369,9 +369,9 @@ var audioRecorder = RecordRTC(audioStream, {
 });
 ```
 
-**It will reduce WAV size to half!*
+**It will reduce WAV size to half!**
 
-This feature is useful only in Chrome and Microsoft Edge (WAV-recorders).
+This feature is useful only in Chrome and Microsoft Edge (WAV-recorders). It can work in Firefox as well.
 
 ## How to set video width/height?
 

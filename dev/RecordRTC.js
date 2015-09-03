@@ -26,10 +26,12 @@ function RecordRTC(mediaStream, config) {
         throw 'MediaStream is mandatory.';
     }
 
+    // consider default type=audio
     if (!config.type) {
         config.type = 'audio';
     }
 
+    // a reference to user's recordRTC object
     var self = this;
 
     function startRecording() {
@@ -37,12 +39,42 @@ function RecordRTC(mediaStream, config) {
             console.debug('started recording ' + config.type + ' stream.');
         }
 
+        if (mediaRecorder) {
+            mediaRecorder.clearRecordedData();
+            mediaRecorder.resume();
+
+            if (self.recordingDuration) {
+                setTimeout(function() {
+                    stopRecording(self.onRecordingStopped);
+                }, self.recordingDuration);
+            }
+            return self;
+        }
+
+        initRecorder(function() {
+            if (self.recordingDuration) {
+                setTimeout(function() {
+                    stopRecording(self.onRecordingStopped);
+                }, self.recordingDuration);
+            }
+        });
+
+        return self;
+    }
+
+    function initRecorder(initCallback) {
+        if (!config.disableLogs) {
+            console.debug('initializing ' + config.type + ' stream recorder.');
+        }
+
         var Recorder;
 
-        if (typeof StereoRecorder !== 'undefined' && isChrome) {
+        // StereoAudioRecorder can work with all three: Edge, Firefox and Chrome
+        // todo: detect if it is Edge, then auto use: StereoAudioRecorder
+        if (typeof StereoAudioRecorder !== 'undefined' && isChrome) {
             // Media Stream Recording API has not been implemented in chrome yet;
             // That's why using WebAudio API to record stereo audio in WAV format
-            Recorder = StereoRecorder;
+            Recorder = StereoAudioRecorder;
         }
 
         if (typeof MediaStreamRecorder !== 'undefined' && !isChrome) {
@@ -80,26 +112,15 @@ function RecordRTC(mediaStream, config) {
             Recorder = config.recorderType;
         }
 
+        if (initCallback) {
+            config.initCallback = function() {
+                initCallback();
+                initCallback = config.initCallback = null; // recordRTC.initRecorder should be call-backed once.
+            };
+        }
+
         mediaRecorder = new Recorder(mediaStream, config);
-
-        // Merge all data-types except "function"
-        mediaRecorder = mergeProps(mediaRecorder, config);
-
-        mediaRecorder.onAudioProcessStarted = function() {
-            if (config.onAudioProcessStarted) {
-                config.onAudioProcessStarted();
-            }
-        };
-
-        mediaRecorder.onGifPreview = function(gif) {
-            if (config.onGifPreview) {
-                config.onGifPreview(gif);
-            }
-        };
-
         mediaRecorder.record();
-
-        return self;
     }
 
     function stopRecording(callback) {
@@ -279,6 +300,59 @@ function RecordRTC(mediaStream, config) {
         resumeRecording: resumeRecording,
 
         /**
+         * This method initializes the recording process.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.initRecorder();
+         */
+        initRecorder: initRecorder,
+
+        /**
+         * This method initializes the recording process.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.initRecorder();
+         */
+        setRecordingDuration: function(milliseconds, callback) {
+            if (typeof milliseconds === 'undefined') {
+                throw 'milliseconds is required.';
+            }
+
+            if (typeof milliseconds !== 'number') {
+                throw 'milliseconds must be a number.';
+            }
+
+            self.recordingDuration = milliseconds;
+            self.onRecordingStopped = callback || function() {};
+
+            return {
+                onRecordingStopped: function(callback) {
+                    self.onRecordingStopped = callback;
+                }
+            };
+        },
+
+        /**
+         * This method can be used to clear/reset all the recorded data.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.clearRecordedData();
+         */
+        clearRecordedData: function() {
+            if (!mediaRecorder) {
+                return console.warn(WARNING);
+            }
+
+            mediaRecorder.clearRecordedData();
+        },
+
+        /**
          * It is equivalent to <code class="str">"recordRTC.blob"</code> property.
          * @method
          * @memberof RecordRTC
@@ -409,11 +483,11 @@ function RecordRTC(mediaStream, config) {
          * recordRTC.setAdvertisementArray(arrayOfWebPImages);
          */
         setAdvertisementArray: function(arrayOfWebPImages) {
-            this.advertisement = [];
+            config.advertisement = [];
 
             var length = arrayOfWebPImages.length;
             for (var i = 0; i < length; i++) {
-                this.advertisement.push({
+                config.advertisement.push({
                     duration: i,
                     image: arrayOfWebPImages[i]
                 });
@@ -485,6 +559,7 @@ function RecordRTC(mediaStream, config) {
     };
 
     if (!this) {
+        self = returnObject;
         return returnObject;
     }
 
@@ -492,6 +567,8 @@ function RecordRTC(mediaStream, config) {
     for (var prop in returnObject) {
         this[prop] = returnObject[prop];
     }
+
+    self = this;
 
     return returnObject;
 }

@@ -67,55 +67,6 @@ if (typeof webkitMediaStream !== 'undefined') {
     var MediaStream = webkitMediaStream;
 }
 
-// Merge all other data-types except "function"
-
-/**
- * @param {object} mergein - Merge another object in this object.
- * @param {object} mergeto - Merge this object in another object.
- * @returns {object} - merged object
- * @example
- * var mergedObject = mergeProps({}, {
- *     x: 10, // this will be merged
- *     y: 10, // this will be merged
- *     add: function() {} // this will be skipped
- * });
- */
-function mergeProps(mergein, mergeto) {
-    mergeto = reformatProps(mergeto);
-    for (var t in mergeto) {
-        if (typeof mergeto[t] !== 'function') {
-            mergein[t] = mergeto[t];
-        }
-    }
-    return mergein;
-}
-
-/**
- * @param {object} obj - If a property name is "sample-rate"; it will be converted into "sampleRate".
- * @returns {object} - formatted object.
- * @example
- * var mergedObject = reformatProps({
- *     'sample-rate': 44100,
- *     'buffer-size': 4096
- * });
- *
- * mergedObject.sampleRate === 44100
- * mergedObject.bufferSize === 4096
- */
-function reformatProps(obj) {
-    var output = {};
-    for (var o in obj) {
-        if (o.indexOf('-') !== -1) {
-            var splitted = o.split('-');
-            var name = splitted[0] + splitted[1].split('')[0].toUpperCase() + splitted[1].substr(1);
-            output[name] = obj[o];
-        } else {
-            output[o] = obj[o];
-        }
-    }
-    return output;
-}
-
 if (typeof location !== 'undefined') {
     if (location.href.indexOf('file:') === 0) {
         console.error('Please load this HTML file on HTTP or HTTPS.');

@@ -28,6 +28,8 @@ function StereoAudioRecorder(mediaStream, config) {
         throw 'Your stream has no audio tracks.';
     }
 
+    config = config || {};
+
     var self = this;
 
     // variables
@@ -35,6 +37,75 @@ function StereoAudioRecorder(mediaStream, config) {
     var rightchannel = [];
     var recording = false;
     var recordingLength = 0;
+
+    var numberOfAudioChannels = 2;
+
+    // backward compatibility
+    if (config.leftChannel === true) {
+        numberOfAudioChannels = 1;
+    }
+
+    if (config.numberOfAudioChannels === 1) {
+        numberOfAudioChannels = 1;
+    }
+
+    if (!config.disableLogs) {
+        console.debug('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
+    }
+
+    var legalBufferValues = [0, 256, 512, 1024, 2048, 4096, 8192, 16384];
+
+    /**
+     * From the spec: This value controls how frequently the audioprocess event is
+     * dispatched and how many sample-frames need to be processed each call.
+     * Lower values for buffer size will result in a lower (better) latency.
+     * Higher values will be necessary to avoid audio breakup and glitches
+     * The size of the buffer (in sample-frames) which needs to
+     * be processed each time onprocessaudio is called.
+     * Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384).
+     * @property {number} bufferSize - Buffer-size for how frequently the audioprocess event is dispatched.
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder = new StereoAudioRecorder(mediaStream, {
+     *     bufferSize: 4096
+     * });
+     */
+
+    // "0" means, let chrome decide the most accurate buffer-size for current platform.
+    var bufferSize = typeof config.bufferSize === 'undefined' ? 4096 : config.bufferSize;
+
+    if (legalBufferValues.indexOf(bufferSize) === -1) {
+        if (!config.disableLogs) {
+            console.warn('Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
+        }
+    }
+
+
+    /**
+     * The sample rate (in sample-frames per second) at which the
+     * AudioContext handles audio. It is assumed that all AudioNodes
+     * in the context run at this rate. In making this assumption,
+     * sample-rate converters or "varispeed" processors are not supported
+     * in real-time processing.
+     * The sampleRate parameter describes the sample-rate of the
+     * linear PCM audio data in the buffer in sample-frames per second.
+     * An implementation must support sample-rates in at least
+     * the range 22050 to 96000.
+     * @property {number} sampleRate - Buffer-size for how frequently the audioprocess event is dispatched.
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder = new StereoAudioRecorder(mediaStream, {
+     *     sampleRate: 44100
+     * });
+     */
+    var sampleRate = typeof config.sampleRate !== 'undefined' ? config.sampleRate : context.sampleRate || 44100;
+
+    if (sampleRate < 22050 || sampleRate > 96000) {
+        // Ref: http://stackoverflow.com/a/26303918/552182
+        if (!config.disableLogs) {
+            console.warn('sample-rate must be under range 22050 and 96000.');
+        }
+    }
 
     /**
      * This method records MediaStream.
@@ -53,12 +124,22 @@ function StereoAudioRecorder(mediaStream, config) {
 
     function mergeLeftRightBuffers(config, callback) {
         function mergeAudioBuffers(config, cb) {
-            var leftBuffers = config.leftBuffers;
-            var rightBuffers = config.rightBuffers;
-            var sampleRate = config.sampleRate;
+            var numberOfAudioChannels = config.numberOfAudioChannels;
 
-            leftBuffers = mergeBuffers(leftBuffers[0], leftBuffers[1]);
-            rightBuffers = mergeBuffers(rightBuffers[0], rightBuffers[1]);
+            // todo: "slice(0)" --- is it causes loop? Should be removed?
+            var leftBuffers = config.leftBuffers.slice(0);
+            var rightBuffers = config.rightBuffers.slice(0);
+            var sampleRate = config.sampleRate;
+            var internalInterleavedLength = config.internalInterleavedLength;
+
+            if (numberOfAudioChannels === 2) {
+                leftBuffers = mergeBuffers(leftBuffers, internalInterleavedLength);
+                rightBuffers = mergeBuffers(rightBuffers, internalInterleavedLength);
+            }
+
+            if (numberOfAudioChannels === 1) {
+                leftBuffers = mergeBuffers(leftBuffers, internalInterleavedLength);
+            }
 
             function mergeBuffers(channelBuffer, rLength) {
                 var result = new Float64Array(rLength);
@@ -97,7 +178,15 @@ function StereoAudioRecorder(mediaStream, config) {
             }
 
             // interleave both channels together
-            var interleaved = interleave(leftBuffers, rightBuffers);
+            var interleaved;
+
+            if (numberOfAudioChannels === 2) {
+                interleaved = interleave(leftBuffers, rightBuffers);
+            }
+
+            if (numberOfAudioChannels === 1) {
+                interleaved = leftBuffers;
+            }
 
             var interleavedLength = interleaved.length;
 
@@ -112,8 +201,7 @@ function StereoAudioRecorder(mediaStream, config) {
             writeUTFBytes(view, 0, 'RIFF');
 
             // RIFF chunk length
-            var blockAlign = 4;
-            view.setUint32(blockAlign, 44 + interleavedLength * 2, true);
+            view.setUint32(4, 44 + interleavedLength * 2, true);
 
             // RIFF type 
             writeUTFBytes(view, 8, 'WAVE');
@@ -129,16 +217,16 @@ function StereoAudioRecorder(mediaStream, config) {
             view.setUint16(20, 1, true);
 
             // stereo (2 channels)
-            view.setUint16(22, 2, true);
+            view.setUint16(22, numberOfAudioChannels, true);
 
             // sample rate 
             view.setUint32(24, sampleRate, true);
 
             // byte rate (sample rate * block align)
-            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint32(28, sampleRate * 4, true);
 
             // block align (channel count * bytes per sample) 
-            view.setUint16(32, blockAlign, true);
+            view.setUint16(32, numberOfAudioChannels * 2, true);
 
             // bits per sample 
             view.setUint16(34, 16, true);
@@ -151,20 +239,12 @@ function StereoAudioRecorder(mediaStream, config) {
             view.setUint32(40, interleavedLength * 2, true);
 
             // write the PCM samples
-            var offset = 44,
-                leftChannel;
-            for (var i = 0; i < interleavedLength; i++, offset += 2) {
-                var size = Math.max(-1, Math.min(1, interleaved[i]));
-                var currentChannel = size < 0 ? size * 32768 : size * 32767;
-
-                if (config.leftChannel) {
-                    if (currentChannel !== leftChannel) {
-                        view.setInt16(offset, currentChannel, true);
-                    }
-                    leftChannel = currentChannel;
-                } else {
-                    view.setInt16(offset, currentChannel, true);
-                }
+            var lng = interleavedLength;
+            var index = 44;
+            var volume = 1;
+            for (var i = 0; i < lng; i++) {
+                view.setInt16(index, interleaved[i] * (0x7FFF * volume), true);
+                index += 2;
             }
 
             if (cb) {
@@ -229,9 +309,10 @@ function StereoAudioRecorder(mediaStream, config) {
 
         mergeLeftRightBuffers({
             sampleRate: sampleRate,
-            leftChannel: config.leftChannel,
-            leftBuffers: [leftchannel, recordingLength],
-            rightBuffers: [rightchannel, recordingLength]
+            numberOfAudioChannels: numberOfAudioChannels,
+            internalInterleavedLength: recordingLength,
+            leftBuffers: leftchannel,
+            rightBuffers: numberOfAudioChannels === 1 ? [] : rightchannel
         }, function(buffer, view) {
             /**
              * @property {Blob} blob - The recorded blob object.
@@ -288,64 +369,10 @@ function StereoAudioRecorder(mediaStream, config) {
     // creates an audio node from the microphone incoming stream
     var audioInput = context.createMediaStreamSource(mediaStream);
 
-    var legalBufferValues = [0, 256, 512, 1024, 2048, 4096, 8192, 16384];
-
-    /**
-     * From the spec: This value controls how frequently the audioprocess event is
-     * dispatched and how many sample-frames need to be processed each call.
-     * Lower values for buffer size will result in a lower (better) latency.
-     * Higher values will be necessary to avoid audio breakup and glitches
-     * The size of the buffer (in sample-frames) which needs to
-     * be processed each time onprocessaudio is called.
-     * Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384).
-     * @property {number} bufferSize - Buffer-size for how frequently the audioprocess event is dispatched.
-     * @memberof StereoAudioRecorder
-     * @example
-     * recorder = new StereoAudioRecorder(mediaStream, {
-     *     bufferSize: 4096
-     * });
-     */
-
-    // "0" means, let chrome decide the most accurate buffer-size for current platform.
-    var bufferSize = typeof config.bufferSize === 'undefined' ? 4096 : config.bufferSize;
-
-    if (legalBufferValues.indexOf(bufferSize) === -1) {
-        if (!config.disableLogs) {
-            console.warn('Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
-        }
-    }
-
-
-    /**
-     * The sample rate (in sample-frames per second) at which the
-     * AudioContext handles audio. It is assumed that all AudioNodes
-     * in the context run at this rate. In making this assumption,
-     * sample-rate converters or "varispeed" processors are not supported
-     * in real-time processing.
-     * The sampleRate parameter describes the sample-rate of the
-     * linear PCM audio data in the buffer in sample-frames per second.
-     * An implementation must support sample-rates in at least
-     * the range 22050 to 96000.
-     * @property {number} sampleRate - Buffer-size for how frequently the audioprocess event is dispatched.
-     * @memberof StereoAudioRecorder
-     * @example
-     * recorder = new StereoAudioRecorder(mediaStream, {
-     *     sampleRate: 44100
-     * });
-     */
-    var sampleRate = typeof config.sampleRate !== 'undefined' ? config.sampleRate : context.sampleRate || 44100;
-
-    if (sampleRate < 22050 || sampleRate > 96000) {
-        // Ref: http://stackoverflow.com/a/26303918/552182
-        if (!config.disableLogs) {
-            console.warn('sample-rate must be under range 22050 and 96000.');
-        }
-    }
-
     if (context.createJavaScriptNode) {
-        __stereoAudioRecorderJavacriptNode = context.createJavaScriptNode(bufferSize, 2, 2);
+        __stereoAudioRecorderJavacriptNode = context.createJavaScriptNode(bufferSize, numberOfAudioChannels, numberOfAudioChannels);
     } else if (context.createScriptProcessor) {
-        __stereoAudioRecorderJavacriptNode = context.createScriptProcessor(bufferSize, 2, 2);
+        __stereoAudioRecorderJavacriptNode = context.createScriptProcessor(bufferSize, numberOfAudioChannels, numberOfAudioChannels);
     } else {
         throw 'WebAudio API has no support on this browser.';
     }
@@ -391,6 +418,24 @@ function StereoAudioRecorder(mediaStream, config) {
         }
     };
 
+    /**
+     * This method resets currently recorded data.
+     * @method
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder.clearRecordedData();
+     */
+    this.clearRecordedData = function() {
+        this.pause();
+
+        leftchannel.length = rightchannel.length = 0;
+        recordingLength = 0;
+
+        if (!config.disableLogs) {
+            console.debug('Cleared old recorded data.');
+        }
+    };
+
     var isAudioProcessStarted = false;
 
     __stereoAudioRecorderJavacriptNode.onaudioprocess = function(e) {
@@ -402,12 +447,12 @@ function StereoAudioRecorder(mediaStream, config) {
         if ('active' in mediaStream) {
             if (!mediaStream.active) {
                 __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
-                return;
+                recording = false;
             }
         } else if ('ended' in mediaStream) { // old hack
             if (mediaStream.ended) {
                 __stereoAudioRecorderJavacriptNode.onaudioprocess = function() {};
-                return;
+                recording = false;
             }
         }
 
@@ -425,17 +470,25 @@ function StereoAudioRecorder(mediaStream, config) {
          */
         if (!isAudioProcessStarted) {
             isAudioProcessStarted = true;
-            if (self.onAudioProcessStarted) {
-                self.onAudioProcessStarted();
+            if (config.onAudioProcessStarted) {
+                config.onAudioProcessStarted();
+            }
+
+            if (config.initCallback) {
+                config.initCallback();
             }
         }
 
         var left = e.inputBuffer.getChannelData(0);
-        var right = e.inputBuffer.getChannelData(1);
+
 
         // we clone the samples
         leftchannel.push(new Float32Array(left));
-        rightchannel.push(new Float32Array(right));
+
+        if (numberOfAudioChannels === 2) {
+            var right = e.inputBuffer.getChannelData(1);
+            rightchannel.push(new Float32Array(right));
+        }
 
         recordingLength += bufferSize;
     };

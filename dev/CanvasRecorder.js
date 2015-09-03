@@ -15,10 +15,12 @@
  * @param {HTMLElement} htmlElement - querySelector/getElementById/getElementsByTagName[0]/etc.
  */
 
-function CanvasRecorder(htmlElement) {
+function CanvasRecorder(htmlElement, config) {
     if (typeof html2canvas === 'undefined') {
         throw 'Please link: //cdn.webrtc-experiment.com/screenshot.js';
     }
+
+    config = config || {};
 
     var isRecording;
 
@@ -33,6 +35,10 @@ function CanvasRecorder(htmlElement) {
         isRecording = true;
         whammy.frames = [];
         drawCanvasFrame();
+
+        if (config.initCallback) {
+            config.initCallback();
+        }
     };
 
     /**
@@ -70,6 +76,8 @@ function CanvasRecorder(htmlElement) {
             if (callback) {
                 callback(that.blob);
             }
+
+            whammy.frames = [];
         });
     };
 
@@ -85,7 +93,7 @@ function CanvasRecorder(htmlElement) {
     this.pause = function() {
         isPausedRecording = true;
 
-        if (!this.disableLogs) {
+        if (!config.disableLogs) {
             console.debug('Paused recording.');
         }
     };
@@ -100,8 +108,25 @@ function CanvasRecorder(htmlElement) {
     this.resume = function() {
         isPausedRecording = false;
 
-        if (!this.disableLogs) {
+        if (!config.disableLogs) {
             console.debug('Resumed recording.');
+        }
+    };
+
+    /**
+     * This method resets currently recorded data.
+     * @method
+     * @memberof CanvasRecorder
+     * @example
+     * recorder.clearRecordedData();
+     */
+    this.clearRecordedData = function() {
+        this.pause();
+
+        whammy.frames = [];
+
+        if (!config.disableLogs) {
+            console.debug('Cleared old recorded data.');
         }
     };
 

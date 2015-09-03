@@ -147,8 +147,13 @@
                 }
 
                 var match, search = window.location.search;
-                while (match = r.exec(search.substring(1)))
+                while (match = r.exec(search.substring(1))) {
                     params[d(match[1])] = d(match[2]);
+
+                    if(d(match[2]) === 'true' || d(match[2]) === 'false') {
+                        params[d(match[1])] = d(match[2]) === 'true' ? true : false;
+                    }
+                }
 
                 window.params = params;
             })();
@@ -178,16 +183,41 @@
                     }, 2 * 1000);
                     
                     button.innerHTML = 'Star Recording';
+
+                    function stopStream() {
+                        if(button.stream && button.stream.stop) {
+                            button.stream.stop();
+                            button.stream = null;
+                        }
+                    }
                     
                     if(button.recordRTC) {
-                        button.recordRTC.stopRecording(button.recordingEndedCallback);
-                        saveToDiskOrOpenNewTab(button.recordRTC);
+                        if(button.recordRTC.length) {
+                            button.recordRTC[0].stopRecording(function(url) {
+                                if(!button.recordRTC[1]) {
+                                    button.recordingEndedCallback(url);
+                                    stopStream();
+
+                                    saveToDiskOrOpenNewTab(button.recordRTC[0]);
+                                    return;
+                                }
+
+                                button.recordRTC[1].stopRecording(function(url) {
+                                    button.recordingEndedCallback(url);
+                                    stopStream();
+                                });
+                            });
+                        }
+                        else {
+                            button.recordRTC.stopRecording(function(url) {
+                                button.recordingEndedCallback(url);
+                                stopStream();
+
+                                saveToDiskOrOpenNewTab(button.recordRTC);
+                            });
+                        }
                     }
                     
-                    if(button.stream && button.stream.stop) {
-                        button.stream.stop();
-                        button.stream = null;
-                    }
                     return;
                 }
                 
@@ -287,6 +317,57 @@
                     captureAudioPlusVideo(commonConfig);
                     
                     button.mediaCapturedCallback = function() {
+
+                        if(webrtcDetectedBrowser === 'chrome') {
+                            button.recordRTC = [];
+
+                            var audioRecorder = RecordRTC(button.stream, {
+                                type: 'audio',
+                                bufferSize: typeof params.bufferSize == 'undefined' ? 16384 : params.bufferSize,
+                                sampleRate: typeof params.sampleRate == 'undefined' ? 44100 : params.sampleRate,
+                                leftChannel: params.leftChannel || false,
+                                disableLogs: params.disableLogs || false,
+                                recorderType: webrtcDetectedBrowser === 'edge' ? StereoAudioRecorder : null
+                            });
+
+                            var videoRecorder = RecordRTC(button.stream, {
+                                type: 'video',
+                                disableLogs: params.disableLogs || false,
+                                canvas: {
+                                    width: params.canvas_width || recordingPlayer.clientWidth,
+                                    height: params.canvas_height || recordingPlayer.clientHeight
+                                }
+                            });
+
+                            // to sync audio/video playbacks in browser!
+                            videoRecorder.initRecorder(function() {
+                                audioRecorder.initRecorder(function() {
+                                    audioRecorder.startRecording();
+                                    videoRecorder.startRecording();
+                                });
+                            });
+
+                            button.recordRTC.push(audioRecorder, videoRecorder);
+
+                            button.recordingEndedCallback = function() {
+                                var audio = new Audio();
+                                audio.src = audioRecorder.toURL();
+                                audio.controls = true;
+                                audio.autoplay = true;
+
+                                audio.onloadedmetadata = function() {
+                                    recordingPlayer.src = videoRecorder.toURL();
+                                    recordingPlayer.play();
+                                };
+
+                                recordingPlayer.parentNode.appendChild(document.createElement('hr'));
+                                recordingPlayer.parentNode.appendChild(audio);
+
+                                if(audio.paused) audio.play();
+                            };
+                            return;
+                        }
+
                         button.recordRTC = RecordRTC(button.stream, {
                             type: 'video',
                             disableLogs: params.disableLogs || false,
@@ -519,6 +600,12 @@
                 recordingMedia.innerHTML = '<option value="record-audio-plus-video">Audio+Video</option>' 
                                             + '<option value="record-audio-plus-screen">Audio+Screen</option>' 
                                             + recordingMedia.innerHTML;
+            }
+
+            if(webrtcDetectedBrowser === 'chrome') {
+                recordingMedia.innerHTML = '<option value="record-audio-plus-video">Audio+Video</option>' 
+                                            + recordingMedia.innerHTML;
+                console.info('This RecordRTC demo merely tries to playback recorded audio/video sync inside the browser. It still generates two separate files (WAV/WebM).');
             }
             
             function saveToDiskOrOpenNewTab(recordRTC) {

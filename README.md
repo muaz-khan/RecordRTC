@@ -6,12 +6,13 @@
 
 > [RecordRTC](https://www.webrtc-experiment.com/RecordRTC/) is a JavaScript-based media-recording library for modern web-browsers (supporting WebRTC getUserMedia API). It is optimized for different devices and browsers to bring all client-side (pluginfree) recording solutions in single place.
 
+
+
 Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) directory for development files.
 
 1. [RecordRTC API Reference](http://RecordRTC.org/RecordRTC.html)
 2. [MRecordRTC API Reference](http://RecordRTC.org/MRecordRTC.html)
 3. [MediaStreamRecorder API Reference](http://RecordRTC.org/MediaStreamRecorder.html)
-4. [StereoRecorder API Reference](http://RecordRTC.org/StereoRecorder.html)
 5. [StereoAudioRecorder API Reference](http://RecordRTC.org/StereoAudioRecorder.html)
 6. [WhammyRecorder API Reference](http://RecordRTC.org/WhammyRecorder.html)
 7. [Whammy API Reference](http://RecordRTC.org/Whammy.html)
@@ -27,7 +28,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Google Chrome | [Stable](https://www.google.com/intl/en_uk/chrome/browser/) / [Canary](https://www.google.com/intl/en/chrome/browser/canary.html) / [Beta](https://www.google.com/intl/en/chrome/browser/beta.html) / [Dev](https://www.google.com/intl/en/chrome/browser/index.html?extra=devchannel#eula) |
 | Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  |
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) |
-| Microsoft Edge | [Edge](https://www.microsoft.com/en-us/windows/microsoft-edge) |
+| Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) |
 
 ## How RecordRTC encodes wav/webm?
 
@@ -49,6 +50,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 9. [RecordRTC / PHP / FFmpeg](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/PHP-and-FFmpeg)
 10. [Record Audio and upload to Nodejs server](https://www.npmjs.org/package/record-audio)
 11. [ConcatenateBlobs.js](https://github.com/muaz-khan/ConcatenateBlobs) - Concatenate multiple recordings in single Blob!
+12. [Remote stream recording](https://www.webrtc-experiment.com/demos/remote-stream-recording.html)
 
 ## How to link?
 
@@ -206,29 +208,6 @@ recordRTC.stopRecording(function(videoURL) {
 });
 ```
 
-## `onAudioProcessStarted`
-
-Useful to recover audio/video sync issues inside the browser:
-
-```javascript
-recordAudio = RecordRTC( stream, {
-     onAudioProcessStarted: function( ) {
-         recordVideo.startRecording();
-     }
-});
-
-recordVideo = RecordRTC(stream, {
-    type: 'video'
-});
-
-recordAudio.startRecording();
-```
-
-`onAudioProcessStarted` fixes shared/exclusive audio gap (a little bit). Because shared audio sometimes causes 100ms delay...
-sometime about 400-to-500 ms delay. 
-Delay depends upon number of applications concurrently requesting same audio devices and CPU/Memory available. 
-Shared mode is the only mode currently available on 90% of windows systems especially on windows 7.
-
 ## Record animated GIF image
 
 Everything is optional except `type:'gif'`:
@@ -277,63 +256,122 @@ See a demo: [/Canvas-Recording/](https://www.webrtc-experiment.com/RecordRTC/Can
 
 # API Reference
 
-## `autoWriteToDisk`
+## `initRecorder`
 
-Using `autoWriteToDisk`; you can suggest RecordRTC to auto-write to indexed-db as soon as you call `stopRecording` method.
+It is a function that can be used to initiate recorder however skip getting recording outputs. It will provide maximum accuracy in the outputs after using `startRecording` method. Here is how to use it:
 
 ```javascript
-var recordRTC = RecordRTC(MediaStream, {
-    autoWriteToDisk: true
+var audioRecorder = RecordRTC(mediaStream, {
+  type: 'audio',
+  recorderType: StereoAudioRecorder
+});
+
+var videoRecorder = RecordRTC(mediaStream, {
+  type: 'video',
+  recorderType: WhammyRecorder
+});
+
+videoRecorder.initRecorder(function() {
+  audioRecorder.initRecorder(function() {
+    // Both recorders are ready to record things accurately
+    videoRecorder.startRecording();
+    audioRecorder.startRecording();
+  });
 });
 ```
 
-`autoWriteToDisk` is helpful for single stream recording and writing to disk; however for `MRecordRTC`; `writeToDisk` is preferred one.
+After using `stopRecording`, you'll see that both WAV/WebM blobs are having following charachteristics:
 
-## `writeToDisk`
+1. Both are having same recording duration i.e. size
+2. Video recorder is having no blank frames
+3. Audio recorder is having no empty buffers
 
-You can write recorded blob to disk using `writeToDisk` method:
+This method is really useful to sync audio/video outputs.
+
+## `setRecordingDuration`
+
+You can ask RecordRTC to auto stop recording after specific duration. It accepts one mandatory and one optional argument:
 
 ```javascript
-recordRTC.stopRecording();
-recordRTC.writeToDisk();
+recordRTC.setRecordingDuration(milliseconds, stoppedCallback);
+
+// the easiest one:
+recordRTC.setRecordingDuration(milliseconds).onRecordingStopped(stoppedCallback);
 ```
 
-## `getFromDisk`
-
-You can get recorded blob from disk using `getFromDisk` method:
+Try a simple demo; paste in the chrome console:
 
 ```javascript
-// get all blobs from disk
-RecordRTC.getFromDisk('all', function(dataURL, type) {
-   type == 'audio'
-   type == 'video'
-   type == 'gif'
-});
+navigator.mediaDevices.getUserMedia({
+    video: true
+}).then(function(stream) {
+    var recordRTC = RecordRTC(stream, {
+        type: 'video',
+        recorderType: WhammyRecorder
+    });
 
-// or get just single blob
-RecordRTC.getFromDisk('audio', function(dataURL) {
-   // only audio blob is returned from disk!
-});
-```
+    // auto stop recording after 5 seconds
+    recordRTC.setRecordingDuration(5 * 1000).onRecordingStopped(function(url) {
+        console.debug('setRecordingDuration', url);
+        window.open(url);
+    })
 
-For [MRecordRTC](https://RecordRTC.org/MRecordRTC.html); you can use word `MRecordRTC` instead of `RecordRTC`!
-
-Another possible situation!
-
-```javascript
-var recordRTC = RecordRTC(mediaStream);
-recordRTC.startRecording();
-recordRTC.stopRecording(function(audioURL) {
-   mediaElement.src = audioURL;
-});
-
-// "recordRTC" instance object to invoke "getFromDisk" method!
-recordRTC.getFromDisk(function(dataURL) {
-   // audio blob is automaticlaly returned from disk!
+    recordRTC.startRecording();
+}).catch(function(error) {
+    console.error(error);
 });
 ```
 
-In the above example; you can see that `recordRTC` instance object is used instead of global `RecordRTC` object.
+## `clearRecordedData`
+
+This method can be used to clear old recorded frames/buffers. Snippet:
+
+```javascript
+recorder.clearRecordedData();
+```
+
+## `recorderType`
+
+You can force any Recorder by passing this object over RecordRTC constructor:
+
+```javascript
+var audioRecorder = RecordRTC(mediaStream, {
+  type: 'audio',
+  recorderType: StereoAudioRecorder
+})
+```
+
+It means that ALL_BROWSERS will be using [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) i.e. WebAudio API for audio recording.
+
+This feature brings remote audio recording support in Firefox, and local audio recording support in Microsoft Edge.
+
+You can even force `WhammyRecorder` on Firefox however webp format isn't yet supported in standard Firefox builds. It simply means that, you're skipping MediaRecorder API in Firefox.
+
+## `disableLogs`
+
+You can disable all the RecordRTC logs by passing this Boolean:
+
+```javascript
+var recorder = RecordRTC(mediaStream, {
+  disableLogs: true
+});
+```
+
+## `audioChannels`
+
+You can force [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) to record left-audio-channels only.
+
+```javascript
+var audioRecorder = RecordRTC(audioStream, {
+  type: 'audio',
+  recorderType: StereoAudioRecorder,
+  audioChannels: 1 // or leftChannel:true
+});
+```
+
+**It will reduce WAV size to half!*
+
+This feature is useful only in Chrome and Microsoft Edge (WAV-recorders).
 
 ## How to set video width/height?
 
@@ -417,14 +455,6 @@ Following values are allowed for buffer-size:
 // Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384)
 ```
 
-You can write like this:
-
-```javascript
-var options = {
-   'buffer-size': 16384
-};
-```
-
 ## `sampleRate`
 
 Here is jow to customize Sample-Rate for audio recording?
@@ -449,13 +479,86 @@ var recordRTC = RecordRTC(audioStream, options);
 
 Values for sample-rate must be greater than or equal to 22050 and less than or equal to 96000.
 
-You can write like this:
+## `onAudioProcessStarted`
+
+Useful to recover audio/video sync issues inside the browser:
 
 ```javascript
-var options = {
-   'sample-rate': 16384
-};
+recordAudio = RecordRTC( stream, {
+     onAudioProcessStarted: function( ) {
+         recordVideo.startRecording();
+     }
+});
+
+recordVideo = RecordRTC(stream, {
+    type: 'video'
+});
+
+recordAudio.startRecording();
 ```
+
+`onAudioProcessStarted` fixes shared/exclusive audio gap (a little bit). Because shared audio sometimes causes 100ms delay...
+sometime about 400-to-500 ms delay. 
+Delay depends upon number of applications concurrently requesting same audio devices and CPU/Memory available. 
+Shared mode is the only mode currently available on 90% of windows systems especially on windows 7.
+
+## `autoWriteToDisk`
+
+Using `autoWriteToDisk`; you can suggest RecordRTC to auto-write to indexed-db as soon as you call `stopRecording` method.
+
+```javascript
+var recordRTC = RecordRTC(MediaStream, {
+    autoWriteToDisk: true
+});
+```
+
+`autoWriteToDisk` is helpful for single stream recording and writing to disk; however for `MRecordRTC`; `writeToDisk` is preferred one.
+
+## `writeToDisk`
+
+You can write recorded blob to disk using `writeToDisk` method:
+
+```javascript
+recordRTC.stopRecording();
+recordRTC.writeToDisk();
+```
+
+## `getFromDisk`
+
+You can get recorded blob from disk using `getFromDisk` method:
+
+```javascript
+// get all blobs from disk
+RecordRTC.getFromDisk('all', function(dataURL, type) {
+   type == 'audio'
+   type == 'video'
+   type == 'gif'
+});
+
+// or get just single blob
+RecordRTC.getFromDisk('audio', function(dataURL) {
+   // only audio blob is returned from disk!
+});
+```
+
+For [MRecordRTC](https://RecordRTC.org/MRecordRTC.html); you can use word `MRecordRTC` instead of `RecordRTC`!
+
+Another possible situation!
+
+```javascript
+var recordRTC = RecordRTC(mediaStream);
+recordRTC.startRecording();
+recordRTC.stopRecording(function(audioURL) {
+   mediaElement.src = audioURL;
+});
+
+// "recordRTC" instance object to invoke "getFromDisk" method!
+recordRTC.getFromDisk(function(dataURL) {
+   // audio blob is automaticlaly returned from disk!
+});
+```
+
+In the above example; you can see that `recordRTC` instance object is used instead of global `RecordRTC` object.
 
 # Clarifications
 
@@ -467,11 +570,17 @@ No WinXP SP2 based "Chrome" support. However, RecordRTC works on WinXP Service P
 
 RecordRTC uses WebAudio API for stereo-audio recording. AFAIK, WebAudio is not supported on android chrome releases, yet.
 
+Firefox merely supports audio-recording on Android devices.
+
 ## Stereo or Mono?
 
 Audio recording fails for `mono` audio. So, try `stereo` audio only.
 
+MediaRecorder API (in Firefox) seems using mono-audio-recording instead.
+
 ## Possible issues/failures:
+
+**This section applies only to StereoAudioRecorder:**
 
 Do you know "RecordRTC" fails recording audio because following conditions fails:
 
@@ -494,10 +603,6 @@ If you explorer chromium code; you'll see that some APIs can only be successfull
 
 Stereo audio is only supported for WAV files.
 
-...still investigating the actual issue of failure with `mono` audio.
-
-Media Stream Recording API (MediaRecorder object) is being implemented by both Firefox and Chrome. RecordRTC is also using MediaRecorder API for Firefox (nightly).
-
 RecordRTC is unable to record "mono" audio on chrome; however it seems that we can covert channels from "stereo" to "mono" using WebAudio API, though. MediaRecorder API's encoder only support 48k/16k mono audio channel (on Firefox Nightly).
 
 ## Credits
@@ -514,90 +619,12 @@ RecordRTC is unable to record "mono" audio on chrome; however it seems that we c
 4. [MediaStream Recording](https://dvcs.w3.org/hg/dap/raw-file/tip/media-stream-capture/MediaRecorder.html)
 5. [Media Capture and Streams](http://www.w3.org/TR/mediacapture-streams/)
 
-## Contribute in [RecordRTC.org](http://RecordRTC.org)
+## Contribute in [RecordRTC.org](http://RecordRTC.org) domain
 
-[![npm](https://img.shields.io/npm/v/recordrtc.org.svg)](https://npmjs.org/package/recordrtc.org) [![downloads](https://img.shields.io/npm/dm/recordrtc.org.svg)](https://npmjs.org/package/recordrtc.org)
+The domain www.RecordRTC.org is open-sourced here:
 
-http://recordrtc.org/ is a documentation webpage for [RecordRTC.js](https://github.com/muaz-khan/RecordRTC). It is [open-sourced in github](https://github.com/muaz-khan/RecordRTC/tree/gh-pages) and everyone can collaborate to improve documentation.
-
-To contribute:
-
-1. You should modify `RecordRTC.js` file (aka [`latest.js`](https://github.com/muaz-khan/RecordRTC/blob/gh-pages/latest.js) file)
-2. You'll see that each function/property/method is having comments (format is chosen from http://usejsdoc.org/).
-3. Using `jsdoc` tool, you can generate documentation HTML pages from `latest.js` file
-4. You should NEVER modify HTML pages. You merely need to modify `latest.js` file for documentation.
-
-Steps to contribute:
-
-1. Modify `latest.js` file
-2. Use below NPM-commands to generate HTML pages.
-3. Manually copy/paste `latest.js` file in the resulting `recordrtc.org` directory
-4. Copy `recordrtc.org` directory and replace in `RecordRTC` github clone's `gh-pages` section
-5. Send a pull-request and done!
-
-```
-# First step: install recordrtc.org template and javascript file
-npm install recordrtc.org
-
-# Second step: generate HTML files from template & latest.js file
-cd .\node_modules\recordrtc.org
-
-# This command generates HTML pages from latest.js file
-node_modules\.bin\jsdoc node_modules\recordrtc\RecordRTC.js -d .\..\..\recordrtc.org node_modules\recordrtc\README.md -t template
-```
-
-Now you'll see a directory with name `recordrtc.org`.
-
-```
-# This command runs index.html file
-# You can use it to preview HTML pages (doc files)
-.\..\..\recordrtc.org\index.html
-```
-
-## Send pull requests
-
-Now, you should fork this repository:
-
-* [https://github.com/muaz-khan/RecordRTC](https://github.com/muaz-khan/RecordRTC)
-
-And push/pull `recordrtc.org` directory to `gh-pages`.
-
-## How to modify `latest.js` file?
-
-RecordRTC is using comments format from jsdoc:
-
-* [http://usejsdoc.org/](http://usejsdoc.org/)
-
-E.g.
-
-```javascript
-/**
-* Description
-* @summary Summary
-* @typedef Hello
-* @example
-* var some = new Something();
-*/
-```
-
-Example - [`stopRecording`](https://github.com/muaz-khan/RecordRTC/blob/gh-pages/latest.js#L206) method:
-
-```javascript
-/**
- * This method stops recording. It takes single "callback" argument. It is suggested to get blob or URI in the callback to make sure all encoders finished their jobs.
- * @param {function} callback - This callback function is invoked after completion of all encoding jobs.
- * @method
- * @memberof RecordRTC
- * @instance
- * @example
- * recordRTC.stopRecording(function(videoURL) {
- *     video.src = videoURL;
- * });
- * @todo Implement <code class="str">recordRTC.stopRecording().getDataURL(callback);</code>
- */
-stopRecording: stopRecording,
-```
+* https://github.com/muaz-khan/RecordRTC/tree/gh-pages
 
 ## License
 
-[RecordRTC.js](https://github.com/muaz-khan/RecordRTC) is released under [MIT licence](https://www.webrtc-experiment.com/licence/) . Copyright (c) [Muaz Khan](https://plus.google.com/+MuazKhan).
+[RecordRTC.js](https://github.com/muaz-khan/RecordRTC) is released under [MIT licence](https://www.webrtc-experiment.com/licence/) . Copyright (c) [Muaz Khan](http://www.MuazKhan.com).

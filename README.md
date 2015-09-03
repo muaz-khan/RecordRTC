@@ -357,15 +357,15 @@ var recorder = RecordRTC(mediaStream, {
 });
 ```
 
-## `audioChannels`
+## `numberOfAudioChannels`
 
-You can force [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) to record left-audio-channels only.
+You can force [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) to record single-audio-channels only. It allows you reduce WAV file size to half.
 
 ```javascript
 var audioRecorder = RecordRTC(audioStream, {
   type: 'audio',
   recorderType: StereoAudioRecorder,
-  audioChannels: 1 // or leftChannel:true
+  numberOfAudioChannels: 1 // or leftChannel:true
 });
 ```
 

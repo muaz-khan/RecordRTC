@@ -291,8 +291,8 @@
                     button.mediaCapturedCallback = function() {
                         button.recordRTC = RecordRTC(button.stream, {
                             type: 'audio',
-                            bufferSize: typeof params.bufferSize == 'undefined' ? 0 : params.bufferSize,
-                            sampleRate: typeof params.sampleRate == 'undefined' ? 0 : params.sampleRate,
+                            bufferSize: typeof params.bufferSize == 'undefined' ? 0 : parseInt(params.bufferSize),
+                            sampleRate: typeof params.sampleRate == 'undefined' ? 44100 : parseInt(params.sampleRate),
                             leftChannel: params.leftChannel || false,
                             disableLogs: params.disableLogs || false,
                             recorderType: webrtcDetectedBrowser === 'edge' ? StereoAudioRecorder : null
@@ -323,8 +323,8 @@
 
                             var audioRecorder = RecordRTC(button.stream, {
                                 type: 'audio',
-                                bufferSize: typeof params.bufferSize == 'undefined' ? 0 : params.bufferSize,
-                                sampleRate: typeof params.sampleRate == 'undefined' ? 0 : params.sampleRate,
+                                bufferSize: typeof params.bufferSize == 'undefined' ? 0 : parseInt(params.bufferSize),
+                                sampleRate: typeof params.sampleRate == 'undefined' ? 44100 : parseInt(params.sampleRate),
                                 leftChannel: params.leftChannel || false,
                                 disableLogs: params.disableLogs || false,
                                 recorderType: webrtcDetectedBrowser === 'edge' ? StereoAudioRecorder : null
@@ -630,7 +630,7 @@
             </h2>
             <pre>
 // AUDIO
-<a href="https://www.webrtc-experiment.com/RecordRTC/?bufferSize=0&sampleRate=44100">?bufferSize=0&sampleRate=44100</a>
+<a href="https://www.webrtc-experiment.com/RecordRTC/?bufferSize=16384&sampleRate=44100">?bufferSize=16384&sampleRate=44100</a>
 <a href="https://www.webrtc-experiment.com/RecordRTC/?leftChannel=false&disableLogs=false">?leftChannel=false&disableLogs=false</a>
 
 // VIDEO

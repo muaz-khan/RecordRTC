@@ -13,6 +13,7 @@
  *     video.src = URL.createObjectURL(blob);
  * });
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
+ * @param {object} config - {disableLogs: true, initCallback: function, video: HTMLVideoElement, etc.}
  */
 
 function WhammyRecorder(mediaStream, config) {

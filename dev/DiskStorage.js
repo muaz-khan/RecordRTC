@@ -37,8 +37,9 @@ var DiskStorage = {
     init: function() {
         var self = this;
 
-        if (typeof 'indexedDB' === 'undefined') {
-            var indexedDB = {}; // todo?
+        if (typeof indexedDB === 'undefined' || typeof indexedDB.open === 'undefined') {
+            console.error('IndexedDB API are not available in this browser.');
+            return;
         }
 
         if (typeof webkitIndexedDB !== 'undefined') {

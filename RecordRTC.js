@@ -1,4 +1,4 @@
-// Last time updated at September 03, 2015, 08:32:23
+// Last time updated at September 05, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. "indexedDB" bug fixed for Firefox.
 -. numberOfAudioChannels:1 can be passed to reduce WAV size in Chrome.
 -. StereoRecorder.js is removed. It was redundant. Now RecordRTC is directly using: StereoAudioRecorder.js
 -. mergeProps is removed. It was redundant.
@@ -79,6 +80,8 @@
  * var recordRTC = new RecordRTC(mediaStream[, config]);
  * @see For further information:
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
+ * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
+ * @param {object} config - {type:"video", disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
  */
 
 function RecordRTC(mediaStream, config) {
@@ -743,6 +746,12 @@ RecordRTC.writeToDisk = function(options) {
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
 }
+
+if (typeof define === 'function' && define.amd) {
+    define('RecordRTC', [], function() {
+        return RecordRTC;
+    });
+}
 // _____________
 // MRecordRTC.js
 
@@ -885,6 +894,9 @@ function MRecordRTC(mediaStream) {
      *     var videoBlob = recording.video;
      *     var gifBlob   = recording.gif;
      * });
+     * // or
+     * var audioBlob = recorder.getBlob().audio;
+     * var videoBlob = recorder.getBlob().video;
      */
     this.getBlob = function(callback) {
         var output = {};
@@ -904,6 +916,8 @@ function MRecordRTC(mediaStream) {
         if (callback) {
             callback(output);
         }
+
+        return output;
     };
 
     /**
@@ -1187,6 +1201,7 @@ if (typeof AudioContext !== 'undefined') {
  *     var blob = recorder.blob;
  * });
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
+ * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm", onAudioProcessStarted: function}
  */
 
 function MediaStreamRecorder(mediaStream, config) {
@@ -1413,7 +1428,7 @@ function MediaStreamRecorder(mediaStream, config) {
  *     video.src = URL.createObjectURL(blob);
  * });
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
- * @param {object} config - {sampleRate: 44100, bufferSize: 4096}
+ * @param {object} config - {sampleRate: 44100, bufferSize: 4096, numberOfAudioChannels: 1, etc.}
  */
 
 var __stereoAudioRecorderJavacriptNode;
@@ -1446,60 +1461,6 @@ function StereoAudioRecorder(mediaStream, config) {
 
     if (!config.disableLogs) {
         console.debug('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
-    }
-
-    var legalBufferValues = [0, 256, 512, 1024, 2048, 4096, 8192, 16384];
-
-    /**
-     * From the spec: This value controls how frequently the audioprocess event is
-     * dispatched and how many sample-frames need to be processed each call.
-     * Lower values for buffer size will result in a lower (better) latency.
-     * Higher values will be necessary to avoid audio breakup and glitches
-     * The size of the buffer (in sample-frames) which needs to
-     * be processed each time onprocessaudio is called.
-     * Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384).
-     * @property {number} bufferSize - Buffer-size for how frequently the audioprocess event is dispatched.
-     * @memberof StereoAudioRecorder
-     * @example
-     * recorder = new StereoAudioRecorder(mediaStream, {
-     *     bufferSize: 4096
-     * });
-     */
-
-    // "0" means, let chrome decide the most accurate buffer-size for current platform.
-    var bufferSize = typeof config.bufferSize === 'undefined' ? 4096 : config.bufferSize;
-
-    if (legalBufferValues.indexOf(bufferSize) === -1) {
-        if (!config.disableLogs) {
-            console.warn('Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
-        }
-    }
-
-
-    /**
-     * The sample rate (in sample-frames per second) at which the
-     * AudioContext handles audio. It is assumed that all AudioNodes
-     * in the context run at this rate. In making this assumption,
-     * sample-rate converters or "varispeed" processors are not supported
-     * in real-time processing.
-     * The sampleRate parameter describes the sample-rate of the
-     * linear PCM audio data in the buffer in sample-frames per second.
-     * An implementation must support sample-rates in at least
-     * the range 22050 to 96000.
-     * @property {number} sampleRate - Buffer-size for how frequently the audioprocess event is dispatched.
-     * @memberof StereoAudioRecorder
-     * @example
-     * recorder = new StereoAudioRecorder(mediaStream, {
-     *     sampleRate: 44100
-     * });
-     */
-    var sampleRate = typeof config.sampleRate !== 'undefined' ? config.sampleRate : context.sampleRate || 44100;
-
-    if (sampleRate < 22050 || sampleRate > 96000) {
-        // Ref: http://stackoverflow.com/a/26303918/552182
-        if (!config.disableLogs) {
-            console.warn('sample-rate must be under range 22050 and 96000.');
-        }
     }
 
     /**
@@ -1775,7 +1736,63 @@ function StereoAudioRecorder(mediaStream, config) {
     // connect the stream to the gain node
     audioInput.connect(__stereoAudioRecorderJavacriptNode);
 
-    bufferSize = __stereoAudioRecorderJavacriptNode.bufferSize;
+    var legalBufferValues = [0, 256, 512, 1024, 2048, 4096, 8192, 16384];
+
+    /**
+     * From the spec: This value controls how frequently the audioprocess event is
+     * dispatched and how many sample-frames need to be processed each call.
+     * Lower values for buffer size will result in a lower (better) latency.
+     * Higher values will be necessary to avoid audio breakup and glitches
+     * The size of the buffer (in sample-frames) which needs to
+     * be processed each time onprocessaudio is called.
+     * Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384).
+     * @property {number} bufferSize - Buffer-size for how frequently the audioprocess event is dispatched.
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder = new StereoAudioRecorder(mediaStream, {
+     *     bufferSize: 4096
+     * });
+     */
+
+    // "0" means, let chrome decide the most accurate buffer-size for current platform.
+    var bufferSize = typeof config.bufferSize === 'undefined' ? 4096 : config.bufferSize;
+
+    if (legalBufferValues.indexOf(bufferSize) === -1) {
+        if (!config.disableLogs) {
+            console.warn('Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
+        }
+    }
+
+    if (!config.bufferSize) {
+        bufferSize = __stereoAudioRecorderJavacriptNode.bufferSize; // device buffer-size
+    }
+
+
+    /**
+     * The sample rate (in sample-frames per second) at which the
+     * AudioContext handles audio. It is assumed that all AudioNodes
+     * in the context run at this rate. In making this assumption,
+     * sample-rate converters or "varispeed" processors are not supported
+     * in real-time processing.
+     * The sampleRate parameter describes the sample-rate of the
+     * linear PCM audio data in the buffer in sample-frames per second.
+     * An implementation must support sample-rates in at least
+     * the range 22050 to 96000.
+     * @property {number} sampleRate - Buffer-size for how frequently the audioprocess event is dispatched.
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder = new StereoAudioRecorder(mediaStream, {
+     *     sampleRate: 44100
+     * });
+     */
+    var sampleRate = typeof config.sampleRate !== 'undefined' ? config.sampleRate : context.sampleRate || 44100;
+
+    if (sampleRate < 22050 || sampleRate > 96000) {
+        // Ref: http://stackoverflow.com/a/26303918/552182
+        if (!config.disableLogs) {
+            console.warn('sample-rate must be under range 22050 and 96000.');
+        }
+    }
 
     if (!config.disableLogs) {
         console.log('sample-rate', sampleRate);
@@ -1906,6 +1923,7 @@ function StereoAudioRecorder(mediaStream, config) {
  *     video.src = URL.createObjectURL(blob);
  * });
  * @param {HTMLElement} htmlElement - querySelector/getElementById/getElementsByTagName[0]/etc.
+ * @param {object} config - {disableLogs:true, initCallback: function}
  */
 
 function CanvasRecorder(htmlElement, config) {
@@ -2070,6 +2088,7 @@ function CanvasRecorder(htmlElement, config) {
  *     video.src = URL.createObjectURL(blob);
  * });
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
+ * @param {object} config - {disableLogs: true, initCallback: function, video: HTMLVideoElement, etc.}
  */
 
 function WhammyRecorder(mediaStream, config) {
@@ -2840,8 +2859,9 @@ var DiskStorage = {
     init: function() {
         var self = this;
 
-        if (typeof 'indexedDB' === 'undefined') {
-            var indexedDB = {}; // todo?
+        if (typeof indexedDB === 'undefined' || typeof indexedDB.open === 'undefined') {
+            console.error('IndexedDB API are not available in this browser.');
+            return;
         }
 
         if (typeof webkitIndexedDB !== 'undefined') {
@@ -2998,6 +3018,7 @@ var DiskStorage = {
  *     img.src = URL.createObjectURL(blob);
  * });
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
+ * @param {object} config - {disableLogs:true, initcallback: function, width: 320, height: 240, frameRate: 200, quality: 10}
  */
 
 function GifRecorder(mediaStream, config) {

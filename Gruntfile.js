@@ -85,7 +85,8 @@ module.exports = function(grunt) {
                     mozAudioContext: true,
                     AudioContext: true,
                     JSON: true,
-                    typeof: true
+                    typeof: true,
+                    define: true
                 },
                 browser: true,
                 browserify: true,

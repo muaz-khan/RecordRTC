@@ -31,6 +31,7 @@
  *     var blob = recorder.blob;
  * });
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
+ * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm", onAudioProcessStarted: function}
  */
 
 function MediaStreamRecorder(mediaStream, config) {

@@ -13,6 +13,7 @@
  *     video.src = URL.createObjectURL(blob);
  * });
  * @param {HTMLElement} htmlElement - querySelector/getElementById/getElementsByTagName[0]/etc.
+ * @param {object} config - {disableLogs:true, initCallback: function}
  */
 
 function CanvasRecorder(htmlElement, config) {

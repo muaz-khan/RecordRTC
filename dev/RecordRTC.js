@@ -420,35 +420,10 @@ function RecordRTC(mediaStream, config) {
          */
         save: function(fileName) {
             if (!mediaRecorder) {
-                var that = this;
-                setTimeout(function() {
-                    that.save(fileName);
-                }, 2000);
                 return console.warn(WARNING);
             }
 
-            var fileFullName = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.blob.type.split('/')[1];
-
-            if (typeof navigator.msSaveOrOpenBlob !== 'undefined') {
-                return navigator.msSaveOrOpenBlob(mediaRecorder.blob, fileFullName);
-            } else if (typeof navigator.msSaveBlob !== 'undefined') {
-                return navigator.msSaveBlob(mediaRecorder.blob, fileFullName);
-            }
-
-            var hyperlink = document.createElement('a');
-            hyperlink.href = URL.createObjectURL(mediaRecorder.blob);
-            hyperlink.target = '_blank';
-            hyperlink.download = fileFullName;
-
-            var evt = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-
-            hyperlink.dispatchEvent(evt);
-
-            URL.revokeObjectURL(hyperlink.href);
+            invokeSaveAsDialog(mediaRecorder.blob, fileName);
         },
 
         /**

@@ -1,4 +1,4 @@
-// Last time updated at September 05, 2015, 08:32:23
+// Last time updated at September 06, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. fixed Firefox save-as dialog i.e. recordRTC.save('filen-name')
 -. "indexedDB" bug fixed for Firefox.
 -. numberOfAudioChannels:1 can be passed to reduce WAV size in Chrome.
 -. StereoRecorder.js is removed. It was redundant. Now RecordRTC is directly using: StereoAudioRecorder.js

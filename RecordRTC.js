@@ -1,4 +1,4 @@
-// Last time updated at September 05, 2015, 08:32:23
+// Last time updated at September 06, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. fixed Firefox save-as dialog i.e. recordRTC.save('filen-name')
 -. "indexedDB" bug fixed for Firefox.
 -. numberOfAudioChannels:1 can be passed to reduce WAV size in Chrome.
 -. StereoRecorder.js is removed. It was redundant. Now RecordRTC is directly using: StereoAudioRecorder.js
@@ -483,35 +484,10 @@ function RecordRTC(mediaStream, config) {
          */
         save: function(fileName) {
             if (!mediaRecorder) {
-                var that = this;
-                setTimeout(function() {
-                    that.save(fileName);
-                }, 2000);
                 return console.warn(WARNING);
             }
 
-            var fileFullName = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + mediaRecorder.blob.type.split('/')[1];
-
-            if (typeof navigator.msSaveOrOpenBlob !== 'undefined') {
-                return navigator.msSaveOrOpenBlob(mediaRecorder.blob, fileFullName);
-            } else if (typeof navigator.msSaveBlob !== 'undefined') {
-                return navigator.msSaveBlob(mediaRecorder.blob, fileFullName);
-            }
-
-            var hyperlink = document.createElement('a');
-            hyperlink.href = URL.createObjectURL(mediaRecorder.blob);
-            hyperlink.target = '_blank';
-            hyperlink.download = fileFullName;
-
-            var evt = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-
-            hyperlink.dispatchEvent(evt);
-
-            URL.revokeObjectURL(hyperlink.href);
+            invokeSaveAsDialog(mediaRecorder.blob, fileName);
         },
 
         /**
@@ -1150,6 +1126,56 @@ function bytesToSize(bytes) {
     }
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(k)), 10);
     return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+}
+
+function invokeSaveAsDialog(file, fileName) {
+    if (!file) {
+        throw 'Blob object is required.';
+    }
+
+    if (!file.type) {
+        file.type = 'video/webm';
+    }
+
+    var fileExtension = file.type.split('/')[1];
+
+    if (fileName && fileName.indexOf('.') !== -1) {
+        var splitted = fileName.split('.');
+        fileName = splitted[0];
+        fileExtension = splitted[1];
+    }
+
+    var fileFullName = (fileName || (Math.round(Math.random() * 9999999999) + 888888888)) + '.' + fileExtension;
+
+    if (typeof navigator.msSaveOrOpenBlob !== 'undefined') {
+        return navigator.msSaveOrOpenBlob(file, fileFullName);
+    } else if (typeof navigator.msSaveBlob !== 'undefined') {
+        return navigator.msSaveBlob(file, fileFullName);
+    }
+
+    var hyperlink = document.createElement('a');
+    hyperlink.href = URL.createObjectURL(file);
+    hyperlink.target = '_blank';
+    hyperlink.download = fileFullName;
+
+    if (!!navigator.mozGetUserMedia) {
+        hyperlink.onclick = function() {
+            (document.body || document.documentElement).removeChild(hyperlink);
+        };
+        (document.body || document.documentElement).appendChild(hyperlink);
+    }
+
+    var evt = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+    });
+
+    hyperlink.dispatchEvent(evt);
+
+    if (!navigator.mozGetUserMedia) {
+        URL.revokeObjectURL(hyperlink.href);
+    }
 }
 // __________ (used to handle stuff like http://goo.gl/xmE5eg) issue #129
 // Storage.js

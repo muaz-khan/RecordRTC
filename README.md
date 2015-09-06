@@ -387,9 +387,13 @@ var options = {
       height: 240
    }
 };
+
+var recordVideo = RecordRTC(MediaStream, options);
 ```
 
 ## `pauseRecording`
+
+RecordRTC pauses recording buffers/frames.
 
 ```javascript
 recordRTC.pauseRecording();
@@ -397,11 +401,15 @@ recordRTC.pauseRecording();
 
 ## `resumeRecording`
 
+If you're using "initRecorder" then it asks RecordRTC that now its time to record buffers/frames. Otherwise, it asks RecordRTC to not only initialize recorder but also record buffers/frames.
+
 ```javascript
 recordRTC.resumeRecording();
 ```
 
 ## `getDataURL`
+
+Optionally get "DataURL" object instead of "Blob".
 
 ```javascript
 recordRTC.getDataURL(function(dataURL) {
@@ -411,11 +419,15 @@ recordRTC.getDataURL(function(dataURL) {
 
 ## `getBlob`
 
+Get "Blob" object. A blob object looks similar to `input[type=file]`. Which means that you can append it to `FormData` and upload to server using XMLHttpRequest object. Even socket.io nowadays supports blob-transmission.
+
 ```javascript
 blob = recordRTC.getBlob();
 ```
 
 ## `toURL`
+
+A virtual URL. It can be used only inside the same browser. You can't share it. It is just providing a preview of the recording.
 
 ```javascript
 window.open( recordRTC.toURL() );
@@ -423,8 +435,10 @@ window.open( recordRTC.toURL() );
 
 ## `save`
 
+Invoke save-as dialog. You can pass "fileName" as well; though fileName argument is optional.
+
 ```javascript
-recordRTC.save();
+recordRTC.save('File Name');
 ```
 
 ## `bufferSize`
@@ -455,6 +469,8 @@ Following values are allowed for buffer-size:
 // Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384)
 ```
 
+If you passed invalid value then you'll get blank audio.
+
 ## `sampleRate`
 
 Here is jow to customize Sample-Rate for audio recording?
@@ -479,7 +495,13 @@ var recordRTC = RecordRTC(audioStream, options);
 
 Values for sample-rate must be greater than or equal to 22050 and less than or equal to 96000.
 
+If you passed invalid value then you'll get blank audio.
+
+You can pass custom sample-rate values only on Mac (or additionally maybe on Windows 10).
+
 ## `onAudioProcessStarted`
+
+Note: "initRecorder" is preferred over this old hack. Both works similarly.
 
 Useful to recover audio/video sync issues inside the browser:
 

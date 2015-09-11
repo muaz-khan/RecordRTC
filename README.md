@@ -51,6 +51,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 10. [Record Audio and upload to Nodejs server](https://www.npmjs.org/package/record-audio)
 11. [ConcatenateBlobs.js](https://github.com/muaz-khan/ConcatenateBlobs) - Concatenate multiple recordings in single Blob!
 12. [Remote stream recording](https://www.webrtc-experiment.com/demos/remote-stream-recording.html)
+13. [Mp3 or Wav Recording](https://www.webrtc-experiment.com/RecordRTC/Record-Mp3-or-Wav.html)
 
 ## How to link?
 

@@ -46,18 +46,14 @@ function RecordRTC(mediaStream, config) {
             mediaRecorder.resume();
 
             if (self.recordingDuration) {
-                setTimeout(function() {
-                    stopRecording(self.onRecordingStopped);
-                }, self.recordingDuration);
+                handleRecordingDuration();
             }
             return self;
         }
 
         initRecorder(function() {
             if (self.recordingDuration) {
-                setTimeout(function() {
-                    stopRecording(self.onRecordingStopped);
-                }, self.recordingDuration);
+                handleRecordingDuration();
             }
         });
 
@@ -184,6 +180,7 @@ function RecordRTC(mediaStream, config) {
 
         // not all libs yet having  this method
         if (mediaRecorder.pause) {
+            self.isPaused = true;
             mediaRecorder.pause();
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "pause" method.');
@@ -197,6 +194,7 @@ function RecordRTC(mediaStream, config) {
 
         // not all libs yet having  this method
         if (mediaRecorder.resume) {
+            self.isPaused = false;
             mediaRecorder.resume();
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "resume" method.');
@@ -250,6 +248,20 @@ function RecordRTC(mediaStream, config) {
             URL.revokeObjectURL(blob);
             return worker;
         }
+    }
+
+    function handleRecordingDuration() {
+        if (self.isPaused) {
+            return setTimeout(handleRecordingDuration, 300);
+        }
+        self.recordingDuration -= 300;
+
+        if (self.recordingDuration <= 0) {
+            stopRecording(self.onRecordingStopped);
+            return;
+        }
+
+        setTimeout(handleRecordingDuration, 300);
     }
 
     var WARNING = 'It seems that "startRecording" is not invoked for ' + config.type + ' recorder.';

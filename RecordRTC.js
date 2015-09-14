@@ -1,4 +1,4 @@
-// Last time updated at September 12, 2015, 08:32:23
+// Last time updated at September 14, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,7 +9,6 @@
 
 // updates?
 /*
--. setRecordingDuration now handles pause/resume as well.
 -. fixed Firefox save-as dialog i.e. recordRTC.save('filen-name')
 -. "indexedDB" bug fixed for Firefox.
 -. numberOfAudioChannels:1 can be passed to reduce WAV size in Chrome.
@@ -241,7 +240,6 @@ function RecordRTC(mediaStream, config) {
 
         // not all libs yet having  this method
         if (mediaRecorder.pause) {
-            self.isPaused = true;
             mediaRecorder.pause();
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "pause" method.');
@@ -255,7 +253,6 @@ function RecordRTC(mediaStream, config) {
 
         // not all libs yet having  this method
         if (mediaRecorder.resume) {
-            self.isPaused = false;
             mediaRecorder.resume();
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "resume" method.');
@@ -312,17 +309,9 @@ function RecordRTC(mediaStream, config) {
     }
 
     function handleRecordingDuration() {
-        if (self.isPaused) {
-            return setTimeout(handleRecordingDuration, 300);
-        }
-        self.recordingDuration -= 300;
-
-        if (self.recordingDuration <= 0) {
+        setTimeout(function() {
             stopRecording(self.onRecordingStopped);
-            return;
-        }
-
-        setTimeout(handleRecordingDuration, 300);
+        }, self.recordingDuration);
     }
 
     var WARNING = 'It seems that "startRecording" is not invoked for ' + config.type + ' recorder.';

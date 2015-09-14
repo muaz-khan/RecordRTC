@@ -180,7 +180,6 @@ function RecordRTC(mediaStream, config) {
 
         // not all libs yet having  this method
         if (mediaRecorder.pause) {
-            self.isPaused = true;
             mediaRecorder.pause();
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "pause" method.');
@@ -194,7 +193,6 @@ function RecordRTC(mediaStream, config) {
 
         // not all libs yet having  this method
         if (mediaRecorder.resume) {
-            self.isPaused = false;
             mediaRecorder.resume();
         } else if (!config.disableLogs) {
             console.warn('This recording library is having no "resume" method.');
@@ -251,17 +249,9 @@ function RecordRTC(mediaStream, config) {
     }
 
     function handleRecordingDuration() {
-        if (self.isPaused) {
-            return setTimeout(handleRecordingDuration, 300);
-        }
-        self.recordingDuration -= 300;
-
-        if (self.recordingDuration <= 0) {
+        setTimeout(function() {
             stopRecording(self.onRecordingStopped);
-            return;
-        }
-
-        setTimeout(handleRecordingDuration, 300);
+        }, self.recordingDuration);
     }
 
     var WARNING = 'It seems that "startRecording" is not invoked for ' + config.type + ' recorder.';

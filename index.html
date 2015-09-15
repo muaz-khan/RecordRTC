@@ -321,6 +321,11 @@
                         if(webrtcDetectedBrowser === 'chrome') {
                             button.recordRTC = [];
 
+                            if(!params.bufferSize) {
+                                // it fixes audio issues whilst recording 720p
+                                params.bufferSize = 16384;
+                            }
+
                             var audioRecorder = RecordRTC(button.stream, {
                                 type: 'audio',
                                 bufferSize: typeof params.bufferSize == 'undefined' ? 0 : parseInt(params.bufferSize),

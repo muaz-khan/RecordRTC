@@ -1,4 +1,4 @@
-// Last time updated at September 14, 2015, 08:32:23
+// Last time updated at September 15, 2015, 08:32:23
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. chrome issue  audio plus 720p-video recording can be fixed by setting bufferSize:16384
 -. fixed Firefox save-as dialog i.e. recordRTC.save('filen-name')
 -. "indexedDB" bug fixed for Firefox.
 -. numberOfAudioChannels:1 can be passed to reduce WAV size in Chrome.

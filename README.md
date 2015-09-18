@@ -130,7 +130,7 @@ navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catc
 btnStopRecording.onclick = function () {
     recordRTC.stopRecording(function (audioVideoWebMURL) {
         video.src = audioVideoWebMURL;
-        
+
         var recordedBlob = recordRTC.getBlob();
         recordRTC.getDataURL(function(dataURL) { });
     });
@@ -146,7 +146,7 @@ var recordRTC = RecordRTC(mediaStream);
 recordRTC.startRecording();
 recordRTC.stopRecording(function(audioURL) {
     audio.src = audioURL;
-   
+
     var recordedBlob = recordRTC.getBlob();
     recordRTC.getDataURL(function(dataURL) { });
 });
@@ -197,13 +197,14 @@ Everything is optional except `type:'video'`:
 
 ```javascript
 var options = {
-   type: 'video'
+   type: 'video',
+   frameInterval: 20 // minimum time between pushing frames to Whammy (in milliseconds)
 };
 var recordRTC = RecordRTC(mediaStream, options);
 recordRTC.startRecording();
 recordRTC.stopRecording(function(videoURL) {
     video.src = videoURL;
-   
+
     var recordedBlob = recordRTC.getBlob();
     recordRTC.getDataURL(function(dataURL) { });
 });
@@ -246,7 +247,7 @@ var recordRTC = RecordRTC(elementToShare, {
 recordRTC.startRecording();
 recordRTC.stopRecording(function(videoURL) {
     video.src = videoURL;
-   
+
     var recordedBlob = recordRTC.getBlob();
     recordRTC.getDataURL(function(dataURL) { });
 });
@@ -447,16 +448,16 @@ recordRTC.save('File Name');
 Here is how to customize Buffer-Size for audio recording?
 
 ```javascript
-// From the spec: This value controls how frequently the audioprocess event is 
-// dispatched and how many sample-frames need to be processed each call. 
-// Lower values for buffer size will result in a lower (better) latency. 
+// From the spec: This value controls how frequently the audioprocess event is
+// dispatched and how many sample-frames need to be processed each call.
+// Lower values for buffer size will result in a lower (better) latency.
 // Higher values will be necessary to avoid audio breakup and glitches
 // bug: how to minimize wav size?
 // workaround? obviously ffmpeg!
-// The size of the buffer (in sample-frames) which needs to 
-// be processed each time onprocessaudio is called. 
+// The size of the buffer (in sample-frames) which needs to
+// be processed each time onprocessaudio is called.
 
-// Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384). 
+// Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384).
 
 var options = {
    bufferSize: 16384
@@ -477,15 +478,15 @@ If you passed invalid value then you'll get blank audio.
 Here is jow to customize Sample-Rate for audio recording?
 
 ```javascript
-// The sample rate (in sample-frames per second) at which the 
-// AudioContext handles audio. It is assumed that all AudioNodes 
-// in the context run at this rate. In making this assumption, 
-// sample-rate converters or "varispeed" processors are not supported 
+// The sample rate (in sample-frames per second) at which the
+// AudioContext handles audio. It is assumed that all AudioNodes
+// in the context run at this rate. In making this assumption,
+// sample-rate converters or "varispeed" processors are not supported
 // in real-time processing.
-// The sampleRate parameter describes the sample-rate of the 
-// linear PCM audio data in the buffer in sample-frames per second. 
+// The sampleRate parameter describes the sample-rate of the
+// linear PCM audio data in the buffer in sample-frames per second.
 
-// An implementation must support sample-rates in at least 
+// An implementation must support sample-rates in at least
 // the range 22050 to 96000.
 
 var options = {
@@ -521,8 +522,8 @@ recordAudio.startRecording();
 ```
 
 `onAudioProcessStarted` fixes shared/exclusive audio gap (a little bit). Because shared audio sometimes causes 100ms delay...
-sometime about 400-to-500 ms delay. 
-Delay depends upon number of applications concurrently requesting same audio devices and CPU/Memory available. 
+sometime about 400-to-500 ms delay.
+Delay depends upon number of applications concurrently requesting same audio devices and CPU/Memory available.
 Shared mode is the only mode currently available on 90% of windows systems especially on windows 7.
 
 ## `autoWriteToDisk`

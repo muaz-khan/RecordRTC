@@ -9,6 +9,8 @@
 
 // updates?
 /*
+-. GifRecorder.js can now record HTMLCanvasElement|CanvasRenderingContext2D as well.
+-. added: frameInterval:20 for WhammyRecorder.js
 -. chrome issue  audio plus 720p-video recording can be fixed by setting bufferSize:16384
 -. fixed Firefox save-as dialog i.e. recordRTC.save('filen-name')
 -. "indexedDB" bug fixed for Firefox.

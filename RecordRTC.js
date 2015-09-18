@@ -9,6 +9,8 @@
 
 // updates?
 /*
+-. GifRecorder.js can now record HTMLCanvasElement|CanvasRenderingContext2D as well.
+-. added: frameInterval:20 for WhammyRecorder.js
 -. chrome issue  audio plus 720p-video recording can be fixed by setting bufferSize:16384
 -. fixed Firefox save-as dialog i.e. recordRTC.save('filen-name')
 -. "indexedDB" bug fixed for Firefox.
@@ -90,6 +92,26 @@ function RecordRTC(mediaStream, config) {
         throw 'MediaStream is mandatory.';
     }
 
+    if (config.recorderType && !config.type) {
+        if (config.recorderType === WhammyRecorder || config.recorderType === CanvasRecorder) {
+            config.type = 'video';
+        } else if (config.recorderType === GifRecorder) {
+            config.type = 'gif';
+        } else if (config.recorderType === StereoAudioRecorder) {
+            config.type = 'audio';
+        } else if (config.recorderType === MediaStreamRecorder) {
+            if (mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+                config.type = 'video';
+            } else if (mediaStream.getAudioTracks().length && !mediaStream.getVideoTracks().length) {
+                config.type = 'audio';
+            } else if (!mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+                config.type = 'audio';
+            } else {
+                // config.type = 'UnKnown';
+            }
+        }
+    }
+
     // consider default type=audio
     if (!config.type) {
         config.type = 'audio';
@@ -131,18 +153,18 @@ function RecordRTC(mediaStream, config) {
 
         // StereoAudioRecorder can work with all three: Edge, Firefox and Chrome
         // todo: detect if it is Edge, then auto use: StereoAudioRecorder
-        if (typeof StereoAudioRecorder !== 'undefined' && isChrome) {
+        if (typeof StereoAudioRecorder !== 'undefined' && (isChrome || isEdge || isOpera)) {
             // Media Stream Recording API has not been implemented in chrome yet;
             // That's why using WebAudio API to record stereo audio in WAV format
             Recorder = StereoAudioRecorder;
         }
 
-        if (typeof MediaStreamRecorder !== 'undefined' && !isChrome) {
+        if (typeof MediaStreamRecorder !== 'undefined' && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
             Recorder = MediaStreamRecorder;
         }
 
         // video recorder (in WebM format)
-        if (config.type === 'video' && isChrome) {
+        if (config.type === 'video' && (isChrome || isOpera)) {
             if (typeof WhammyRecorder !== 'undefined') {
                 Recorder = WhammyRecorder;
             } else {
@@ -1082,7 +1104,9 @@ if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     var URL = webkitURL;
 }
 
-var isChrome = true;
+var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
+var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
+var isChrome = !isOpera && !isEdge && !!navigator.webkitGetUserMedia;
 
 if (typeof navigator !== 'undefined') {
     if (typeof navigator.webkitGetUserMedia !== 'undefined') {
@@ -1092,8 +1116,6 @@ if (typeof navigator !== 'undefined') {
     if (typeof navigator.mozGetUserMedia !== 'undefined') {
         navigator.getUserMedia = navigator.mozGetUserMedia;
     }
-
-    isChrome = typeof navigator.webkitGetUserMedia !== 'undefined';
 } else {
     /*global navigator:true */
     var navigator = {
@@ -1945,7 +1967,7 @@ function StereoAudioRecorder(mediaStream, config) {
  * @typedef CanvasRecorder
  * @class
  * @example
- * var recorder = new CanvasRecorder(htmlElement);
+ * var recorder = new CanvasRecorder(htmlElement, { disableLogs: true });
  * recorder.record();
  * recorder.stop(function(blob) {
  *     video.src = URL.createObjectURL(blob);
@@ -2091,7 +2113,7 @@ function CanvasRecorder(htmlElement, config) {
                 });
 
                 if (isRecording) {
-                    requestAnimationFrame(drawCanvasFrame);
+                    setTimeout(drawCanvasFrame, 0);
                 }
             }
         });
@@ -2122,6 +2144,14 @@ function CanvasRecorder(htmlElement, config) {
 function WhammyRecorder(mediaStream, config) {
 
     config = config || {};
+
+    if (!config.frameInterval) {
+        config.frameInterval = 10;
+    }
+
+    if (!config.disableLogs) {
+        console.log('Using frames-interval:', config.frameInterval);
+    }
 
     /**
      * This method records video.
@@ -3042,17 +3072,17 @@ var DiskStorage = {
 // GifRecorder.js
 
 /**
- * GifRecorder is standalone calss used by {@link RecordRTC} to record video as animated gif image.
+ * GifRecorder is standalone calss used by {@link RecordRTC} to record video or canvas into animated gif.
  * @typedef GifRecorder
  * @class
  * @example
- * var recorder = new GifRecorder(mediaStream);
+ * var recorder = new GifRecorder(mediaStream || canvas || context, { width: 1280, height: 720, frameRate: 200, quality: 10 });
  * recorder.record();
  * recorder.stop(function(blob) {
  *     img.src = URL.createObjectURL(blob);
  * });
- * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
- * @param {object} config - {disableLogs:true, initcallback: function, width: 320, height: 240, frameRate: 200, quality: 10}
+ * @param {MediaStream} mediaStream - MediaStream object or HTMLCanvasElement or CanvasRenderingContext2D.
+ * @param {object} config - {disableLogs:true, initCallback: function, width: 320, height: 240, frameRate: 200, quality: 10}
  */
 
 function GifRecorder(mediaStream, config) {
@@ -3062,6 +3092,8 @@ function GifRecorder(mediaStream, config) {
 
     config = config || {};
 
+    var isHTMLObject = mediaStream instanceof CanvasRenderingContext2D || mediaStream instanceof HTMLCanvasElement;
+
     /**
      * This method records MediaStream.
      * @method
@@ -3070,33 +3102,35 @@ function GifRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
-        if (!config.width) {
-            config.width = video.offsetWidth || 320;
+        if (!isHTMLObject) {
+            if (!config.width) {
+                config.width = video.offsetWidth || 320;
+            }
+
+            if (!this.height) {
+                config.height = video.offsetHeight || 240;
+            }
+
+            if (!config.video) {
+                config.video = {
+                    width: config.width,
+                    height: config.height
+                };
+            }
+
+            if (!config.canvas) {
+                config.canvas = {
+                    width: config.width,
+                    height: config.height
+                };
+            }
+
+            canvas.width = config.canvas.width;
+            canvas.height = config.canvas.height;
+
+            video.width = config.video.width;
+            video.height = config.video.height;
         }
-
-        if (!this.height) {
-            config.height = video.offsetHeight || 240;
-        }
-
-        if (!config.video) {
-            config.video = {
-                width: config.width,
-                height: config.height
-            };
-        }
-
-        if (!config.canvas) {
-            config.canvas = {
-                width: config.width,
-                height: config.height
-            };
-        }
-
-        canvas.width = config.canvas.width;
-        canvas.height = config.canvas.height;
-
-        video.width = config.video.width;
-        video.height = config.video.height;
 
         // external library to record as GIF images
         gifEncoder = new GIFEncoder();
@@ -3147,7 +3181,7 @@ function GifRecorder(mediaStream, config) {
                 return;
             }
 
-            if (video.paused) {
+            if (!isHTMLObject && video.paused) {
                 // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
                 // Tweak for Android Chrome
                 video.play();
@@ -3259,17 +3293,27 @@ function GifRecorder(mediaStream, config) {
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
 
-    var video = document.createElement('video');
-    video.muted = true;
-    video.autoplay = true;
-
-    if (typeof video.srcObject !== 'undefined') {
-        video.srcObject = mediaStream;
-    } else {
-        video.src = URL.createObjectURL(mediaStream);
+    if (isHTMLObject) {
+        if (mediaStream instanceof CanvasRenderingContext2D) {
+            context = mediaStream;
+        } else if (mediaStream instanceof HTMLCanvasElement) {
+            context = mediaStream.getContext('2d');
+        }
     }
 
-    video.play();
+    if (!isHTMLObject) {
+        var video = document.createElement('video');
+        video.muted = true;
+        video.autoplay = true;
+
+        if (typeof video.srcObject !== 'undefined') {
+            video.srcObject = mediaStream;
+        } else {
+            video.src = URL.createObjectURL(mediaStream);
+        }
+
+        video.play();
+    }
 
     var lastAnimationFrame = null;
     var startTime, endTime, lastFrameTime;

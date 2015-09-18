@@ -223,7 +223,7 @@ var options = {
    frameRate: 200,
    quality: 10
 };
-var recordRTC = RecordRTC(mediaStream, options);
+var recordRTC = RecordRTC(mediaStream || canvas || context, options);
 recordRTC.startRecording();
 recordRTC.stopRecording(function(gifURL) {
    mediaElement.src = gifURL;
@@ -264,12 +264,10 @@ It is a function that can be used to initiate recorder however skip getting reco
 
 ```javascript
 var audioRecorder = RecordRTC(mediaStream, {
-  type: 'audio',
   recorderType: StereoAudioRecorder
 });
 
 var videoRecorder = RecordRTC(mediaStream, {
-  type: 'video',
   recorderType: WhammyRecorder
 });
 
@@ -308,7 +306,6 @@ navigator.mediaDevices.getUserMedia({
     video: true
 }).then(function(stream) {
     var recordRTC = RecordRTC(stream, {
-        type: 'video',
         recorderType: WhammyRecorder
     });
 
@@ -334,11 +331,12 @@ recorder.clearRecordedData();
 
 ## `recorderType`
 
+If you're using `recorderType` then you don't need to use `type`. Second one will be redundant i.e. skipped.
+
 You can force any Recorder by passing this object over RecordRTC constructor:
 
 ```javascript
 var audioRecorder = RecordRTC(mediaStream, {
-  type: 'audio',
   recorderType: StereoAudioRecorder
 })
 ```
@@ -348,6 +346,35 @@ It means that ALL_BROWSERS will be using [StereoAudioRecorder](http://RecordRTC.
 This feature brings remote audio recording support in Firefox, and local audio recording support in Microsoft Edge.
 
 You can even force `WhammyRecorder` on Firefox however webp format isn't yet supported in standard Firefox builds. It simply means that, you're skipping MediaRecorder API in Firefox.
+
+## `type`
+
+If you are NOT using `recorderType` parameter then `type` parameter can be used to ask RecordRTC choose best recorder-type for recording.
+
+```javascript
+// if it is Firefox, then RecordRTC will be using MediaStreamRecorder.js
+// if it is Chrome or Opera, then RecordRTC will be using WhammyRecorder.js
+var recordVideo = RecordRTC(mediaStream, {
+  type: 'video'
+});
+
+// if it is Firefox, then RecordRTC will be using MediaStreamRecorder.js
+// if it is Chrome or Opera or Edge, then RecordRTC will be using StereoAudioRecorder.js
+var recordVideo = RecordRTC(mediaStream, {
+  type: 'audio'
+});
+```
+
+## `frameInterval`
+
+Set minimum interval (in milliseconds) between each time we push a frame to Whammy recorder.
+
+```javascript
+var whammyRecorder = RecordRTC(videoStream, {
+  recorderType: WhammyRecorder,
+  frameInterval: 1   // setTimeout interval
+});
+```
 
 ## `disableLogs`
 
@@ -365,7 +392,6 @@ You can force [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.htm
 
 ```javascript
 var audioRecorder = RecordRTC(audioStream, {
-  type: 'audio',
   recorderType: StereoAudioRecorder,
   numberOfAudioChannels: 1 // or leftChannel:true
 });

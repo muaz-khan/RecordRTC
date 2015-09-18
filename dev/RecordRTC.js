@@ -28,6 +28,26 @@ function RecordRTC(mediaStream, config) {
         throw 'MediaStream is mandatory.';
     }
 
+    if (config.recorderType && !config.type) {
+        if (config.recorderType === WhammyRecorder || config.recorderType === CanvasRecorder) {
+            config.type = 'video';
+        } else if (config.recorderType === GifRecorder) {
+            config.type = 'gif';
+        } else if (config.recorderType === StereoAudioRecorder) {
+            config.type = 'audio';
+        } else if (config.recorderType === MediaStreamRecorder) {
+            if (mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+                config.type = 'video';
+            } else if (mediaStream.getAudioTracks().length && !mediaStream.getVideoTracks().length) {
+                config.type = 'audio';
+            } else if (!mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+                config.type = 'audio';
+            } else {
+                // config.type = 'UnKnown';
+            }
+        }
+    }
+
     // consider default type=audio
     if (!config.type) {
         config.type = 'audio';
@@ -69,18 +89,18 @@ function RecordRTC(mediaStream, config) {
 
         // StereoAudioRecorder can work with all three: Edge, Firefox and Chrome
         // todo: detect if it is Edge, then auto use: StereoAudioRecorder
-        if (typeof StereoAudioRecorder !== 'undefined' && isChrome) {
+        if (typeof StereoAudioRecorder !== 'undefined' && (isChrome || isEdge || isOpera)) {
             // Media Stream Recording API has not been implemented in chrome yet;
             // That's why using WebAudio API to record stereo audio in WAV format
             Recorder = StereoAudioRecorder;
         }
 
-        if (typeof MediaStreamRecorder !== 'undefined' && !isChrome) {
+        if (typeof MediaStreamRecorder !== 'undefined' && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
             Recorder = MediaStreamRecorder;
         }
 
         // video recorder (in WebM format)
-        if (config.type === 'video' && isChrome) {
+        if (config.type === 'video' && (isChrome || isOpera)) {
             if (typeof WhammyRecorder !== 'undefined') {
                 Recorder = WhammyRecorder;
             } else {

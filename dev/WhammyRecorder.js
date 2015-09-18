@@ -20,6 +20,14 @@ function WhammyRecorder(mediaStream, config) {
 
     config = config || {};
 
+    if (!config.frameInterval) {
+        config.frameInterval = 10;
+    }
+
+    if (!config.disableLogs) {
+        console.log('Using frames-interval:', config.frameInterval);
+    }
+
     /**
      * This method records video.
      * @method

@@ -1,4 +1,4 @@
-// Last time updated at September 15, 2015, 08:32:23
+// Last time updated at September 18, 2015
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -26,6 +26,7 @@
 -. You can set "leftChannel"   - RecordRTC(stream, { leftChannel: true });
 -. Added functionality for analyse black frames and cut them - pull#293
 -. if you're recording GIF, you must link: https://cdn.webrtc-experiment.com/gif-recorder.js
+-. You can set "frameInterval" for video - RecordRTC(stream, { type: 'video', frameInterval: 100 });
 */
 
 //------------------------------------
@@ -2194,13 +2195,19 @@ function WhammyRecorder(mediaStream, config) {
             console.log('video width/height', video.width || canvas.width, '*', video.height || canvas.height);
         }
 
-        drawFrames();
+        drawFrames(config.frameInterval);
     };
 
-    function drawFrames() {
+    /**
+     * Draw and push frames to Whammy
+     * @param {integer} frameInterval - set minimum interval (in milliseconds) between each time we push a frame to Whammy
+     */
+    function drawFrames(frameInterval) {
+        frameInterval = typeof frameInterval !== 'undefined' ? frameInterval : 10;
+
         var duration = new Date().getTime() - lastTime;
         if (!duration) {
-            return setTimeout(drawFrames, 10);
+            return setTimeout(drawFrames, frameInterval, frameInterval);
         }
 
         if (isPausedRecording) {
@@ -2224,7 +2231,7 @@ function WhammyRecorder(mediaStream, config) {
         });
 
         if (!isStopDrawing) {
-            setTimeout(drawFrames, 10);
+            setTimeout(drawFrames, frameInterval, frameInterval);
         }
     }
 
@@ -2442,7 +2449,7 @@ var Whammy = (function() {
     function WhammyVideo(duration) {
         this.frames = [];
         this.duration = duration || 1;
-        this.quality = 100;
+        this.quality = 0.8;
     }
 
     /**

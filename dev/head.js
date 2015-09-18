@@ -1,4 +1,4 @@
-// Last time updated at September 15, 2015, 08:32:23
+// Last time updated at September 18, 2015
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -26,6 +26,7 @@
 -. You can set "leftChannel"   - RecordRTC(stream, { leftChannel: true });
 -. Added functionality for analyse black frames and cut them - pull#293
 -. if you're recording GIF, you must link: https://cdn.webrtc-experiment.com/gif-recorder.js
+-. You can set "frameInterval" for video - RecordRTC(stream, { type: 'video', frameInterval: 100 });
 */
 
 //------------------------------------

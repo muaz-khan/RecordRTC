@@ -62,6 +62,7 @@
 //------------------------------------
 
 'use strict';
+
 // ____________
 // RecordRTC.js
 
@@ -750,6 +751,7 @@ if (typeof define === 'function' && define.amd) {
         return RecordRTC;
     });
 }
+
 // _____________
 // MRecordRTC.js
 
@@ -1058,6 +1060,7 @@ MRecordRTC.getFromDisk = RecordRTC.getFromDisk;
  * });
  */
 MRecordRTC.writeToDisk = RecordRTC.writeToDisk;
+
 // _____________________________
 // Cross-Browser-Declarations.js
 
@@ -1199,6 +1202,7 @@ function invokeSaveAsDialog(file, fileName) {
         URL.revokeObjectURL(hyperlink.href);
     }
 }
+
 // __________ (used to handle stuff like http://goo.gl/xmE5eg) issue #129
 // Storage.js
 
@@ -1216,6 +1220,7 @@ if (typeof AudioContext !== 'undefined') {
 } else if (typeof webkitAudioContext !== 'undefined') {
     Storage.AudioContext = webkitAudioContext;
 }
+
 // ______________________
 // MediaStreamRecorder.js
 
@@ -1456,6 +1461,7 @@ function MediaStreamRecorder(mediaStream, config) {
     // Reference to "MediaRecorder" object
     var mediaRecorder;
 }
+
 // source code from: http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js
 // https://github.com/mattdiamond/Recorderjs#license-mit
 // ______________________
@@ -1958,6 +1964,7 @@ function StereoAudioRecorder(mediaStream, config) {
     // to prevent self audio to be connected with speakers
     jsAudioNode.connect(context.destination);
 }
+
 // _________________
 // CanvasRecorder.js
 
@@ -2123,6 +2130,7 @@ function CanvasRecorder(htmlElement, config) {
 
     var whammy = new Whammy.Video(100);
 }
+
 // _________________
 // WhammyRecorder.js
 
@@ -2454,6 +2462,7 @@ function WhammyRecorder(mediaStream, config) {
     var lastTime;
     var whammy;
 }
+
 // https://github.com/antimatter15/whammy/blob/master/LICENSE
 // _________
 // Whammy.js
@@ -2884,6 +2893,7 @@ var Whammy = (function() {
         Video: WhammyVideo
     };
 })();
+
 // ______________ (indexed-db)
 // DiskStorage.js
 
@@ -3068,6 +3078,7 @@ var DiskStorage = {
     dataStoreName: 'recordRTC',
     dbName: null
 };
+
 // ______________
 // GifRecorder.js
 

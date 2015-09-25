@@ -14,7 +14,7 @@ module.exports = function(grunt) {
         concat: {
             options: {
                 stripBanners: true,
-                separator: ''
+                separator: '\n'
             },
             dist: {
                 src: [
@@ -126,13 +126,7 @@ module.exports = function(grunt) {
             files: [
                 // 'RecordRTC.js',
                 'dev/*.js',
-                'Gruntfile.js',
-                './Canvas-Recording/*.html',
-                './MRecordRTC/*.html',
-                './PHP-and-FFmpeg/*.html',
-                './RecordRTC-over-Socketio/*.html',
-                './RecordRTC-to-Nodejs/static/*.html',
-                './RecordRTC-to-PHP/*.html'
+                'Gruntfile.js'
             ],
             options: {
                 js: {

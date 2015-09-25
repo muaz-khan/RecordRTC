@@ -6,7 +6,9 @@
 
 > [RecordRTC](https://www.webrtc-experiment.com/RecordRTC/) is a JavaScript-based media-recording library for modern web-browsers (supporting WebRTC getUserMedia API). It is optimized for different devices and browsers to bring all client-side (pluginfree) recording solutions in single place.
 
+# Check all releases:
 
+* https://github.com/muaz-khan/RecordRTC/releases
 
 Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) directory for development files.
 

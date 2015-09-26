@@ -1,4 +1,4 @@
-// Last time updated at September 18, 2015
+// Last time updated at September 26, 2015
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.
 -. GifRecorder.js can now record HTMLCanvasElement|CanvasRenderingContext2D as well.
 -. added: frameInterval:20 for WhammyRecorder.js
 -. chrome issue  audio plus 720p-video recording can be fixed by setting bufferSize:16384
@@ -53,12 +54,12 @@
 // 3. Cross-Browser-Declarations.js
 // 4. Storage.js
 // 5. MediaStreamRecorder.js
-// 7. StereoAudioRecorder.js
-// 8. CanvasRecorder.js
-// 9. WhammyRecorder.js
-// 10. Whammy.js
-// 11. DiskStorage.js
-// 12. GifRecorder.js
+// 6. StereoAudioRecorder.js
+// 7. CanvasRecorder.js
+// 8. WhammyRecorder.js
+// 9. Whammy.js
+// 10. DiskStorage.js
+// 11. GifRecorder.js
 //------------------------------------
 
 'use strict';
@@ -1516,6 +1517,18 @@ function StereoAudioRecorder(mediaStream, config) {
         console.debug('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
     }
 
+    function isMediaStreamActive() {
+        if ('active' in mediaStream) {
+            if (!mediaStream.active) {
+                return false;
+            }
+        } else if ('ended' in mediaStream) { // old hack
+            if (mediaStream.ended) {
+                return false;
+            }
+        }
+    }
+
     /**
      * This method records MediaStream.
      * @method
@@ -1524,10 +1537,22 @@ function StereoAudioRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
+        if (isMediaStreamActive() === false) {
+            throw 'Please make sure MediaStream is active.';
+        }
+
         // reset the buffers for the new recording
         leftchannel.length = rightchannel.length = 0;
         recordingLength = 0;
 
+        if (audioInput) {
+            audioInput.connect(jsAudioNode);
+        }
+
+        // to prevent self audio to be connected with speakers
+        // jsAudioNode.connect(context.destination);
+
+        isAudioProcessStarted = isPaused = false;
         recording = true;
     };
 
@@ -1878,6 +1903,18 @@ function StereoAudioRecorder(mediaStream, config) {
      * recorder.resume();
      */
     this.resume = function() {
+        if (isMediaStreamActive() === false) {
+            throw 'Please make sure MediaStream is active.';
+        }
+
+        if (!recording) {
+            if (!config.disableLogs) {
+                console.info('Seems recording has been restarted.');
+            }
+            this.record();
+            return;
+        }
+
         isPaused = false;
 
         if (!config.disableLogs) {
@@ -1910,17 +1947,12 @@ function StereoAudioRecorder(mediaStream, config) {
             return;
         }
 
-        // if MediaStream().stop() or MediaStreamTrack.stop() is invoked.
-        if ('active' in mediaStream) {
-            if (!mediaStream.active) {
-                jsAudioNode.onaudioprocess = function() {};
-                recording = false;
+        if (isMediaStreamActive() === false) {
+            if (!config.disableLogs) {
+                console.error('MediaStream seems stopped.');
             }
-        } else if ('ended' in mediaStream) { // old hack
-            if (mediaStream.ended) {
-                jsAudioNode.onaudioprocess = function() {};
-                recording = false;
-            }
+            jsAudioNode.disconnect();
+            recording = false;
         }
 
         if (!recording) {

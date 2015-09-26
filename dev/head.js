@@ -1,4 +1,4 @@
-// Last time updated at September 18, 2015
+// Last time updated at September 26, 2015
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.
 -. GifRecorder.js can now record HTMLCanvasElement|CanvasRenderingContext2D as well.
 -. added: frameInterval:20 for WhammyRecorder.js
 -. chrome issue  audio plus 720p-video recording can be fixed by setting bufferSize:16384
@@ -53,12 +54,12 @@
 // 3. Cross-Browser-Declarations.js
 // 4. Storage.js
 // 5. MediaStreamRecorder.js
-// 7. StereoAudioRecorder.js
-// 8. CanvasRecorder.js
-// 9. WhammyRecorder.js
-// 10. Whammy.js
-// 11. DiskStorage.js
-// 12. GifRecorder.js
+// 6. StereoAudioRecorder.js
+// 7. CanvasRecorder.js
+// 8. WhammyRecorder.js
+// 9. Whammy.js
+// 10. DiskStorage.js
+// 11. GifRecorder.js
 //------------------------------------
 
 'use strict';

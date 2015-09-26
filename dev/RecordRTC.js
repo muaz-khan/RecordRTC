@@ -57,18 +57,19 @@ function RecordRTC(mediaStream, config) {
             config.type = config.mimeType.split('/')[0];
         }
 
-        if (!config.audioBitsPerSecond) {
-            config.audioBitsPerSecond = 128000;
-        }
-
-        if (!config.videoBitsPerSecond) {
-            config.videoBitsPerSecond = 128000;
+        if (!config.bitsPerSecond) {
+            config.bitsPerSecond = 128000;
         }
     }
 
     // consider default type=audio
     if (!config.type) {
-        config.type = 'audio';
+        if (config.mimeType) {
+            config.type = config.mimeType.split('/')[0];
+        }
+        if (!config.type) {
+            config.type = 'audio';
+        }
     }
 
     // a reference to user's recordRTC object
@@ -216,11 +217,10 @@ function RecordRTC(mediaStream, config) {
             return console.warn(WARNING);
         }
 
-        // not all libs yet having  this method
-        if (mediaRecorder.pause) {
-            mediaRecorder.pause();
-        } else if (!config.disableLogs) {
-            console.warn('This recording library is having no "pause" method.');
+        mediaRecorder.pause();
+
+        if (!config.disableLogs) {
+            console.debug('Paused recording.');
         }
     }
 
@@ -230,10 +230,10 @@ function RecordRTC(mediaStream, config) {
         }
 
         // not all libs yet having  this method
-        if (mediaRecorder.resume) {
-            mediaRecorder.resume();
-        } else if (!config.disableLogs) {
-            console.warn('This recording library is having no "resume" method.');
+        mediaRecorder.resume();
+
+        if (!config.disableLogs) {
+            console.debug('Resumed recording.');
         }
     }
 
@@ -392,6 +392,10 @@ function RecordRTC(mediaStream, config) {
             }
 
             mediaRecorder.clearRecordedData();
+
+            if (!config.disableLogs) {
+                console.debug('Cleared old recorded data.');
+            }
         },
 
         /**

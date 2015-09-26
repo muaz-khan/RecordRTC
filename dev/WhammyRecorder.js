@@ -288,10 +288,6 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPausedRecording = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -303,10 +299,6 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -318,7 +310,6 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.clearRecordedData = function() {
         this.pause();
-
         whammy.frames = [];
     };
 

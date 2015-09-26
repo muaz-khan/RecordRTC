@@ -125,18 +125,19 @@ function RecordRTC(mediaStream, config) {
             config.type = config.mimeType.split('/')[0];
         }
 
-        if (!config.audioBitsPerSecond) {
-            config.audioBitsPerSecond = 128000;
-        }
-
-        if (!config.videoBitsPerSecond) {
-            config.videoBitsPerSecond = 128000;
+        if (!config.bitsPerSecond) {
+            config.bitsPerSecond = 128000;
         }
     }
 
     // consider default type=audio
     if (!config.type) {
-        config.type = 'audio';
+        if (config.mimeType) {
+            config.type = config.mimeType.split('/')[0];
+        }
+        if (!config.type) {
+            config.type = 'audio';
+        }
     }
 
     // a reference to user's recordRTC object
@@ -284,11 +285,10 @@ function RecordRTC(mediaStream, config) {
             return console.warn(WARNING);
         }
 
-        // not all libs yet having  this method
-        if (mediaRecorder.pause) {
-            mediaRecorder.pause();
-        } else if (!config.disableLogs) {
-            console.warn('This recording library is having no "pause" method.');
+        mediaRecorder.pause();
+
+        if (!config.disableLogs) {
+            console.debug('Paused recording.');
         }
     }
 
@@ -298,10 +298,10 @@ function RecordRTC(mediaStream, config) {
         }
 
         // not all libs yet having  this method
-        if (mediaRecorder.resume) {
-            mediaRecorder.resume();
-        } else if (!config.disableLogs) {
-            console.warn('This recording library is having no "resume" method.');
+        mediaRecorder.resume();
+
+        if (!config.disableLogs) {
+            console.debug('Resumed recording.');
         }
     }
 
@@ -460,6 +460,10 @@ function RecordRTC(mediaStream, config) {
             }
 
             mediaRecorder.clearRecordedData();
+
+            if (!config.disableLogs) {
+                console.debug('Cleared old recorded data.');
+            }
         },
 
         /**
@@ -1289,6 +1293,7 @@ function MediaStreamRecorder(mediaStream, config) {
     config = config || {
         audioBitsPerSecond: 128000,
         videoBitsPerSecond: 2500000,
+        bitsPerSecond: 128000,
         mimeType: 'video/webm'
     };
 
@@ -1319,6 +1324,10 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
+        if (!config.disableLogs) {
+            console.log('Passing following config over MediaRecorder API.', config);
+        }
+
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
         // https://wiki.mozilla.org/Gecko:MediaRecorder
         // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
@@ -1333,6 +1342,10 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         }
 
+        // i.e. stop recording when <video> is paused by the user; and auto restart recording 
+        // when video is resumed. E.g. yourStream.getVideoTracks()[0].muted = true; // it will auto-stop recording.
+        mediaRecorder.ignoreMutedMedia = config.ignoreMutedMedia || false;
+
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
             if (self.dontFireOnDataAvailableEvent || dataAvailable) {
@@ -1341,7 +1354,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
             if (!e.data.size) {
                 if (!config.disableLogs) {
-                    console.warn('Recording of', (e.data.type || config.mimeType), 'failed.');
+                    console.warn('Recording of', (e.data.type || mediaRecorder.mimeType || config.mimeType), 'failed.');
                 }
                 return;
             }
@@ -1367,7 +1380,19 @@ function MediaStreamRecorder(mediaStream, config) {
 
         mediaRecorder.onerror = function(error) {
             if (!config.disableLogs) {
-                console.warn(error);
+                if (error.name === 'InvalidState') {
+                    console.error('The MediaRecorder is not in a state in which the proposed operation is allowed to be executed.');
+                } else if (error.name === 'OutOfMemory') {
+                    console.error('The UA has exhaused the available memory. User agents SHOULD provide as much additional information as possible in the message attribute.');
+                } else if (error.name === 'IllegalStreamModification') {
+                    console.error('A modification to the stream has occurred that makes it impossible to continue recording. An example would be the addition of a Track while recording is occurring. User agents SHOULD provide as much additional information as possible in the message attribute.');
+                } else if (error.name === 'OtherRecordingError') {
+                    console.error('Used for an fatal error other than those listed above. User agents SHOULD provide as much additional information as possible in the message attribute.');
+                } else if (error.name === 'GenericError') {
+                    console.error('The UA cannot provide the codec or recording option that has been requested.', error);
+                } else {
+                    console.error('MediaRecorder Error', error);
+                }
             }
 
             // When the stream is "ended" set recording to 'inactive' 
@@ -1376,8 +1401,10 @@ function MediaStreamRecorder(mediaStream, config) {
             // if the timeSlice value is small. Callers should 
             // consider timeSlice as a minimum value
 
-            mediaRecorder.stop();
-            self.record(0);
+            if (mediaRecorder.state !== 'inactive' && mediaRecorder.state !== 'stopped') {
+                mediaRecorder.stop();
+            }
+            // self.record(0);
         };
 
         // void start(optional long mTimeSlice)
@@ -1441,10 +1468,6 @@ function MediaStreamRecorder(mediaStream, config) {
 
         if (mediaRecorder.state === 'recording') {
             mediaRecorder.pause();
-
-            if (!config.disableLogs) {
-                console.debug('Paused recording.');
-            }
         }
     };
 
@@ -1469,10 +1492,6 @@ function MediaStreamRecorder(mediaStream, config) {
 
         if (mediaRecorder.state === 'paused') {
             mediaRecorder.resume();
-
-            if (!config.disableLogs) {
-                console.debug('Resumed recording.');
-            }
         }
     };
 
@@ -1492,10 +1511,6 @@ function MediaStreamRecorder(mediaStream, config) {
 
         this.dontFireOnDataAvailableEvent = true;
         this.stop();
-
-        if (!config.disableLogs) {
-            console.debug('Cleared old recorded data.');
-        }
     };
 
     // Reference to "MediaRecorder" object
@@ -1955,10 +1970,6 @@ function StereoAudioRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPaused = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -1982,10 +1993,6 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         isPaused = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -2000,10 +2007,6 @@ function StereoAudioRecorder(mediaStream, config) {
 
         leftchannel.length = rightchannel.length = 0;
         recordingLength = 0;
-
-        if (!config.disableLogs) {
-            console.debug('Cleared old recorded data.');
-        }
     };
 
     var isAudioProcessStarted = false;
@@ -2108,7 +2111,7 @@ function CanvasRecorder(htmlElement, config) {
         globalCanvas.width = htmlElement.clientWidth || window.innerWidth;
         globalCanvas.height = htmlElement.clientHeight || window.innerHeight;
 
-        globalCanvas.style = 'opacity:0; top: 0; left: 0; visibility:hidden; display: none;';
+        globalCanvas.style = 'top: -9999999; left: -99999999; visibility:hidden; position:absoluted; display: none;';
         (document.body || document.documentElement).appendChild(globalCanvas);
 
         globalContext = globalCanvas.getContext('2d');
@@ -2132,11 +2135,11 @@ function CanvasRecorder(htmlElement, config) {
             // CanvasCaptureMediaStream
             var canvasMediaStream;
             if ('captureStream' in globalCanvas) {
-                canvasMediaStream = globalCanvas.captureStream();
+                canvasMediaStream = globalCanvas.captureStream(25); // 25 FPS
             } else if ('mozCaptureStream' in globalCanvas) {
-                canvasMediaStream = globalCanvas.captureStream();
+                canvasMediaStream = globalCanvas.captureStream(25);
             } else if ('webkitCaptureStream' in globalCanvas) {
-                canvasMediaStream = globalCanvas.captureStream();
+                canvasMediaStream = globalCanvas.captureStream(25);
             }
 
             if (!canvasMediaStream) {
@@ -2223,10 +2226,6 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.pause = function() {
         isPausedRecording = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -2238,10 +2237,6 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -2253,12 +2248,7 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.clearRecordedData = function() {
         this.pause();
-
         whammy.frames = [];
-
-        if (!config.disableLogs) {
-            console.debug('Cleared old recorded data.');
-        }
     };
 
     function drawCanvasFrame() {
@@ -2595,10 +2585,6 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPausedRecording = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -2610,10 +2596,6 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -2625,7 +2607,6 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.clearRecordedData = function() {
         this.pause();
-
         whammy.frames = [];
     };
 
@@ -3441,10 +3422,6 @@ function GifRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPausedRecording = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -3456,10 +3433,6 @@ function GifRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -3477,10 +3450,6 @@ function GifRecorder(mediaStream, config) {
         this.pause();
 
         gifEncoder.stream().bin = [];
-
-        if (!config.disableLogs) {
-            console.debug('Cleared old recorded data.');
-        }
     };
 
     var canvas = document.createElement('canvas');

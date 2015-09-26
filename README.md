@@ -537,7 +537,7 @@ You can pass custom sample-rate values only on Mac (or additionally maybe on Win
 
 ## `mimeType`
 
-This option allows you force MediaRecorder API (currently works only in Firefox; Chrome support coming soon):
+This option allows you set MediaRecorder output format (currently works only in Firefox; Chrome support coming soon):
 
 ```javascript
 var options = {
@@ -546,6 +546,10 @@ var options = {
 };
 var recorder = RecordRTC(mediaStream, options);
 ```
+
+Note: For chrome, it will simply auto-set `type:audio or video` parameters to keep supporting `StereoAudioRecorder.js` and `WhammyRecorder.js`.
+
+That is, you can skip passing `type:audio` parameter when you're using `mimeType` parameter.
 
 ## `bitsPerSecond`
 

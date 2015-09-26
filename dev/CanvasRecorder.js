@@ -43,7 +43,7 @@ function CanvasRecorder(htmlElement, config) {
         globalCanvas.width = htmlElement.clientWidth || window.innerWidth;
         globalCanvas.height = htmlElement.clientHeight || window.innerHeight;
 
-        globalCanvas.style = 'opacity:0; top: 0; left: 0; visibility:hidden; display: none;';
+        globalCanvas.style = 'top: -9999999; left: -99999999; visibility:hidden; position:absoluted; display: none;';
         (document.body || document.documentElement).appendChild(globalCanvas);
 
         globalContext = globalCanvas.getContext('2d');
@@ -67,11 +67,11 @@ function CanvasRecorder(htmlElement, config) {
             // CanvasCaptureMediaStream
             var canvasMediaStream;
             if ('captureStream' in globalCanvas) {
-                canvasMediaStream = globalCanvas.captureStream();
+                canvasMediaStream = globalCanvas.captureStream(25); // 25 FPS
             } else if ('mozCaptureStream' in globalCanvas) {
-                canvasMediaStream = globalCanvas.captureStream();
+                canvasMediaStream = globalCanvas.captureStream(25);
             } else if ('webkitCaptureStream' in globalCanvas) {
-                canvasMediaStream = globalCanvas.captureStream();
+                canvasMediaStream = globalCanvas.captureStream(25);
             }
 
             if (!canvasMediaStream) {
@@ -158,10 +158,6 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.pause = function() {
         isPausedRecording = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -173,10 +169,6 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -188,12 +180,7 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.clearRecordedData = function() {
         this.pause();
-
         whammy.frames = [];
-
-        if (!config.disableLogs) {
-            console.debug('Cleared old recorded data.');
-        }
     };
 
     function drawCanvasFrame() {

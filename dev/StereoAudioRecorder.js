@@ -424,10 +424,6 @@ function StereoAudioRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPaused = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -451,10 +447,6 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         isPaused = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -469,10 +461,6 @@ function StereoAudioRecorder(mediaStream, config) {
 
         leftchannel.length = rightchannel.length = 0;
         recordingLength = 0;
-
-        if (!config.disableLogs) {
-            console.debug('Cleared old recorded data.');
-        }
     };
 
     var isAudioProcessStarted = false;

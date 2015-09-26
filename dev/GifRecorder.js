@@ -178,10 +178,6 @@ function GifRecorder(mediaStream, config) {
      */
     this.pause = function() {
         isPausedRecording = true;
-
-        if (!config.disableLogs) {
-            console.debug('Paused recording.');
-        }
     };
 
     /**
@@ -193,10 +189,6 @@ function GifRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
-
-        if (!config.disableLogs) {
-            console.debug('Resumed recording.');
-        }
     };
 
     /**
@@ -214,10 +206,6 @@ function GifRecorder(mediaStream, config) {
         this.pause();
 
         gifEncoder.stream().bin = [];
-
-        if (!config.disableLogs) {
-            console.debug('Cleared old recorded data.');
-        }
     };
 
     var canvas = document.createElement('canvas');

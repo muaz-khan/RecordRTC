@@ -48,6 +48,24 @@ function RecordRTC(mediaStream, config) {
         }
     }
 
+    if (typeof MediaStreamRecorder !== 'undefined' && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+        if (!config.mimeType) {
+            config.mimeType = 'video/webm';
+        }
+
+        if (!config.type) {
+            config.type = config.mimeType.split('/')[0];
+        }
+
+        if (!config.audioBitsPerSecond) {
+            config.audioBitsPerSecond = 128000;
+        }
+
+        if (!config.videoBitsPerSecond) {
+            config.videoBitsPerSecond = 128000;
+        }
+    }
+
     // consider default type=audio
     if (!config.type) {
         config.type = 'audio';

@@ -173,7 +173,7 @@
             
             recordingDIV.querySelector('button').onclick = function() {
                 var button = this;
-                
+
                 if(button.innerHTML === 'Stop Recording') {
                     button.disabled = true;
                     button.disableStateWaiting = true;
@@ -192,7 +192,7 @@
                     }
                     
                     if(button.recordRTC) {
-                        if(button.recordRTC.length && button.RecordRTC instanceof Array) {
+                        if(button.recordRTC.length) {
                             button.recordRTC[0].stopRecording(function(url) {
                                 if(!button.recordRTC[1]) {
                                     button.recordingEndedCallback(url);
@@ -256,6 +256,11 @@
                         commonConfig.onMediaStopped();
                     }
                 };
+
+                var mimeType = 'video/webm';
+                if(mediaContainerFormat.value === 'Mp4') {
+                    mimeType = 'video/mp4';
+                }
                 
                 if(recordingMedia.value === 'record-video') {
                     captureVideo(commonConfig);
@@ -263,6 +268,7 @@
                     button.mediaCapturedCallback = function() {
                         button.recordRTC = RecordRTC(button.stream, {
                             type: mediaContainerFormat.value === 'Gif' ? 'gif' : 'video',
+                            mimeType: mimeType,
                             disableLogs: params.disableLogs || false,
                             canvas: {
                                 width: params.canvas_width || recordingPlayer.clientWidth,
@@ -305,6 +311,7 @@
                     button.mediaCapturedCallback = function() {
                         button.recordRTC = RecordRTC(button.stream, {
                             type: 'audio',
+                            mimeType: mimeType,
                             bufferSize: typeof params.bufferSize == 'undefined' ? 0 : parseInt(params.bufferSize),
                             sampleRate: typeof params.sampleRate == 'undefined' ? 44100 : parseInt(params.sampleRate),
                             leftChannel: params.leftChannel || false,
@@ -394,6 +401,7 @@
 
                         button.recordRTC = RecordRTC(button.stream, {
                             type: 'video',
+                            mimeType: mimeType,
                             disableLogs: params.disableLogs || false,
                             // we can't pass bitrates or framerates here
                             // Firefox MediaRecorder API lakes these features
@@ -421,6 +429,7 @@
                     button.mediaCapturedCallback = function() {
                         button.recordRTC = RecordRTC(button.stream, {
                             type: mediaContainerFormat.value === 'Gif' ? 'gif' : 'video',
+                            mimeType: mimeType,
                             disableLogs: params.disableLogs || false,
                             canvas: {
                                 width: params.canvas_width || recordingPlayer.clientWidth,
@@ -456,6 +465,7 @@
                     button.mediaCapturedCallback = function() {
                         button.recordRTC = RecordRTC(button.stream, {
                             type: 'video',
+                            mimeType: mimeType,
                             disableLogs: params.disableLogs || false,
                             // we can't pass bitrates or framerates here
                             // Firefox MediaRecorder API lakes these features
@@ -618,11 +628,23 @@
             }
             
             recordingMedia.onchange = function() {
+                var options = [];
+                if(webrtcDetectedBrowser === 'firefox') {
+                    if(this.value === 'record-audio') {
+                        options.push('Ogg');
+                    }
+                    else {
+                        options.push('WebM', 'Mp4');
+                    }
+
+                    setMediaContainerFormat(options);
+                    return;
+                }
                 if(this.value === 'record-audio') {
                     setMediaContainerFormat(['WAV', 'Ogg']);
                     return;
                 }
-                setMediaContainerFormat(['WebM', /*'Mp4',*/ 'Gif']);
+                setMediaContainerFormat(['WebM', 'Mp4', 'Ogg']);
             };
 
             if(webrtcDetectedBrowser === 'edge') {
@@ -644,6 +666,8 @@
                 recordingMedia.innerHTML = '<option value="record-audio-plus-video">Audio+Video</option>' 
                                             + '<option value="record-audio-plus-screen">Audio+Screen</option>' 
                                             + recordingMedia.innerHTML;
+
+                setMediaContainerFormat(['WebM', 'Mp4']);
             }
 
             if(webrtcDetectedBrowser === 'chrome') {

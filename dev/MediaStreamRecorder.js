@@ -21,8 +21,13 @@
  * @typedef MediaStreamRecorder
  * @class
  * @example
- * var recorder = new MediaStreamRecorder(MediaStream);
- * recorder.mimeType = 'video/webm'; // audio/ogg or video/webm
+ * var options = {
+ *     mimeType: 'video/mp4', // audio/ogg or video/webm
+ *     audioBitsPerSecond : 128000,
+ *     videoBitsPerSecond : 2500000,
+ *     bitsPerSecond: 2500000  // if this is provided, skip above two
+ * }
+ * var recorder = new MediaStreamRecorder(MediaStream, options);
  * recorder.record();
  * recorder.stop(function(blob) {
  *     video.src = URL.createObjectURL(blob);
@@ -37,7 +42,11 @@
 function MediaStreamRecorder(mediaStream, config) {
     var self = this;
 
-    config = config || {};
+    config = config || {
+        audioBitsPerSecond: 128000,
+        videoBitsPerSecond: 2500000,
+        mimeType: 'video/webm'
+    };
 
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
@@ -50,6 +59,10 @@ function MediaStreamRecorder(mediaStream, config) {
         mediaStreamSource.connect(destination);
 
         mediaStream = destination.stream;
+
+        if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
+            config.mimeType = 'audio/ogg';
+        }
     }
 
     var dataAvailable = false;
@@ -68,7 +81,13 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new MediaRecorder(mediaStream);
+        mediaRecorder = new MediaRecorder(mediaStream, config);
+
+        if ('canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
+            if (!config.disableLogs) {
+                console.warn('MediaRecorder API seems unable to record mimeType:', config.mimeType);
+            }
+        }
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
@@ -78,7 +97,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
             if (!e.data.size) {
                 if (!config.disableLogs) {
-                    console.warn('Recording of', e.data.type, 'failed.');
+                    console.warn('Recording of', (e.data.type || config.mimeType), 'failed.');
                 }
                 return;
             }
@@ -237,4 +256,31 @@ function MediaStreamRecorder(mediaStream, config) {
 
     // Reference to "MediaRecorder" object
     var mediaRecorder;
+
+    function isMediaStreamActive() {
+        if ('active' in mediaStream) {
+            if (!mediaStream.active) {
+                return false;
+            }
+        } else if ('ended' in mediaStream) { // old hack
+            if (mediaStream.ended) {
+                return false;
+            }
+        }
+    }
+
+    // this method checks if media stream is stopped
+    // or any track is ended.
+    (function looper() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        if (isMediaStreamActive() === false) {
+            mediaRecorder.stop();
+            return;
+        }
+
+        setTimeout(looper, 1000); // check every second
+    })();
 }

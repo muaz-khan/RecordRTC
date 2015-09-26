@@ -9,6 +9,8 @@
 
 // updates?
 /*
+-. mimeType, bitsPerSecond, audioBitsPerSecond, videoBitsPerSecond added.
+-. CanvasRecorder.js updated to support Firefox. (experimental)
 -. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.
 -. GifRecorder.js can now record HTMLCanvasElement|CanvasRenderingContext2D as well.
 -. added: frameInterval:20 for WhammyRecorder.js
@@ -111,6 +113,24 @@ function RecordRTC(mediaStream, config) {
             } else {
                 // config.type = 'UnKnown';
             }
+        }
+    }
+
+    if (typeof MediaStreamRecorder !== 'undefined' && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+        if (!config.mimeType) {
+            config.mimeType = 'video/webm';
+        }
+
+        if (!config.type) {
+            config.type = config.mimeType.split('/')[0];
+        }
+
+        if (!config.audioBitsPerSecond) {
+            config.audioBitsPerSecond = 128000;
+        }
+
+        if (!config.videoBitsPerSecond) {
+            config.videoBitsPerSecond = 128000;
         }
     }
 
@@ -1245,8 +1265,13 @@ if (typeof AudioContext !== 'undefined') {
  * @typedef MediaStreamRecorder
  * @class
  * @example
- * var recorder = new MediaStreamRecorder(MediaStream);
- * recorder.mimeType = 'video/webm'; // audio/ogg or video/webm
+ * var options = {
+ *     mimeType: 'video/mp4', // audio/ogg or video/webm
+ *     audioBitsPerSecond : 128000,
+ *     videoBitsPerSecond : 2500000,
+ *     bitsPerSecond: 2500000  // if this is provided, skip above two
+ * }
+ * var recorder = new MediaStreamRecorder(MediaStream, options);
  * recorder.record();
  * recorder.stop(function(blob) {
  *     video.src = URL.createObjectURL(blob);
@@ -1261,7 +1286,11 @@ if (typeof AudioContext !== 'undefined') {
 function MediaStreamRecorder(mediaStream, config) {
     var self = this;
 
-    config = config || {};
+    config = config || {
+        audioBitsPerSecond: 128000,
+        videoBitsPerSecond: 2500000,
+        mimeType: 'video/webm'
+    };
 
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
@@ -1274,6 +1303,10 @@ function MediaStreamRecorder(mediaStream, config) {
         mediaStreamSource.connect(destination);
 
         mediaStream = destination.stream;
+
+        if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
+            config.mimeType = 'audio/ogg';
+        }
     }
 
     var dataAvailable = false;
@@ -1292,7 +1325,13 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new MediaRecorder(mediaStream);
+        mediaRecorder = new MediaRecorder(mediaStream, config);
+
+        if ('canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
+            if (!config.disableLogs) {
+                console.warn('MediaRecorder API seems unable to record mimeType:', config.mimeType);
+            }
+        }
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
@@ -1302,7 +1341,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
             if (!e.data.size) {
                 if (!config.disableLogs) {
-                    console.warn('Recording of', e.data.type, 'failed.');
+                    console.warn('Recording of', (e.data.type || config.mimeType), 'failed.');
                 }
                 return;
             }
@@ -1461,6 +1500,33 @@ function MediaStreamRecorder(mediaStream, config) {
 
     // Reference to "MediaRecorder" object
     var mediaRecorder;
+
+    function isMediaStreamActive() {
+        if ('active' in mediaStream) {
+            if (!mediaStream.active) {
+                return false;
+            }
+        } else if ('ended' in mediaStream) { // old hack
+            if (mediaStream.ended) {
+                return false;
+            }
+        }
+    }
+
+    // this method checks if media stream is stopped
+    // or any track is ended.
+    (function looper() {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        if (isMediaStreamActive() === false) {
+            mediaRecorder.stop();
+            return;
+        }
+
+        setTimeout(looper, 1000); // check every second
+    })();
 }
 
 // source code from: http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js
@@ -2022,6 +2088,36 @@ function CanvasRecorder(htmlElement, config) {
 
     config = config || {};
 
+    // via DetectRTC.js
+    var isCanvasSupportsStreamCapturing = false;
+    ['captureStream', 'mozCaptureStream', 'webkitCaptureStream'].forEach(function(item) {
+        if (item in document.createElement('canvas')) {
+            isCanvasSupportsStreamCapturing = true;
+        }
+    });
+
+    var globalCanvas, globalContext, mediaStreamRecorder;
+
+    if (isCanvasSupportsStreamCapturing) {
+        if (!config.disableLogs) {
+            console.debug('Your browser supports both MediRecorder API and canvas.captureStream!');
+        }
+
+        globalCanvas = document.createElement('canvas');
+
+        globalCanvas.width = htmlElement.clientWidth || window.innerWidth;
+        globalCanvas.height = htmlElement.clientHeight || window.innerHeight;
+
+        globalCanvas.style = 'opacity:0; top: 0; left: 0; visibility:hidden; display: none;';
+        (document.body || document.documentElement).appendChild(globalCanvas);
+
+        globalContext = globalCanvas.getContext('2d');
+    } else if (!!navigator.mozGetUserMedia) {
+        if (!config.disableLogs) {
+            alert('Canvas recording is NOT supported in Firefox.');
+        }
+    }
+
     var isRecording;
 
     /**
@@ -2032,6 +2128,28 @@ function CanvasRecorder(htmlElement, config) {
      * recorder.record();
      */
     this.record = function() {
+        if (isCanvasSupportsStreamCapturing) {
+            // CanvasCaptureMediaStream
+            var canvasMediaStream;
+            if ('captureStream' in globalCanvas) {
+                canvasMediaStream = globalCanvas.captureStream();
+            } else if ('mozCaptureStream' in globalCanvas) {
+                canvasMediaStream = globalCanvas.captureStream();
+            } else if ('webkitCaptureStream' in globalCanvas) {
+                canvasMediaStream = globalCanvas.captureStream();
+            }
+
+            if (!canvasMediaStream) {
+                throw 'captureStream API are NOT available.';
+            }
+
+            // Note: Sep, 2015 status is that, MediaRecorder API can't record CanvasCaptureMediaStream object.
+            mediaStreamRecorder = new MediaStreamRecorder(canvasMediaStream, {
+                mimeType: 'video/webm'
+            });
+            mediaStreamRecorder.record();
+        }
+
         isRecording = true;
         whammy.frames = [];
         drawCanvasFrame();
@@ -2053,6 +2171,19 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.stop = function(callback) {
         isRecording = false;
+
+        if (isCanvasSupportsStreamCapturing && mediaStreamRecorder) {
+            var slef = this;
+            mediaStreamRecorder.stop(function() {
+                for (var prop in mediaStreamRecorder) {
+                    self[prop] = mediaStreamRecorder[prop];
+                }
+                if (callback) {
+                    callback(that.blob);
+                }
+            });
+            return;
+        }
 
         var that = this;
 
@@ -2138,18 +2269,29 @@ function CanvasRecorder(htmlElement, config) {
 
         html2canvas(htmlElement, {
             onrendered: function(canvas) {
-                var duration = new Date().getTime() - lastTime;
-                if (!duration) {
-                    return drawCanvasFrame();
+                if (isCanvasSupportsStreamCapturing) {
+                    var image = document.createElement('img');
+                    image.src = canvas.toDataURL('image/png');
+                    image.onload = function() {
+                        globalContext.drawImage(image, 0, 0, image.clientWidth, image.clientHeight);
+                        (document.body || document.documentElement).removeChild(image);
+                    };
+                    image.style.opacity = 0;
+                    (document.body || document.documentElement).appendChild(image);
+                } else {
+                    var duration = new Date().getTime() - lastTime;
+                    if (!duration) {
+                        return drawCanvasFrame();
+                    }
+
+                    // via #206, by Jack i.e. @Seymourr
+                    lastTime = new Date().getTime();
+
+                    whammy.frames.push({
+                        duration: duration,
+                        image: canvas.toDataURL('image/webp')
+                    });
                 }
-
-                // via #206, by Jack i.e. @Seymourr
-                lastTime = new Date().getTime();
-
-                whammy.frames.push({
-                    duration: duration,
-                    image: canvas.toDataURL('image/webp')
-                });
 
                 if (isRecording) {
                     setTimeout(drawCanvasFrame, 0);
@@ -2884,6 +3026,10 @@ var Whammy = (function() {
             return webp;
         }));
 
+        if (!!navigator.mozGetUserMedia) {
+            return webm;
+        }
+
         postMessage(webm);
     }
 
@@ -2899,6 +3045,10 @@ var Whammy = (function() {
      * });
      */
     WhammyVideo.prototype.compile = function(callback) {
+        if (!!navigator.mozGetUserMedia) {
+            callback(whammyInWebWorker(this.frames));
+            return;
+        }
         var webWorker = processInWebWorker(whammyInWebWorker);
 
         webWorker.onmessage = function(event) {

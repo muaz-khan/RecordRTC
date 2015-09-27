@@ -20,6 +20,8 @@ module.exports = function(grunt) {
                 src: [
                     'dev/head.js',
                     'dev/RecordRTC.js',
+                    'dev/RecordRTC-Configuration.js',
+                    'dev/GetRecorderType.js',
                     'dev/MRecordRTC.js',
                     'dev/Cross-Browser-Declarations.js',
                     'dev/Storage.js',

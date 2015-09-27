@@ -18,6 +18,8 @@
 /**
  * MediaStreamRecorder is an abstraction layer for "MediaRecorder API". It is used by {@link RecordRTC} to record MediaStream(s) in Firefox.
  * @summary Runs top over MediaRecorder API.
+ * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
+ * @author {@link http://www.MuazKhan.com|Muaz Khan}
  * @typedef MediaStreamRecorder
  * @class
  * @example
@@ -35,6 +37,7 @@
  *     // or
  *     var blob = recorder.blob;
  * });
+ * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
  * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm", onAudioProcessStarted: function}
  */

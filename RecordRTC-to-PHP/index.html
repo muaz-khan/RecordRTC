@@ -194,7 +194,7 @@
                     }
                     
                     if(button.recordRTC) {
-                        if(button.recordRTC.length && button.RecordRTC instanceof Array) {
+                        if(button.recordRTC.length) {
                             button.recordRTC[0].stopRecording(function(url) {
                                 if(!button.recordRTC[1]) {
                                     button.recordingEndedCallback(url);

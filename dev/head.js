@@ -1,4 +1,4 @@
-// Last time updated at September 26, 2015
+// Last time updated at September 27, 2015
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,8 @@
 
 // updates?
 /*
+-. mimeType, bitsPerSecond, audioBitsPerSecond, videoBitsPerSecond added.
+-. CanvasRecorder.js updated to support Firefox. (experimental)
 -. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.
 -. GifRecorder.js can now record HTMLCanvasElement|CanvasRenderingContext2D as well.
 -. added: frameInterval:20 for WhammyRecorder.js

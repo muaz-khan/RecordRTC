@@ -1,4 +1,4 @@
-// Last time updated at September 27, 2015
+// Last time updated at October 04, 2015
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. Added support for MediaRecorder API in Chrome. Currently requires: RecordRTC(stream, {recorderType: MediaStreamRecorder})
 -. mimeType, bitsPerSecond, audioBitsPerSecond, videoBitsPerSecond added.
 -. CanvasRecorder.js updated to support Firefox. (experimental)
 -. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.
@@ -135,7 +136,7 @@ function RecordRTC(mediaStream, config) {
             };
         }
 
-        var Recorder = new GetRecorderType(config);
+        var Recorder = new GetRecorderType(mediaStream, config);
 
         mediaRecorder = new Recorder(mediaStream, config);
         mediaRecorder.record();
@@ -770,10 +771,11 @@ function RecordRTCConfiguration(mediaStream, config) {
  * var RecorderType = GetRecorderType(options);
  * var recorder = new RecorderType(options);
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
+ * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
  * @param {object} config - {type:"video", disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
  */
 
-function GetRecorderType(config) {
+function GetRecorderType(mediaStream, config) {
     var recorder;
 
     // StereoAudioRecorder can work with all three: Edge, Firefox and Chrome
@@ -784,7 +786,7 @@ function GetRecorderType(config) {
         recorder = StereoAudioRecorder;
     }
 
-    if (typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+    if (typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype && !isChrome) {
         recorder = MediaStreamRecorder;
     }
 
@@ -801,6 +803,16 @@ function GetRecorderType(config) {
     // html2canvas recording!
     if (config.type === 'canvas') {
         recorder = CanvasRecorder;
+    }
+
+    // todo: enable below block when MediaRecorder in Chrome gets out of flags; and it also supports audio recording.
+    if (false && isChrome && recorder === WhammyRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+        if (mediaStream.getVideoTracks().length) {
+            recorder = MediaStreamRecorder;
+            if (!config.disableLogs) {
+                console.debug('Using MediaRecorder API in chrome!');
+            }
+        }
     }
 
     if (config.recorderType) {
@@ -1348,7 +1360,7 @@ function MediaStreamRecorder(mediaStream, config) {
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
     // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (config.mimeType && config.mimeType !== 'video/webm' && mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
+    if (!isChrome && config.mimeType && config.mimeType !== 'video/webm' && mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
         var context = new AudioContext();
         var mediaStreamSource = context.createMediaStreamSource(mediaStream);
 
@@ -1363,6 +1375,7 @@ function MediaStreamRecorder(mediaStream, config) {
     }
 
     var dataAvailable = false;
+    var recordedBuffers = [];
 
     /**
      * This method records MediaStream.
@@ -1372,8 +1385,19 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
+        var recorderHints = config;
+
+        if (isChrome) {
+            if (!recorderHints || typeof recorderHints !== 'string') {
+                recorderHints = 'video/vp8';
+
+                // chrome currently supports only video recording
+                mediaStream = new MediaStream(mediaStream.getVideoTracks());
+            }
+        }
+
         if (!config.disableLogs) {
-            console.log('Passing following config over MediaRecorder API.', config);
+            console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
 
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
@@ -1382,7 +1406,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new MediaRecorder(mediaStream, config);
+        mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
 
         if ('canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
             if (!config.disableLogs) {
@@ -1396,13 +1420,36 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
+            if (e.data && !e.data.size) {
+                e.data.size = e.data.length || e.data.byteLength || 0;
+            }
+
+            if (isChrome && e.data && e.data.size) {
+                recordedBuffers.push(e.data);
+                return;
+            }
+
             if (self.dontFireOnDataAvailableEvent || dataAvailable) {
                 return;
             }
 
-            if (!e.data.size) {
+            if (!e.data || !e.data.size) {
+                if (recordedBuffers.length) {
+                    self.blob = new Blob(recordedBuffers, {
+                        type: config.mimeType || 'video/webm'
+                    });
+
+                    if (self.callback) {
+                        self.callback();
+                    }
+                    return;
+                }
+
                 if (!config.disableLogs) {
-                    console.warn('Recording of', (e.data.type || mediaRecorder.mimeType || config.mimeType), 'failed.');
+                    if (!e.data) {
+                        console.error('MediaRecorder.onDataAvailable returned nothing.', e);
+                    }
+                    console.warn('Recording of', ((e.data ? e.data.type : null) || mediaRecorder.mimeType || config.mimeType), 'failed.');
                 }
                 return;
             }

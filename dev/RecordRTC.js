@@ -67,7 +67,7 @@ function RecordRTC(mediaStream, config) {
             };
         }
 
-        var Recorder = new GetRecorderType(config);
+        var Recorder = new GetRecorderType(mediaStream, config);
 
         mediaRecorder = new Recorder(mediaStream, config);
         mediaRecorder.record();

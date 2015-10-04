@@ -55,7 +55,7 @@ function MediaStreamRecorder(mediaStream, config) {
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
     // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (config.mimeType && config.mimeType !== 'video/webm' && mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
+    if (!isChrome && config.mimeType && config.mimeType !== 'video/webm' && mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
         var context = new AudioContext();
         var mediaStreamSource = context.createMediaStreamSource(mediaStream);
 
@@ -70,6 +70,7 @@ function MediaStreamRecorder(mediaStream, config) {
     }
 
     var dataAvailable = false;
+    var recordedBuffers = [];
 
     /**
      * This method records MediaStream.
@@ -79,8 +80,19 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
+        var recorderHints = config;
+
+        if (isChrome) {
+            if (!recorderHints || typeof recorderHints !== 'string') {
+                recorderHints = 'video/vp8';
+
+                // chrome currently supports only video recording
+                mediaStream = new MediaStream(mediaStream.getVideoTracks());
+            }
+        }
+
         if (!config.disableLogs) {
-            console.log('Passing following config over MediaRecorder API.', config);
+            console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
 
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
@@ -89,7 +101,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new MediaRecorder(mediaStream, config);
+        mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
 
         if ('canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
             if (!config.disableLogs) {
@@ -103,13 +115,36 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
+            if (e.data && !e.data.size) {
+                e.data.size = e.data.length || e.data.byteLength || 0;
+            }
+
+            if (isChrome && e.data && e.data.size) {
+                recordedBuffers.push(e.data);
+                return;
+            }
+
             if (self.dontFireOnDataAvailableEvent || dataAvailable) {
                 return;
             }
 
-            if (!e.data.size) {
+            if (!e.data || !e.data.size) {
+                if (recordedBuffers.length) {
+                    self.blob = new Blob(recordedBuffers, {
+                        type: config.mimeType || 'video/webm'
+                    });
+
+                    if (self.callback) {
+                        self.callback();
+                    }
+                    return;
+                }
+
                 if (!config.disableLogs) {
-                    console.warn('Recording of', (e.data.type || mediaRecorder.mimeType || config.mimeType), 'failed.');
+                    if (!e.data) {
+                        console.error('MediaRecorder.onDataAvailable returned nothing.', e);
+                    }
+                    console.warn('Recording of', ((e.data ? e.data.type : null) || mediaRecorder.mimeType || config.mimeType), 'failed.');
                 }
                 return;
             }

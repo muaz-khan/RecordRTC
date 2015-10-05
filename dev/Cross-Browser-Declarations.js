@@ -1,48 +1,58 @@
 // _____________________________
 // Cross-Browser-Declarations.js
 
+var requestAnimationFrame = window.requestAnimationFrame;
+
 // animation-frame used in WebM recording
 if (typeof requestAnimationFrame === 'undefined') {
     if (typeof webkitRequestAnimationFrame !== 'undefined') {
         /*global requestAnimationFrame:true */
-        var requestAnimationFrame = webkitRequestAnimationFrame;
+        requestAnimationFrame = webkitRequestAnimationFrame;
     }
 
     if (typeof mozRequestAnimationFrame !== 'undefined') {
         /*global requestAnimationFrame:true */
-        var requestAnimationFrame = mozRequestAnimationFrame;
+        requestAnimationFrame = mozRequestAnimationFrame;
     }
 }
+
+var cancelAnimationFrame = window.cancelAnimationFrame;
 
 if (typeof cancelAnimationFrame === 'undefined') {
     if (typeof webkitCancelAnimationFrame !== 'undefined') {
         /*global cancelAnimationFrame:true */
-        var cancelAnimationFrame = webkitCancelAnimationFrame;
+        cancelAnimationFrame = webkitCancelAnimationFrame;
     }
 
     if (typeof mozCancelAnimationFrame !== 'undefined') {
         /*global cancelAnimationFrame:true */
-        var cancelAnimationFrame = mozCancelAnimationFrame;
+        cancelAnimationFrame = mozCancelAnimationFrame;
     }
 }
+
+var AudioContext = window.AudioContext;
 
 // WebAudio API representer
 if (typeof AudioContext === 'undefined') {
     if (typeof webkitAudioContext !== 'undefined') {
         /*global AudioContext:true */
-        var AudioContext = webkitAudioContext;
+        AudioContext = webkitAudioContext;
     }
 
     if (typeof mozAudioContext !== 'undefined') {
         /*global AudioContext:true */
-        var AudioContext = mozAudioContext;
+        AudioContext = mozAudioContext;
     }
 }
 
+var URL = window.URL;
+
 if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     /*global URL:true */
-    var URL = webkitURL;
+    URL = webkitURL;
 }
+
+var navigator = window.navigator;
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
 var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
@@ -58,13 +68,15 @@ if (typeof navigator !== 'undefined') {
     }
 } else {
     /*global navigator:true */
-    var navigator = {
+    navigator = {
         getUserMedia: {}
     };
 }
 
+var MediaStream = window.MediaStream;
+
 if (typeof webkitMediaStream !== 'undefined') {
-    var MediaStream = webkitMediaStream;
+    MediaStream = webkitMediaStream;
 }
 
 if (typeof location !== 'undefined') {

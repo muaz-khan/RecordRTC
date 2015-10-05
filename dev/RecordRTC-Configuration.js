@@ -46,8 +46,7 @@ function RecordRTCConfiguration(mediaStream, config) {
         }
 
         if (!config.bitsPerSecond) {
-            // or use lowest: 128000
-            config.bitsPerSecond = 256 * 1024 * 8; // 256 kbps
+            config.bitsPerSecond = 128000;
         }
     }
 

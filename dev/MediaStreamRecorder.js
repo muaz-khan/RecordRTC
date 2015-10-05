@@ -46,8 +46,6 @@ function MediaStreamRecorder(mediaStream, config) {
     var self = this;
 
     config = config || {
-        audioBitsPerSecond: 128000,
-        videoBitsPerSecond: 2500000,
         bitsPerSecond: 128000,
         mimeType: 'video/webm'
     };
@@ -55,14 +53,16 @@ function MediaStreamRecorder(mediaStream, config) {
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
     // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (!isChrome && config.mimeType && config.mimeType !== 'video/webm' && mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
-        var context = new AudioContext();
-        var mediaStreamSource = context.createMediaStreamSource(mediaStream);
+    if (!isChrome && config.type && config.type === 'audio') {
+        if (mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
+            var context = new AudioContext();
+            var mediaStreamSource = context.createMediaStreamSource(mediaStream);
 
-        var destination = context.createMediaStreamDestination();
-        mediaStreamSource.connect(destination);
+            var destination = context.createMediaStreamDestination();
+            mediaStreamSource.connect(destination);
 
-        mediaStream = destination.stream;
+            mediaStream = destination.stream;
+        }
 
         if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
             config.mimeType = 'audio/ogg';
@@ -115,7 +115,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
-            if (e.data && !e.data.size) {
+            if (isChrome && e.data && !('size' in e.data)) {
                 e.data.size = e.data.length || e.data.byteLength || 0;
             }
 
@@ -162,6 +162,13 @@ function MediaStreamRecorder(mediaStream, config) {
             self.blob = new Blob([e.data], {
                 type: e.data.type || config.mimeType || 'audio/ogg'
             });
+
+            if (bytesToSize(self.blob) === '3.69 KB') {
+                if (!config.disableLogs) {
+                    console.error('Seems recorded blob is corrupt.');
+                }
+                return;
+            }
 
             if (self.callback) {
                 self.callback();
@@ -242,6 +249,9 @@ function MediaStreamRecorder(mediaStream, config) {
             // mediaRecorder.requestData();
             mediaRecorder.stop();
         }
+
+        // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
+        mediaRecorder = null;
     };
 
     /**
@@ -269,14 +279,14 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.resume();
      */
     this.resume = function() {
-        if (!mediaRecorder) {
-            return;
-        }
-
         if (this.dontFireOnDataAvailableEvent) {
             this.dontFireOnDataAvailableEvent = false;
             dataAvailable = false;
             this.record();
+            return;
+        }
+
+        if (!mediaRecorder) {
             return;
         }
 

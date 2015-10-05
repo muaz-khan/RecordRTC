@@ -1,4 +1,4 @@
-// Last time updated at October 04, 2015
+// Last time updated at Monday, October 5th, 2015, 9:30:19 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -739,8 +739,7 @@ function RecordRTCConfiguration(mediaStream, config) {
         }
 
         if (!config.bitsPerSecond) {
-            // or use lowest: 128000
-            config.bitsPerSecond = 256 * 1024 * 8; // 256 kbps
+            config.bitsPerSecond = 128000;
         }
     }
 
@@ -1136,46 +1135,56 @@ MRecordRTC.writeToDisk = RecordRTC.writeToDisk;
 // Cross-Browser-Declarations.js
 
 // animation-frame used in WebM recording
+
+/*jshint -W079 */
+var requestAnimationFrame = window.requestAnimationFrame;
 if (typeof requestAnimationFrame === 'undefined') {
     if (typeof webkitRequestAnimationFrame !== 'undefined') {
         /*global requestAnimationFrame:true */
-        var requestAnimationFrame = webkitRequestAnimationFrame;
+        requestAnimationFrame = webkitRequestAnimationFrame;
     }
 
     if (typeof mozRequestAnimationFrame !== 'undefined') {
         /*global requestAnimationFrame:true */
-        var requestAnimationFrame = mozRequestAnimationFrame;
+        requestAnimationFrame = mozRequestAnimationFrame;
     }
 }
 
+/*jshint -W079 */
+var cancelAnimationFrame = window.cancelAnimationFrame;
 if (typeof cancelAnimationFrame === 'undefined') {
     if (typeof webkitCancelAnimationFrame !== 'undefined') {
         /*global cancelAnimationFrame:true */
-        var cancelAnimationFrame = webkitCancelAnimationFrame;
+        cancelAnimationFrame = webkitCancelAnimationFrame;
     }
 
     if (typeof mozCancelAnimationFrame !== 'undefined') {
         /*global cancelAnimationFrame:true */
-        var cancelAnimationFrame = mozCancelAnimationFrame;
+        cancelAnimationFrame = mozCancelAnimationFrame;
     }
 }
 
 // WebAudio API representer
+var AudioContext = window.AudioContext;
+
 if (typeof AudioContext === 'undefined') {
     if (typeof webkitAudioContext !== 'undefined') {
         /*global AudioContext:true */
-        var AudioContext = webkitAudioContext;
+        AudioContext = webkitAudioContext;
     }
 
     if (typeof mozAudioContext !== 'undefined') {
         /*global AudioContext:true */
-        var AudioContext = mozAudioContext;
+        AudioContext = mozAudioContext;
     }
 }
 
+/*jshint -W079 */
+var URL = window.URL;
+
 if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     /*global URL:true */
-    var URL = webkitURL;
+    URL = webkitURL;
 }
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
@@ -1197,8 +1206,23 @@ if (typeof navigator !== 'undefined') {
     };
 }
 
-if (typeof webkitMediaStream !== 'undefined') {
-    var MediaStream = webkitMediaStream;
+var MediaStream = window.MediaStream;
+
+if (typeof MediaStream === 'undefined' && typeof webkitMediaStream !== 'undefined') {
+    MediaStream = webkitMediaStream;
+}
+
+/*global MediaStream:true */
+if (!('stop' in MediaStream.prototype)) {
+    MediaStream.prototype.stop = function() {
+        this.getAudioTracks().forEach(function(track) {
+            track.stop();
+        });
+
+        this.getVideoTracks().forEach(function(track) {
+            track.stop();
+        });
+    };
 }
 
 if (typeof location !== 'undefined') {
@@ -1351,8 +1375,6 @@ function MediaStreamRecorder(mediaStream, config) {
     var self = this;
 
     config = config || {
-        audioBitsPerSecond: 128000,
-        videoBitsPerSecond: 2500000,
         bitsPerSecond: 128000,
         mimeType: 'video/webm'
     };
@@ -1360,14 +1382,16 @@ function MediaStreamRecorder(mediaStream, config) {
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
     // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (!isChrome && config.mimeType && config.mimeType !== 'video/webm' && mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
-        var context = new AudioContext();
-        var mediaStreamSource = context.createMediaStreamSource(mediaStream);
+    if (!isChrome && config.type && config.type === 'audio') {
+        if (mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
+            var context = new AudioContext();
+            var mediaStreamSource = context.createMediaStreamSource(mediaStream);
 
-        var destination = context.createMediaStreamDestination();
-        mediaStreamSource.connect(destination);
+            var destination = context.createMediaStreamDestination();
+            mediaStreamSource.connect(destination);
 
-        mediaStream = destination.stream;
+            mediaStream = destination.stream;
+        }
 
         if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
             config.mimeType = 'audio/ogg';
@@ -1420,7 +1444,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
-            if (e.data && !e.data.size) {
+            if (isChrome && e.data && !('size' in e.data)) {
                 e.data.size = e.data.length || e.data.byteLength || 0;
             }
 
@@ -1467,6 +1491,13 @@ function MediaStreamRecorder(mediaStream, config) {
             self.blob = new Blob([e.data], {
                 type: e.data.type || config.mimeType || 'audio/ogg'
             });
+
+            if (bytesToSize(self.blob) === '3.69 KB') {
+                if (!config.disableLogs) {
+                    console.error('Seems recorded blob is corrupt.');
+                }
+                return;
+            }
 
             if (self.callback) {
                 self.callback();
@@ -1547,6 +1578,9 @@ function MediaStreamRecorder(mediaStream, config) {
             // mediaRecorder.requestData();
             mediaRecorder.stop();
         }
+
+        // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
+        mediaRecorder = null;
     };
 
     /**
@@ -1574,14 +1608,14 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.resume();
      */
     this.resume = function() {
-        if (!mediaRecorder) {
-            return;
-        }
-
         if (this.dontFireOnDataAvailableEvent) {
             this.dontFireOnDataAvailableEvent = false;
             dataAvailable = false;
             this.record();
+            return;
+        }
+
+        if (!mediaRecorder) {
             return;
         }
 

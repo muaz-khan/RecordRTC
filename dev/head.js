@@ -1,5 +1,3 @@
-// Last time updated at October 04, 2015
-
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 // https://cdn.WebRTC-Experiment.com/RecordRTC.js

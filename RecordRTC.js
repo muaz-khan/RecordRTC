@@ -1,4 +1,4 @@
-// Last time updated at September 27, 2015
+// Last time updated at Wednesday, October 7th, 2015, 6:46:05 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -9,6 +9,7 @@
 
 // updates?
 /*
+-. Added support for MediaRecorder API in Chrome. Currently requires: RecordRTC(stream, {recorderType: MediaStreamRecorder})
 -. mimeType, bitsPerSecond, audioBitsPerSecond, videoBitsPerSecond added.
 -. CanvasRecorder.js updated to support Firefox. (experimental)
 -. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.
@@ -135,7 +136,7 @@ function RecordRTC(mediaStream, config) {
             };
         }
 
-        var Recorder = new GetRecorderType(config);
+        var Recorder = new GetRecorderType(mediaStream, config);
 
         mediaRecorder = new Recorder(mediaStream, config);
         mediaRecorder.record();
@@ -738,8 +739,7 @@ function RecordRTCConfiguration(mediaStream, config) {
         }
 
         if (!config.bitsPerSecond) {
-            // or use lowest: 128000
-            config.bitsPerSecond = 256 * 1024 * 8; // 256 kbps
+            config.bitsPerSecond = 128000;
         }
     }
 
@@ -770,10 +770,11 @@ function RecordRTCConfiguration(mediaStream, config) {
  * var RecorderType = GetRecorderType(options);
  * var recorder = new RecorderType(options);
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
+ * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
  * @param {object} config - {type:"video", disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
  */
 
-function GetRecorderType(config) {
+function GetRecorderType(mediaStream, config) {
     var recorder;
 
     // StereoAudioRecorder can work with all three: Edge, Firefox and Chrome
@@ -784,7 +785,7 @@ function GetRecorderType(config) {
         recorder = StereoAudioRecorder;
     }
 
-    if (typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+    if (typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype && !isChrome) {
         recorder = MediaStreamRecorder;
     }
 
@@ -801,6 +802,16 @@ function GetRecorderType(config) {
     // html2canvas recording!
     if (config.type === 'canvas') {
         recorder = CanvasRecorder;
+    }
+
+    // todo: enable below block when MediaRecorder in Chrome gets out of flags; and it also supports audio recording.
+    if (false && isChrome && recorder === WhammyRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+        if (mediaStream.getVideoTracks().length) {
+            recorder = MediaStreamRecorder;
+            if (!config.disableLogs) {
+                console.debug('Using MediaRecorder API in chrome!');
+            }
+        }
     }
 
     if (config.recorderType) {
@@ -1124,46 +1135,56 @@ MRecordRTC.writeToDisk = RecordRTC.writeToDisk;
 // Cross-Browser-Declarations.js
 
 // animation-frame used in WebM recording
+
+/*jshint -W079 */
+var requestAnimationFrame = window.requestAnimationFrame;
 if (typeof requestAnimationFrame === 'undefined') {
     if (typeof webkitRequestAnimationFrame !== 'undefined') {
         /*global requestAnimationFrame:true */
-        var requestAnimationFrame = webkitRequestAnimationFrame;
+        requestAnimationFrame = webkitRequestAnimationFrame;
     }
 
     if (typeof mozRequestAnimationFrame !== 'undefined') {
         /*global requestAnimationFrame:true */
-        var requestAnimationFrame = mozRequestAnimationFrame;
+        requestAnimationFrame = mozRequestAnimationFrame;
     }
 }
 
+/*jshint -W079 */
+var cancelAnimationFrame = window.cancelAnimationFrame;
 if (typeof cancelAnimationFrame === 'undefined') {
     if (typeof webkitCancelAnimationFrame !== 'undefined') {
         /*global cancelAnimationFrame:true */
-        var cancelAnimationFrame = webkitCancelAnimationFrame;
+        cancelAnimationFrame = webkitCancelAnimationFrame;
     }
 
     if (typeof mozCancelAnimationFrame !== 'undefined') {
         /*global cancelAnimationFrame:true */
-        var cancelAnimationFrame = mozCancelAnimationFrame;
+        cancelAnimationFrame = mozCancelAnimationFrame;
     }
 }
 
 // WebAudio API representer
+var AudioContext = window.AudioContext;
+
 if (typeof AudioContext === 'undefined') {
     if (typeof webkitAudioContext !== 'undefined') {
         /*global AudioContext:true */
-        var AudioContext = webkitAudioContext;
+        AudioContext = webkitAudioContext;
     }
 
     if (typeof mozAudioContext !== 'undefined') {
         /*global AudioContext:true */
-        var AudioContext = mozAudioContext;
+        AudioContext = mozAudioContext;
     }
 }
 
+/*jshint -W079 */
+var URL = window.URL;
+
 if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     /*global URL:true */
-    var URL = webkitURL;
+    URL = webkitURL;
 }
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
@@ -1185,8 +1206,23 @@ if (typeof navigator !== 'undefined') {
     };
 }
 
-if (typeof webkitMediaStream !== 'undefined') {
-    var MediaStream = webkitMediaStream;
+var MediaStream = window.MediaStream;
+
+if (typeof MediaStream === 'undefined' && typeof webkitMediaStream !== 'undefined') {
+    MediaStream = webkitMediaStream;
+}
+
+/*global MediaStream:true */
+if (!('stop' in MediaStream.prototype)) {
+    MediaStream.prototype.stop = function() {
+        this.getAudioTracks().forEach(function(track) {
+            track.stop();
+        });
+
+        this.getVideoTracks().forEach(function(track) {
+            track.stop();
+        });
+    };
 }
 
 if (typeof location !== 'undefined') {
@@ -1336,11 +1372,7 @@ if (typeof AudioContext !== 'undefined') {
  */
 
 function MediaStreamRecorder(mediaStream, config) {
-    var self = this;
-
     config = config || {
-        audioBitsPerSecond: 128000,
-        videoBitsPerSecond: 2500000,
         bitsPerSecond: 128000,
         mimeType: 'video/webm'
     };
@@ -1348,21 +1380,23 @@ function MediaStreamRecorder(mediaStream, config) {
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
     // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (config.mimeType && config.mimeType !== 'video/webm' && mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
-        var context = new AudioContext();
-        var mediaStreamSource = context.createMediaStreamSource(mediaStream);
+    if (!isChrome && config.type && config.type === 'audio') {
+        if (mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
+            var context = new AudioContext();
+            var mediaStreamSource = context.createMediaStreamSource(mediaStream);
 
-        var destination = context.createMediaStreamDestination();
-        mediaStreamSource.connect(destination);
+            var destination = context.createMediaStreamDestination();
+            mediaStreamSource.connect(destination);
 
-        mediaStream = destination.stream;
+            mediaStream = destination.stream;
+        }
 
         if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
             config.mimeType = 'audio/ogg';
         }
     }
 
-    var dataAvailable = false;
+    var recordedBuffers = [];
 
     /**
      * This method records MediaStream.
@@ -1372,8 +1406,19 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
+        var recorderHints = config;
+
+        if (isChrome) {
+            if (!recorderHints || typeof recorderHints !== 'string') {
+                recorderHints = 'video/vp8';
+
+                // chrome currently supports only video recording
+                mediaStream = new MediaStream(mediaStream.getVideoTracks());
+            }
+        }
+
         if (!config.disableLogs) {
-            console.log('Passing following config over MediaRecorder API.', config);
+            console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
 
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
@@ -1382,7 +1427,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new MediaRecorder(mediaStream, config);
+        mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
 
         if ('canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
             if (!config.disableLogs) {
@@ -1396,33 +1441,17 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
-            if (self.dontFireOnDataAvailableEvent || dataAvailable) {
+            if (this.dontFireOnDataAvailableEvent) {
                 return;
             }
 
-            if (!e.data.size) {
-                if (!config.disableLogs) {
-                    console.warn('Recording of', (e.data.type || mediaRecorder.mimeType || config.mimeType), 'failed.');
-                }
-                return;
+            if (isChrome && e.data && !('size' in e.data)) {
+                e.data.size = e.data.length || e.data.byteLength || 0;
             }
 
-            dataAvailable = true;
-
-            /**
-             * @property {Blob} blob - Recorded frames in video/webm blob.
-             * @memberof MediaStreamRecorder
-             * @example
-             * recorder.stop(function() {
-             *     var blob = recorder.blob;
-             * });
-             */
-            self.blob = new Blob([e.data], {
-                type: e.data.type || config.mimeType || 'audio/ogg'
-            });
-
-            if (self.callback) {
-                self.callback();
+            if (e.data && e.data.size) {
+                recordedBuffers.push(e.data);
+                return;
             }
         };
 
@@ -1460,7 +1489,7 @@ function MediaStreamRecorder(mediaStream, config) {
         // handler. "mTimeSlice < 0" means Session object does not push encoded data to
         // onDataAvailable, instead, it passive wait the client side pull encoded data
         // by calling requestData API.
-        mediaRecorder.start(0);
+        mediaRecorder.start(3 * 1000);
 
         // Start recording. If timeSlice has been provided, mediaRecorder will
         // raise a dataavailable event containing the Blob of collected data on every timeSlice milliseconds.
@@ -1490,16 +1519,37 @@ function MediaStreamRecorder(mediaStream, config) {
             return;
         }
 
-        this.callback = callback;
-
         // mediaRecorder.state === 'recording' means that media recorder is associated with "session"
         // mediaRecorder.state === 'stopped' means that media recorder is detached from the "session" ... in this case; "session" will also be deleted.
 
         if (mediaRecorder.state === 'recording') {
             // "stop" method auto invokes "requestData"!
-            // mediaRecorder.requestData();
+            mediaRecorder.requestData();
             mediaRecorder.stop();
         }
+
+        if (recordedBuffers.length) {
+            /**
+             * @property {Blob} blob - Recorded frames in video/webm blob.
+             * @memberof MediaStreamRecorder
+             * @example
+             * recorder.stop(function() {
+             *     var blob = recorder.blob;
+             * });
+             */
+            this.blob = new Blob(recordedBuffers, {
+                type: config.mimeType || 'video/webm'
+            });
+
+            if (callback) {
+                callback();
+            }
+
+            recordedBuffers = [];
+        }
+
+        // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
+        mediaRecorder = null;
     };
 
     /**
@@ -1527,14 +1577,13 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.resume();
      */
     this.resume = function() {
-        if (!mediaRecorder) {
+        if (this.dontFireOnDataAvailableEvent) {
+            this.dontFireOnDataAvailableEvent = false;
+            this.record();
             return;
         }
 
-        if (this.dontFireOnDataAvailableEvent) {
-            this.dontFireOnDataAvailableEvent = false;
-            dataAvailable = false;
-            this.record();
+        if (!mediaRecorder) {
             return;
         }
 
@@ -1576,6 +1625,8 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     }
 
+    var self = this;
+
     // this method checks if media stream is stopped
     // or any track is ended.
     (function looper() {
@@ -1584,7 +1635,7 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         if (isMediaStreamActive() === false) {
-            mediaRecorder.stop();
+            self.stop();
             return;
         }
 

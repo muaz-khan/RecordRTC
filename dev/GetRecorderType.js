@@ -12,10 +12,11 @@
  * var RecorderType = GetRecorderType(options);
  * var recorder = new RecorderType(options);
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
+ * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
  * @param {object} config - {type:"video", disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
  */
 
-function GetRecorderType(config) {
+function GetRecorderType(mediaStream, config) {
     var recorder;
 
     // StereoAudioRecorder can work with all three: Edge, Firefox and Chrome
@@ -26,7 +27,7 @@ function GetRecorderType(config) {
         recorder = StereoAudioRecorder;
     }
 
-    if (typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+    if (typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype && !isChrome) {
         recorder = MediaStreamRecorder;
     }
 
@@ -43,6 +44,16 @@ function GetRecorderType(config) {
     // html2canvas recording!
     if (config.type === 'canvas') {
         recorder = CanvasRecorder;
+    }
+
+    // todo: enable below block when MediaRecorder in Chrome gets out of flags; and it also supports audio recording.
+    if (false && isChrome && recorder === WhammyRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+        if (mediaStream.getVideoTracks().length) {
+            recorder = MediaStreamRecorder;
+            if (!config.disableLogs) {
+                console.debug('Using MediaRecorder API in chrome!');
+            }
+        }
     }
 
     if (config.recorderType) {

@@ -1,5 +1,3 @@
-// Last time updated at September 27, 2015
-
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 // https://cdn.WebRTC-Experiment.com/RecordRTC.js
@@ -9,6 +7,7 @@
 
 // updates?
 /*
+-. Added support for MediaRecorder API in Chrome. Currently requires: RecordRTC(stream, {recorderType: MediaStreamRecorder})
 -. mimeType, bitsPerSecond, audioBitsPerSecond, videoBitsPerSecond added.
 -. CanvasRecorder.js updated to support Firefox. (experimental)
 -. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.

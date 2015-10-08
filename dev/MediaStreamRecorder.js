@@ -92,6 +92,11 @@ function MediaStreamRecorder(mediaStream, config) {
             console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
 
+        if (mediaRecorder) {
+            // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
+            mediaRecorder = null;
+        }
+
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
         // https://wiki.mozilla.org/Gecko:MediaRecorder
         // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
@@ -218,9 +223,6 @@ function MediaStreamRecorder(mediaStream, config) {
 
             recordedBuffers = [];
         }
-
-        // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
-        mediaRecorder = null;
     };
 
     /**

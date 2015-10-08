@@ -1,4 +1,4 @@
-// Last time updated at Wednesday, October 7th, 2015, 6:46:05 PM 
+// Last time updated at Thursday, October 8th, 2015, 4:47:34 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -1421,6 +1421,11 @@ function MediaStreamRecorder(mediaStream, config) {
             console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
 
+        if(mediaRecorder) {
+            // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
+            mediaRecorder = null;
+        }
+
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
         // https://wiki.mozilla.org/Gecko:MediaRecorder
         // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
@@ -1547,9 +1552,6 @@ function MediaStreamRecorder(mediaStream, config) {
 
             recordedBuffers = [];
         }
-
-        // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
-        mediaRecorder = null;
     };
 
     /**

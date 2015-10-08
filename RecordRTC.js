@@ -1,4 +1,4 @@
-// Last time updated at Monday, October 5th, 2015, 9:30:19 PM 
+// Last time updated at Thursday, October 8th, 2015, 4:58:38 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -1372,8 +1372,6 @@ if (typeof AudioContext !== 'undefined') {
  */
 
 function MediaStreamRecorder(mediaStream, config) {
-    var self = this;
-
     config = config || {
         bitsPerSecond: 128000,
         mimeType: 'video/webm'
@@ -1398,7 +1396,6 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     }
 
-    var dataAvailable = false;
     var recordedBuffers = [];
 
     /**
@@ -1424,6 +1421,11 @@ function MediaStreamRecorder(mediaStream, config) {
             console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
 
+        if (mediaRecorder) {
+            // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
+            mediaRecorder = null;
+        }
+
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
         // https://wiki.mozilla.org/Gecko:MediaRecorder
         // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
@@ -1444,63 +1446,17 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
+            if (this.dontFireOnDataAvailableEvent) {
+                return;
+            }
+
             if (isChrome && e.data && !('size' in e.data)) {
                 e.data.size = e.data.length || e.data.byteLength || 0;
             }
 
-            if (isChrome && e.data && e.data.size) {
+            if (e.data && e.data.size) {
                 recordedBuffers.push(e.data);
                 return;
-            }
-
-            if (self.dontFireOnDataAvailableEvent || dataAvailable) {
-                return;
-            }
-
-            if (!e.data || !e.data.size) {
-                if (recordedBuffers.length) {
-                    self.blob = new Blob(recordedBuffers, {
-                        type: config.mimeType || 'video/webm'
-                    });
-
-                    if (self.callback) {
-                        self.callback();
-                    }
-                    return;
-                }
-
-                if (!config.disableLogs) {
-                    if (!e.data) {
-                        console.error('MediaRecorder.onDataAvailable returned nothing.', e);
-                    }
-                    console.warn('Recording of', ((e.data ? e.data.type : null) || mediaRecorder.mimeType || config.mimeType), 'failed.');
-                }
-                return;
-            }
-
-            dataAvailable = true;
-
-            /**
-             * @property {Blob} blob - Recorded frames in video/webm blob.
-             * @memberof MediaStreamRecorder
-             * @example
-             * recorder.stop(function() {
-             *     var blob = recorder.blob;
-             * });
-             */
-            self.blob = new Blob([e.data], {
-                type: e.data.type || config.mimeType || 'audio/ogg'
-            });
-
-            if (bytesToSize(self.blob) === '3.69 KB') {
-                if (!config.disableLogs) {
-                    console.error('Seems recorded blob is corrupt.');
-                }
-                return;
-            }
-
-            if (self.callback) {
-                self.callback();
             }
         };
 
@@ -1538,7 +1494,7 @@ function MediaStreamRecorder(mediaStream, config) {
         // handler. "mTimeSlice < 0" means Session object does not push encoded data to
         // onDataAvailable, instead, it passive wait the client side pull encoded data
         // by calling requestData API.
-        mediaRecorder.start(0);
+        mediaRecorder.start(3 * 1000);
 
         // Start recording. If timeSlice has been provided, mediaRecorder will
         // raise a dataavailable event containing the Blob of collected data on every timeSlice milliseconds.
@@ -1568,19 +1524,34 @@ function MediaStreamRecorder(mediaStream, config) {
             return;
         }
 
-        this.callback = callback;
-
         // mediaRecorder.state === 'recording' means that media recorder is associated with "session"
         // mediaRecorder.state === 'stopped' means that media recorder is detached from the "session" ... in this case; "session" will also be deleted.
 
         if (mediaRecorder.state === 'recording') {
             // "stop" method auto invokes "requestData"!
-            // mediaRecorder.requestData();
+            mediaRecorder.requestData();
             mediaRecorder.stop();
         }
 
-        // mandatory to make sure Firefox doesn't fails to record streams 3-4 times without reloading the page.
-        mediaRecorder = null;
+        if (recordedBuffers.length) {
+            /**
+             * @property {Blob} blob - Recorded frames in video/webm blob.
+             * @memberof MediaStreamRecorder
+             * @example
+             * recorder.stop(function() {
+             *     var blob = recorder.blob;
+             * });
+             */
+            this.blob = new Blob(recordedBuffers, {
+                type: config.mimeType || 'video/webm'
+            });
+
+            if (callback) {
+                callback();
+            }
+
+            recordedBuffers = [];
+        }
     };
 
     /**
@@ -1610,7 +1581,6 @@ function MediaStreamRecorder(mediaStream, config) {
     this.resume = function() {
         if (this.dontFireOnDataAvailableEvent) {
             this.dontFireOnDataAvailableEvent = false;
-            dataAvailable = false;
             this.record();
             return;
         }
@@ -1657,6 +1627,8 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     }
 
+    var self = this;
+
     // this method checks if media stream is stopped
     // or any track is ended.
     (function looper() {
@@ -1665,7 +1637,7 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         if (isMediaStreamActive() === false) {
-            mediaRecorder.stop();
+            self.stop();
             return;
         }
 

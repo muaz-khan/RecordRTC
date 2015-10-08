@@ -45,7 +45,8 @@ module.exports = function(grunt) {
                     './PHP-and-FFmpeg/*.html',
                     './RecordRTC-over-Socketio/*.html',
                     './RecordRTC-to-Nodejs/static/*.html',
-                    './RecordRTC-to-PHP/*.html'
+                    './RecordRTC-to-PHP/*.html',
+                    './*.html'
                 ],
                 options: {
                     'tag-pair': true

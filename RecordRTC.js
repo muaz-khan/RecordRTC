@@ -1,4 +1,4 @@
-// Last time updated at Thursday, October 8th, 2015, 11:21:03 PM 
+// Last time updated at Thursday, October 22nd, 2015, 8:20:55 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -1187,9 +1187,8 @@ if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     URL = webkitURL;
 }
 
-var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
-var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
-var isChrome = !isOpera && !isEdge && !!navigator.webkitGetUserMedia;
+/*global navigator:true */
+var navigator = window.navigator;
 
 if (typeof navigator !== 'undefined') {
     if (typeof navigator.webkitGetUserMedia !== 'undefined') {
@@ -1200,11 +1199,14 @@ if (typeof navigator !== 'undefined') {
         navigator.getUserMedia = navigator.mozGetUserMedia;
     }
 } else {
-    /*global navigator:true */
-    var navigator = {
-        getUserMedia: {}
+    navigator = {
+        getUserMedia: function() {}
     };
 }
+
+var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
+var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
+var isChrome = !isOpera && !isEdge && !!navigator.webkitGetUserMedia;
 
 var MediaStream = window.MediaStream;
 

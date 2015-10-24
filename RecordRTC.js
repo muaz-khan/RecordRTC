@@ -1215,16 +1215,18 @@ if (typeof MediaStream === 'undefined' && typeof webkitMediaStream !== 'undefine
 }
 
 /*global MediaStream:true */
-if (!('stop' in MediaStream.prototype)) {
-    MediaStream.prototype.stop = function() {
-        this.getAudioTracks().forEach(function(track) {
-            track.stop();
-        });
+if (typeof MediaStream !== 'undefined') {
+    if (!('stop' in MediaStream.prototype)) {
+        MediaStream.prototype.stop = function() {
+            this.getAudioTracks().forEach(function(track) {
+                track.stop();
+            });
 
-        this.getVideoTracks().forEach(function(track) {
-            track.stop();
-        });
-    };
+            this.getVideoTracks().forEach(function(track) {
+                track.stop();
+            });
+        };
+    }
 }
 
 if (typeof location !== 'undefined') {

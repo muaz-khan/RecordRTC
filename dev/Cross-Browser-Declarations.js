@@ -82,7 +82,7 @@ if (typeof MediaStream === 'undefined' && typeof webkitMediaStream !== 'undefine
 }
 
 /*global MediaStream:true */
-if (!('stop' in MediaStream.prototype)) {
+if (typeof MediaStream !== 'undefined' && !('stop' in MediaStream.prototype)) {
     MediaStream.prototype.stop = function() {
         this.getAudioTracks().forEach(function(track) {
             track.stop();

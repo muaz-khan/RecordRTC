@@ -1,4 +1,4 @@
-// Last time updated at Monday, October 26th, 2015, 4:28:24 PM 
+// Last time updated at Tuesday, October 27th, 2015, 4:33:33 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -1187,9 +1187,6 @@ if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     URL = webkitURL;
 }
 
-/*global navigator:true */
-var navigator = window.navigator;
-
 if (typeof navigator !== 'undefined') {
     if (typeof navigator.webkitGetUserMedia !== 'undefined') {
         navigator.getUserMedia = navigator.webkitGetUserMedia;
@@ -1199,9 +1196,9 @@ if (typeof navigator !== 'undefined') {
         navigator.getUserMedia = navigator.mozGetUserMedia;
     }
 } else {
-    navigator = {
-        getUserMedia: function() {}
-    };
+    // if you're using NPM or solutions where "navigator" is NOT available,
+    // just define it globally before loading RecordRTC.js script.
+    throw 'Please make sure to define a global variable named as "navigator"';
 }
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);

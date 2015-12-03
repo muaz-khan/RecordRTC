@@ -1,4 +1,4 @@
-// Last time updated at Tuesday, October 27th, 2015, 4:33:33 PM 
+// Last time updated at Thursday, December 3rd, 2015, 9:54:34 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -2367,6 +2367,7 @@ function CanvasRecorder(htmlElement, config) {
         }
 
         html2canvas(htmlElement, {
+            grabMouse: typeof config.showMousePointer === 'undefined' || config.showMousePointer,
             onrendered: function(canvas) {
                 if (isCanvasSupportsStreamCapturing) {
                     var image = document.createElement('img');

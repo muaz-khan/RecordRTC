@@ -193,6 +193,7 @@ function CanvasRecorder(htmlElement, config) {
         }
 
         html2canvas(htmlElement, {
+            grabMouse: typeof config.showMousePointer === 'undefined' || config.showMousePointer,
             onrendered: function(canvas) {
                 if (isCanvasSupportsStreamCapturing) {
                     var image = document.createElement('img');

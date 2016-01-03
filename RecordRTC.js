@@ -895,7 +895,8 @@ function MRecordRTC(mediaStream) {
             this.audioRecorder = new RecordRTC(mediaStream, {
                 type: 'audio',
                 bufferSize: this.bufferSize,
-                sampleRate: this.sampleRate
+                sampleRate: this.sampleRate,
+                disableLogs: this.disableLogs
             });
             this.audioRecorder.startRecording();
         }
@@ -904,7 +905,8 @@ function MRecordRTC(mediaStream) {
             this.videoRecorder = new RecordRTC(mediaStream, {
                 type: 'video',
                 video: this.video,
-                canvas: this.canvas
+                canvas: this.canvas,
+                disableLogs: this.disableLogs
             });
             this.videoRecorder.startRecording();
         }
@@ -913,7 +915,8 @@ function MRecordRTC(mediaStream) {
             this.gifRecorder = new RecordRTC(mediaStream, {
                 type: 'gif',
                 frameRate: this.frameRate || 200,
-                quality: this.quality || 10
+                quality: this.quality || 10,
+                disableLogs: this.disableLogs
             });
             this.gifRecorder.startRecording();
         }

@@ -1,4 +1,4 @@
-// Last time updated at Thursday, December 3rd, 2015, 9:54:34 PM 
+// Last time updated at Friday, January 8th, 2016, 2:15:56 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -219,6 +219,10 @@ function RecordRTC(mediaStream, config) {
         }
     }
 
+    function readFile(_blob) {
+        postMessage(new FileReaderSync().readAsDataURL(_blob));
+    }
+
     function getDataURL(callback, _mediaRecorder) {
         if (!callback) {
             throw 'Pass a callback function over getDataURL.';
@@ -237,10 +241,8 @@ function RecordRTC(mediaStream, config) {
             return;
         }
 
-        if (typeof Worker !== 'undefined') {
-            var webWorker = processInWebWorker(function readFile(_blob) {
-                postMessage(new FileReaderSync().readAsDataURL(_blob));
-            });
+        if (typeof Worker !== 'undefined' && !navigator.mozGetUserMedia) {
+            var webWorker = processInWebWorker(readFile);
 
             webWorker.onmessage = function(event) {
                 callback(event.data);
@@ -805,17 +807,18 @@ function GetRecorderType(mediaStream, config) {
     }
 
     // todo: enable below block when MediaRecorder in Chrome gets out of flags; and it also supports audio recording.
-    if (false && isChrome && recorder === WhammyRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+    if (isChrome && recorder !== CanvasRecorder && recorder !== GifRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
         if (mediaStream.getVideoTracks().length) {
             recorder = MediaStreamRecorder;
-            if (!config.disableLogs) {
-                console.debug('Using MediaRecorder API in chrome!');
-            }
         }
     }
 
     if (config.recorderType) {
         recorder = config.recorderType;
+    }
+
+    if (!config.disableLogs && isChrome && recorder === MediaStreamRecorder) {
+        console.debug('Using MediaRecorder API in chrome!');
     }
 
     return recorder;
@@ -895,7 +898,8 @@ function MRecordRTC(mediaStream) {
             this.audioRecorder = new RecordRTC(mediaStream, {
                 type: 'audio',
                 bufferSize: this.bufferSize,
-                sampleRate: this.sampleRate
+                sampleRate: this.sampleRate,
+                disableLogs: this.disableLogs
             });
             this.audioRecorder.startRecording();
         }
@@ -904,7 +908,8 @@ function MRecordRTC(mediaStream) {
             this.videoRecorder = new RecordRTC(mediaStream, {
                 type: 'video',
                 video: this.video,
-                canvas: this.canvas
+                canvas: this.canvas,
+                disableLogs: this.disableLogs
             });
             this.videoRecorder.startRecording();
         }
@@ -913,7 +918,8 @@ function MRecordRTC(mediaStream) {
             this.gifRecorder = new RecordRTC(mediaStream, {
                 type: 'gif',
                 frameRate: this.frameRate || 200,
-                quality: this.quality || 10
+                quality: this.quality || 10,
+                disableLogs: this.disableLogs
             });
             this.gifRecorder.startRecording();
         }
@@ -1407,15 +1413,6 @@ function MediaStreamRecorder(mediaStream, config) {
     this.record = function() {
         var recorderHints = config;
 
-        if (isChrome) {
-            if (!recorderHints || typeof recorderHints !== 'string') {
-                recorderHints = 'video/vp8';
-
-                // chrome currently supports only video recording
-                mediaStream = new MediaStream(mediaStream.getVideoTracks());
-            }
-        }
-
         if (!config.disableLogs) {
             console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
@@ -1449,13 +1446,11 @@ function MediaStreamRecorder(mediaStream, config) {
                 return;
             }
 
-            if (isChrome && e.data && !('size' in e.data)) {
-                e.data.size = e.data.length || e.data.byteLength || 0;
+            if (!e.data) {
+                return;
             }
 
-            if (e.data && e.data.size) {
-                recordedBuffers.push(e.data);
-            }
+            recordedBuffers.push(e.data);
         };
 
         mediaRecorder.onerror = function(error) {
@@ -1507,6 +1502,35 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     };
 
+    // both "bufferToDataUrl" and "dataUrlToFile" are taken from "60devs.com"
+    function bufferToDataUrl(buffer, callback) {
+        var blob = new Blob(buffer, {
+            type: 'video/webm'
+        });
+
+        var reader = new FileReader();
+        reader.onload = function() {
+            callback(reader.result);
+        };
+        reader.readAsDataURL(blob);
+    }
+
+    // returns file, that we can send to the server.
+    function dataUrlToFile(dataUrl) {
+        var binary = atob(dataUrl.split(',')[1]),
+            data = [];
+
+        for (var i = 0; i < binary.length; i++) {
+            data.push(binary.charCodeAt(i));
+        }
+
+        var File = window.File || window.Blob;
+
+        return new File([new Uint8Array(data)], 'recorded-video.webm', {
+            type: 'video/webm'
+        });
+    }
+
     /**
      * This method stops recording MediaStream.
      * @param {function} callback - Callback function, that is used to pass recorded blob back to the callee.
@@ -1547,13 +1571,19 @@ function MediaStreamRecorder(mediaStream, config) {
          *     var blob = recorder.blob;
          * });
          */
-        this.blob = new Blob(recordedBuffers, {
-            type: config.mimeType || 'video/webm'
+
+        var that = this;
+
+        bufferToDataUrl(recordedBuffers, function(dataURL) {
+            var file = dataUrlToFile(dataURL);
+
+            that.blob = new Blob(recordedBuffers, {
+                type: config.mimeType || 'video/webm'
+            });
+
+            that.recordingCallback();
+            recordedBuffers = [];
         });
-
-        this.recordingCallback();
-
-        recordedBuffers = [];
     };
 
     /**

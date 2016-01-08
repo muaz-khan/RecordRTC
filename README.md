@@ -77,10 +77,21 @@ To use it:
 <script src="./node_modules/recordrtc/RecordRTC.js"></script>
 
 <!-- or -->
-<script src="//cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+<script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
 
 <!-- or -->
-<script src="//www.WebRTC-Experiment.com/RecordRTC.js"></script>
+<script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+```
+
+It is suggested to link specific release:
+
+* https://github.com/muaz-khan/RecordRTC/releases
+
+E.g.
+
+```html
+<!-- use 5.2.4 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.2.4/RecordRTC.js"></script>
 ```
 
 There are some other NPM packages regarding RecordRTC:
@@ -90,14 +101,14 @@ There are some other NPM packages regarding RecordRTC:
 ## How to capture stream?
 
 ```html
-<script src="https://cdn.rawgit.com/webrtc/adapter/master/adapter.js"></script>
+<script src="https://cdn.webrtc-experiment.com/getUserMediaAdapter.js"></script>
 
 <script>
 function successCallback(stream) {
     // RecordRTC usage goes here
 }
 
-function errorCallback(errror) {
+function errorCallback(error) {
     // maybe another application is using the device
 }
 
@@ -127,7 +138,7 @@ function successCallback(stream) {
     recordRTC.startRecording();
 }
 
-function errorCallback(errror) {
+function errorCallback(error) {
     // maybe another application is using the device
 }
 
@@ -176,7 +187,7 @@ function successCallback(stream) {
     // RecordRTC usage goes here
 }
 
-function errorCallback(errror) {
+function errorCallback(error) {
     // maybe another application is using the device
 }
 

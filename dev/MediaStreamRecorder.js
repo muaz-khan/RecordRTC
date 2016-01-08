@@ -79,15 +79,6 @@ function MediaStreamRecorder(mediaStream, config) {
     this.record = function() {
         var recorderHints = config;
 
-        if (isChrome) {
-            if (!recorderHints || typeof recorderHints !== 'string') {
-                recorderHints = 'video/vp8';
-
-                // chrome currently supports only video recording
-                mediaStream = new MediaStream(mediaStream.getVideoTracks());
-            }
-        }
-
         if (!config.disableLogs) {
             console.log('Passing following config over MediaRecorder API.', recorderHints);
         }
@@ -121,13 +112,11 @@ function MediaStreamRecorder(mediaStream, config) {
                 return;
             }
 
-            if (isChrome && e.data && !('size' in e.data)) {
-                e.data.size = e.data.length || e.data.byteLength || 0;
+            if (!e.data) {
+                return;
             }
 
-            if (e.data && e.data.size) {
-                recordedBuffers.push(e.data);
-            }
+            recordedBuffers.push(e.data);
         };
 
         mediaRecorder.onerror = function(error) {
@@ -179,6 +168,35 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     };
 
+    // both "bufferToDataUrl" and "dataUrlToFile" are taken from "60devs.com"
+    function bufferToDataUrl(buffer, callback) {
+        var blob = new Blob(buffer, {
+            type: 'video/webm'
+        });
+
+        var reader = new FileReader();
+        reader.onload = function() {
+            callback(reader.result);
+        };
+        reader.readAsDataURL(blob);
+    }
+
+    // returns file, that we can send to the server.
+    function dataUrlToFile(dataUrl) {
+        var binary = atob(dataUrl.split(',')[1]),
+            data = [];
+
+        for (var i = 0; i < binary.length; i++) {
+            data.push(binary.charCodeAt(i));
+        }
+
+        var File = window.File || window.Blob;
+
+        return new File([new Uint8Array(data)], 'recorded-video.webm', {
+            type: 'video/webm'
+        });
+    }
+
     /**
      * This method stops recording MediaStream.
      * @param {function} callback - Callback function, that is used to pass recorded blob back to the callee.
@@ -219,13 +237,19 @@ function MediaStreamRecorder(mediaStream, config) {
          *     var blob = recorder.blob;
          * });
          */
-        this.blob = new Blob(recordedBuffers, {
-            type: config.mimeType || 'video/webm'
+
+        var that = this;
+
+        bufferToDataUrl(recordedBuffers, function(dataURL) {
+            var file = dataUrlToFile(dataURL);
+
+            that.blob = new Blob(recordedBuffers, {
+                type: config.mimeType || 'video/webm'
+            });
+
+            that.recordingCallback();
+            recordedBuffers = [];
         });
-
-        this.recordingCallback();
-
-        recordedBuffers = [];
     };
 
     /**

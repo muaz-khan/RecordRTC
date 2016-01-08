@@ -55,7 +55,6 @@ module.exports = function(grunt) {
         },
         jshint: {
             options: {
-
                 globals: {
                     webkitIndexedDB: true,
                     mozIndexedDB: true,
@@ -109,16 +108,12 @@ module.exports = function(grunt) {
                 typed: true,
                 worker: true
             },
-            files: ['RecordRTC.js'],
-            ignore_warning: {
-                options: {
-                    '-W015': true
-                }
-            }
+            files: ['RecordRTC.js']
         },
         uglify: {
             options: {
-                mangle: false
+                mangle: false,
+                banner: '// Last time updated at <%= grunt.template.today("dddd, mmmm dS, yyyy, h:MM:ss TT") %> \n\n'
             },
             my_target: {
                 files: {

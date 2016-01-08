@@ -84,7 +84,7 @@
     <script src="https://cdn.webrtc-experiment.com/getScreenId.js"></script>
 
     <!-- for Edige/FF/Chrome/Opera/etc. getUserMedia support -->
-    <script src="https://cdn.rawgit.com/webrtc/adapter/master/adapter.js"></script>
+    <script src="https://cdn.webrtc-experiment.com/gumadapter.js"></script>
 </head>
 
 <body>
@@ -272,7 +272,6 @@
                     button.mediaCapturedCallback = function() {
                         button.recordRTC = RecordRTC(button.stream, {
                             type: mediaContainerFormat.value === 'Gif' ? 'gif' : 'video',
-                            recorderType: isChrome && mediaContainerFormat.value !== 'Gif' && typeof MediaRecorder !== 'undefined' ? MediaStreamRecorder : null,
                             mimeType: isChrome ? null: mimeType,
                             disableLogs: params.disableLogs || false,
                             canvas: {
@@ -284,7 +283,6 @@
                         
                         button.recordingEndedCallback = function(url) {
                             recordingPlayer.src = null;
-                            recordingPlayer.srcObject = null;
 
                             if(mediaContainerFormat.value === 'Gif') {
                                 recordingPlayer.pause();
@@ -348,7 +346,7 @@
                     
                     button.mediaCapturedCallback = function() {
 
-                        if(webrtcDetectedBrowser !== 'firefox') { // opera or chrome etc.
+                        if(typeof MediaRecorder === 'undefined') { // opera or chrome etc.
                             button.recordRTC = [];
 
                             if(!params.bufferSize) {
@@ -367,7 +365,6 @@
 
                             var videoRecorder = RecordRTC(button.stream, {
                                 type: 'video',
-                                // recorderType: isChrome && typeof MediaRecorder !== 'undefined' ? MediaStreamRecorder : null,
                                 disableLogs: params.disableLogs || false,
                                 canvas: {
                                     width: params.canvas_width || 320,
@@ -409,12 +406,10 @@
                             type: 'video',
                             mimeType: mimeType,
                             disableLogs: params.disableLogs || false,
-                            // we can't pass bitrates or framerates here
-                            // Firefox MediaRecorder API lakes these features
+                            bitsPerSecond: 25 * 8 * 1025 // 25 kbits/s
                         });
                         
                         button.recordingEndedCallback = function(url) {
-                            recordingPlayer.srcObject = null;
                             recordingPlayer.muted = false;
                             recordingPlayer.src = url;
                             recordingPlayer.play();
@@ -436,7 +431,6 @@
                         button.recordRTC = RecordRTC(button.stream, {
                             type: mediaContainerFormat.value === 'Gif' ? 'gif' : 'video',
                             mimeType: mimeType,
-                            recorderType: isChrome && mediaContainerFormat.value !== 'Gif' && typeof MediaRecorder !== 'undefined' ? MediaStreamRecorder : null,
                             disableLogs: params.disableLogs || false,
                             canvas: {
                                 width: params.canvas_width || 320,
@@ -446,7 +440,6 @@
                         
                         button.recordingEndedCallback = function(url) {
                             recordingPlayer.src = null;
-                            recordingPlayer.srcObject = null;
 
                             if(mediaContainerFormat.value === 'Gif') {
                                 recordingPlayer.pause();
@@ -479,7 +472,6 @@
                         });
                         
                         button.recordingEndedCallback = function(url) {
-                            recordingPlayer.srcObject = null;
                             recordingPlayer.muted = false;
                             recordingPlayer.src = url;
                             recordingPlayer.play();

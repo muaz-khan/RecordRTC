@@ -1,4 +1,4 @@
-// Last time updated at Friday, January 8th, 2016, 2:15:56 PM 
+// Last time updated at Saturday, January 16th, 2016, 11:43:00 PM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -2224,7 +2224,7 @@ function StereoAudioRecorder(mediaStream, config) {
  */
 
 function CanvasRecorder(htmlElement, config) {
-    if (typeof html2canvas === 'undefined') {
+    if (typeof html2canvas === 'undefined' && htmlElement.nodeName.toLowerCase() !== 'canvas') {
         throw 'Please link: //cdn.webrtc-experiment.com/screenshot.js';
     }
 
@@ -2294,6 +2294,7 @@ function CanvasRecorder(htmlElement, config) {
 
         isRecording = true;
         whammy.frames = [];
+        lastTime = new Date().getTime();
         drawCanvasFrame();
 
         if (config.initCallback) {
@@ -2390,10 +2391,40 @@ function CanvasRecorder(htmlElement, config) {
         whammy.frames = [];
     };
 
+    var lastFrame = '';
+
     function drawCanvasFrame() {
         if (isPausedRecording) {
             lastTime = new Date().getTime();
             return setTimeout(drawCanvasFrame, 100);
+        }
+
+        if (htmlElement.nodeName.toLowerCase() === 'canvas') {
+            var duration = new Date().getTime() - lastTime;
+            if (!duration) {
+                return setTimeout(drawCanvasFrame, 100);
+            }
+
+            // via #206, by Jack i.e. @Seymourr
+            lastTime = new Date().getTime();
+
+            if (isRecording) {
+                setTimeout(drawCanvasFrame, 100);
+            }
+
+            var currentFrame = (htmlElement).toDataURL('image/webp', 1);
+
+            if (currentFrame === lastFrame) {
+                return;
+            }
+
+            lastFrame = currentFrame;
+
+            whammy.frames.push({
+                duration: duration,
+                image: currentFrame
+            });
+            return;
         }
 
         html2canvas(htmlElement, {
@@ -2401,7 +2432,7 @@ function CanvasRecorder(htmlElement, config) {
             onrendered: function(canvas) {
                 if (isCanvasSupportsStreamCapturing) {
                     var image = document.createElement('img');
-                    image.src = canvas.toDataURL('image/png');
+                    image.src = canvas.toDataURL('image/webp', 1);
                     image.onload = function() {
                         globalContext.drawImage(image, 0, 0, image.clientWidth, image.clientHeight);
                         (document.body || document.documentElement).removeChild(image);
@@ -2419,7 +2450,7 @@ function CanvasRecorder(htmlElement, config) {
 
                     whammy.frames.push({
                         duration: duration,
-                        image: canvas.toDataURL('image/webp')
+                        image: canvas.toDataURL('image/webp', 1)
                     });
                 }
 

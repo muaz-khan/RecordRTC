@@ -101,7 +101,7 @@ There are some other NPM packages regarding RecordRTC:
 ## How to capture stream?
 
 ```html
-<script src="https://cdn.webrtc-experiment.com/getUserMediaAdapter.js"></script>
+<script src="https://cdn.webrtc-experiment.com/gumadapter.js"></script>
 
 <script>
 function successCallback(stream) {

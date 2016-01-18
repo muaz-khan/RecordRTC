@@ -134,7 +134,7 @@ function successCallback(stream) {
       videoBitsPerSecond: 128000,
       bitsPerSecond: 128000 // if this line is provided, skip above two
     };
-    recordRTC = RecordRTC(MediaStream);
+    recordRTC = RecordRTC(stream, options);
     recordRTC.startRecording();
 }
 

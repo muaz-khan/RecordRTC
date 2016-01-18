@@ -83,7 +83,7 @@
     var context = getContext('main-canvas'),
         tempContext = getContext('temp-canvas');
 
-    window.canvasElementToBeRecorded = tempContext.canvas;
+    window.canvasElementToBeRecorded = context.canvas;
 
     // -------------------------------------------------------------
 

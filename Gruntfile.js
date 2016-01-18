@@ -28,6 +28,7 @@ module.exports = function(grunt) {
                     'dev/MRecordRTC.js',
                     'dev/Cross-Browser-Declarations.js',
                     'dev/Storage.js',
+                    'dev/isMediaRecorderCompatible.js',
                     'dev/MediaStreamRecorder.js',
                     'dev/StereoAudioRecorder.js',
                     'dev/CanvasRecorder.js',
@@ -38,22 +39,6 @@ module.exports = function(grunt) {
                 ],
                 dest: 'RecordRTC.js',
             },
-        },
-        htmlhint: {
-            html1: {
-                src: [
-                    './Canvas-Recording/*.html',
-                    './MRecordRTC/*.html',
-                    './PHP-and-FFmpeg/*.html',
-                    './RecordRTC-over-Socketio/*.html',
-                    './RecordRTC-to-Nodejs/static/*.html',
-                    './RecordRTC-to-PHP/*.html',
-                    './*.html'
-                ],
-                options: {
-                    'tag-pair': true
-                }
-            }
         },
         jshint: {
             options: {
@@ -186,5 +171,5 @@ module.exports = function(grunt) {
 
     // set default tasks to run when grunt is called without parameters
     // http://gruntjs.com/api/grunt.task
-    grunt.registerTask('default', ['concat', 'jsbeautifier', 'htmlhint', 'jshint', 'uglify']);
+    grunt.registerTask('default', ['concat', 'jsbeautifier', 'jshint', 'uglify']);
 };

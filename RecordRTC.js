@@ -1,4 +1,4 @@
-// Last time updated at Monday, January 18th, 2016, 10:49:23 AM 
+// Last time updated: 2016-01-18 1:39:49 PM UTC
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -901,7 +901,9 @@ function MRecordRTC(mediaStream) {
                 sampleRate: this.sampleRate,
                 disableLogs: this.disableLogs
             });
-            this.audioRecorder.startRecording();
+            if (!this.mediaType.video) {
+                this.audioRecorder.startRecording();
+            }
         }
 
         if (this.mediaType.video) {
@@ -911,7 +913,20 @@ function MRecordRTC(mediaStream) {
                 canvas: this.canvas,
                 disableLogs: this.disableLogs
             });
-            this.videoRecorder.startRecording();
+            if (!this.mediaType.audio) {
+                this.videoRecorder.startRecording();
+            }
+        }
+
+        if (this.mediaType.audio && this.mediaType.video) {
+            var self = this;
+            self.videoRecorder.initRecorder(function() {
+                self.audioRecorder.initRecorder(function() {
+                    // Both recorders are ready to record things accurately
+                    self.videoRecorder.startRecording();
+                    self.audioRecorder.startRecording();
+                });
+            });
         }
 
         if (this.mediaType.gif) {

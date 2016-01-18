@@ -330,11 +330,17 @@
 		    width: 120px;
 		}
 
+		input[type=number] {
+			font-size: 13px!important;
+		    border: 1px solid rgb(9, 159, 243);
+		    padding: 5px 10px;
+		}
+
 	</style>
 </head>
 <body>
 	<section class="design-surface">
-		<canvas id="temp-canvas" style="opacity:0;"></canvas>
+		<canvas id="temp-canvas"></canvas>
 		<canvas id="main-canvas"></canvas>
 	</section>
 	
@@ -501,9 +507,9 @@
     <script>
     	var params = {
     		tools: JSON.stringify({
-    			line: true,
-    			image: true,
-		        pencil: true,
+    			pencil: true,
+    			/*image: true,
+		        line: true,
 		        dragSingle: true,
 		        dragMultiple: true,
 		        eraser: true,
@@ -511,7 +517,7 @@
 		        arc: true,
 		        bezier: true,
 		        quadratic: true,
-		        text: true
+		        text: true*/
     		}),
 	        selectedIcon: 'pencil'
     	}
@@ -519,20 +525,31 @@
     <script src="https://cdn.webrtc-experiment.com/RecordRTC/Canvas-Recording/canvas-designer.js"></script>
 	<script src="https://cdn.webrtc-experiment.com/RecordRTC/Whammy.js"></script>
 	<script src="https://cdn.webrtc-experiment.com/RecordRTC/CanvasRecorder.js"></script>
+	<script src="https://cdn.webrtc-experiment.com/RecordRTC/MediaStreamRecorder.js"></script>
 
 	<div class="start-top-recording" style="position: absolute;bottom: 0;right: 184px;z-index: 9;">
+		<span style="vertical-align:middle;">Fps: </span><input type="number" id="fps" value="10" min="0" max="1000">
 	    <button id="start">Start Canvas Recording</button>
 	    <button id="stop" disabled>Stop</button>
 	</div>
 
 	<script>
-	var recorder = new CanvasRecorder(window.canvasElementToBeRecorded, {
-	    disableLogs: false,
-	    showMousePointer: true
-	});
+	if(!!navigator.mozGetUserMedia) {
+		alert('This demo seems NOT supported in Firefox.');
+	}
+
+	var recorder;
 
 	document.getElementById('start').onclick = function() {
 	    document.getElementById('start').disabled = true;
+
+	    recorder = new CanvasRecorder(window.canvasElementToBeRecorded, {
+			frameInterval: document.getElementById('fps').value || 10, // 10 frames per second
+		    disableLogs: false,
+		    onEncodingCallback: function(framesRemaining, numberOfFrames) {
+		    	// console.log(framesRemaining, ' remaining out of ', numberOfFrames);
+		    }
+		});
 
 	    recorder.record();    
 	    setTimeout(function() {
@@ -540,15 +557,20 @@
 	    }, 1000);
 	};
 	document.getElementById('stop').onclick = function() {
-	    this.disabled = true;
-	    recorder.stop(function(blob) {
-	        var video = document.createElement('video');
-	        video.src = URL.createObjectURL(blob);
-	        video.setAttribute('style', 'height: 100%; position: absolute; top:0; left:0;z-index:9999;width:100%;');
-	        document.body.appendChild(video);
-	        video.controls = true;
-	        video.play();
-	    });
+	   this.disabled = true;
+
+	   document.body.innerHTML = '<h1 style="font-size:30px;text-align:center;margin:15px;color:red;font-weight:normal;">Please check page title for the encoding progress.<br><br>Frames are being encoded to generate a HD smooth WebM!<br><br><small>Please never click "kill" button; otherwise the entire encoding process will be crashed.</small></h1>';
+	    
+	   setTimeout(function() {
+		   	recorder.stop(function(blob) {
+		    	var video = document.createElement('video');
+		        video.src = URL.createObjectURL(blob);
+		        video.setAttribute('style', 'height: 100%; position: absolute; top:0; left:0;z-index:9999;width:100%;');
+		        document.body.appendChild(video);
+		        video.controls = true;
+		        video.play();
+		    });
+		}, 100);
 	};
 
 	window.onbeforeunload = function() {
@@ -556,6 +578,5 @@
 	    document.getElementById('stop').disabled = true;
 	};
 	</script>
-
 </body>
 </html>

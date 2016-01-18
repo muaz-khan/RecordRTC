@@ -43,8 +43,7 @@ recorder.stopRecording(function(url) {
 <script>
 var canvas = document.querySelector('canvas');
 var recorder = new CanvasRecorder(window.canvasElementToBeRecorded, {
-    disableLogs: false,
-    showMousePointer: true
+    disableLogs: false
 });
 
 // start recording <canvas> drawings
@@ -61,6 +60,8 @@ recorder.stop(function(blob) {
 Live Demo:
 
 * https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/record-canvas-drawings.html
+
+Watch a video: https://vimeo.com/152119435
 
 =
 

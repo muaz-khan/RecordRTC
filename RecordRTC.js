@@ -1,4 +1,4 @@
-// Last time updated at Saturday, January 16th, 2016, 11:43:00 PM 
+// Last time updated at Monday, January 18th, 2016, 10:49:23 AM 
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -1385,7 +1385,7 @@ function MediaStreamRecorder(mediaStream, config) {
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
     // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (!isChrome && config.type && config.type === 'audio') {
+    if (!!navigator.mozGetUserMedia && config.type && config.type === 'audio') {
         if (mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
             var context = new AudioContext();
             var mediaStreamSource = context.createMediaStreamSource(mediaStream);
@@ -2229,6 +2229,9 @@ function CanvasRecorder(htmlElement, config) {
     }
 
     config = config || {};
+    if (!config.frameInterval) {
+        config.frameInterval = 10;
+    }
 
     // via DetectRTC.js
     var isCanvasSupportsStreamCapturing = false;
@@ -2270,6 +2273,8 @@ function CanvasRecorder(htmlElement, config) {
      * recorder.record();
      */
     this.record = function() {
+        isRecording = true;
+
         if (isCanvasSupportsStreamCapturing) {
             // CanvasCaptureMediaStream
             var canvasMediaStream;
@@ -2281,25 +2286,55 @@ function CanvasRecorder(htmlElement, config) {
                 canvasMediaStream = globalCanvas.captureStream(25);
             }
 
+            try {
+                var mdStream = new MediaStream();
+                mdStream.addTrack(canvasMediaStream.getVideoTracks()[0]);
+                canvasMediaStream = mdStream;
+            } catch (e) {}
+
             if (!canvasMediaStream) {
                 throw 'captureStream API are NOT available.';
             }
 
-            // Note: Sep, 2015 status is that, MediaRecorder API can't record CanvasCaptureMediaStream object.
+            // Note: Jan 18, 2016 status is that, 
+            // Firefox MediaRecorder API can't record CanvasCaptureMediaStream object.
             mediaStreamRecorder = new MediaStreamRecorder(canvasMediaStream, {
                 mimeType: 'video/webm'
             });
             mediaStreamRecorder.record();
+        } else {
+            whammy.frames = [];
+            lastTime = new Date().getTime();
+            drawCanvasFrame();
         }
-
-        isRecording = true;
-        whammy.frames = [];
-        lastTime = new Date().getTime();
-        drawCanvasFrame();
 
         if (config.initCallback) {
             config.initCallback();
         }
+    };
+
+    this.getWebPImages = function(callback) {
+        if (htmlElement.nodeName.toLowerCase() !== 'canvas') {
+            callback();
+            return;
+        }
+
+        var framesLength = whammy.frames.length;
+        whammy.frames.forEach(function(frame, idx) {
+            var framesRemaining = framesLength - idx;
+            document.title = framesRemaining + '/' + framesLength + ' frames remaining';
+
+            if (config.onEncodingCallback) {
+                config.onEncodingCallback(framesRemaining, framesLength);
+            }
+
+            var webp = frame.image.toDataURL('image/webp', 1);
+            whammy.frames[idx].image = webp;
+        });
+
+        document.title = 'Generating WebM';
+
+        callback();
     };
 
     /**
@@ -2315,6 +2350,8 @@ function CanvasRecorder(htmlElement, config) {
     this.stop = function(callback) {
         isRecording = false;
 
+        var that = this;
+
         if (isCanvasSupportsStreamCapturing && mediaStreamRecorder) {
             var slef = this;
             mediaStreamRecorder.stop(function() {
@@ -2328,30 +2365,32 @@ function CanvasRecorder(htmlElement, config) {
             return;
         }
 
-        var that = this;
+        this.getWebPImages(function() {
+            /**
+             * @property {Blob} blob - Recorded frames in video/webm blob.
+             * @memberof CanvasRecorder
+             * @example
+             * recorder.stop(function() {
+             *     var blob = recorder.blob;
+             * });
+             */
+            whammy.compile(function(blob) {
+                document.title = 'Recording finished!';
 
-        /**
-         * @property {Blob} blob - Recorded frames in video/webm blob.
-         * @memberof CanvasRecorder
-         * @example
-         * recorder.stop(function() {
-         *     var blob = recorder.blob;
-         * });
-         */
-        whammy.compile(function(blob) {
-            that.blob = blob;
+                that.blob = blob;
 
-            if (that.blob.forEach) {
-                that.blob = new Blob([], {
-                    type: 'video/webm'
-                });
-            }
+                if (that.blob.forEach) {
+                    that.blob = new Blob([], {
+                        type: 'video/webm'
+                    });
+                }
 
-            if (callback) {
-                callback(that.blob);
-            }
+                if (callback) {
+                    callback(that.blob);
+                }
 
-            whammy.frames = [];
+                whammy.frames = [];
+            });
         });
     };
 
@@ -2391,71 +2430,62 @@ function CanvasRecorder(htmlElement, config) {
         whammy.frames = [];
     };
 
-    var lastFrame = '';
+    function cloneCanvas() {
+        //create a new canvas
+        var newCanvas = document.createElement('canvas');
+        var context = newCanvas.getContext('2d');
+
+        //set dimensions
+        newCanvas.width = htmlElement.width;
+        newCanvas.height = htmlElement.height;
+
+        //apply the old canvas to the new one
+        context.drawImage(htmlElement, 0, 0);
+
+        //return the new canvas
+        return newCanvas;
+    }
 
     function drawCanvasFrame() {
         if (isPausedRecording) {
             lastTime = new Date().getTime();
-            return setTimeout(drawCanvasFrame, 100);
+            return setTimeout(drawCanvasFrame, 500);
         }
 
         if (htmlElement.nodeName.toLowerCase() === 'canvas') {
             var duration = new Date().getTime() - lastTime;
-            if (!duration) {
-                return setTimeout(drawCanvasFrame, 100);
-            }
-
             // via #206, by Jack i.e. @Seymourr
             lastTime = new Date().getTime();
 
-            if (isRecording) {
-                setTimeout(drawCanvasFrame, 100);
-            }
-
-            var currentFrame = (htmlElement).toDataURL('image/webp', 1);
-
-            if (currentFrame === lastFrame) {
-                return;
-            }
-
-            lastFrame = currentFrame;
-
             whammy.frames.push({
-                duration: duration,
-                image: currentFrame
+                image: cloneCanvas(),
+                duration: duration
             });
+
+            if (isRecording) {
+                setTimeout(drawCanvasFrame, config.frameInterval);
+            }
             return;
         }
 
         html2canvas(htmlElement, {
             grabMouse: typeof config.showMousePointer === 'undefined' || config.showMousePointer,
             onrendered: function(canvas) {
-                if (isCanvasSupportsStreamCapturing) {
-                    var image = document.createElement('img');
-                    image.src = canvas.toDataURL('image/webp', 1);
-                    image.onload = function() {
-                        globalContext.drawImage(image, 0, 0, image.clientWidth, image.clientHeight);
-                        (document.body || document.documentElement).removeChild(image);
-                    };
-                    image.style.opacity = 0;
-                    (document.body || document.documentElement).appendChild(image);
-                } else {
-                    var duration = new Date().getTime() - lastTime;
-                    if (!duration) {
-                        return drawCanvasFrame();
-                    }
-
-                    // via #206, by Jack i.e. @Seymourr
-                    lastTime = new Date().getTime();
-
-                    whammy.frames.push({
-                        duration: duration,
-                        image: canvas.toDataURL('image/webp', 1)
-                    });
+                var duration = new Date().getTime() - lastTime;
+                if (!duration) {
+                    return setTimeout(drawCanvasFrame, config.frameInterval);
                 }
 
+                // via #206, by Jack i.e. @Seymourr
+                lastTime = new Date().getTime();
+
+                whammy.frames.push({
+                    image: canvas.toDataURL('image/webp', 1),
+                    duration: duration
+                });
+
                 if (isRecording) {
-                    setTimeout(drawCanvasFrame, 0);
+                    setTimeout(drawCanvasFrame, config.frameInterval);
                 }
             }
         });
@@ -3213,10 +3243,6 @@ var Whammy = (function() {
             return webp;
         }));
 
-        if (!!navigator.mozGetUserMedia) {
-            return webm;
-        }
-
         postMessage(webm);
     }
 
@@ -3232,10 +3258,6 @@ var Whammy = (function() {
      * });
      */
     WhammyVideo.prototype.compile = function(callback) {
-        if (!!navigator.mozGetUserMedia) {
-            callback(whammyInWebWorker(this.frames));
-            return;
-        }
         var webWorker = processInWebWorker(whammyInWebWorker);
 
         webWorker.onmessage = function(event) {

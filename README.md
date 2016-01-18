@@ -90,8 +90,8 @@ It is suggested to link specific release:
 E.g.
 
 ```html
-<!-- use 5.2.4 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.2.4/RecordRTC.js"></script>
+<!-- use 5.2.6 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.2.6/RecordRTC.js"></script>
 ```
 
 There are some other NPM packages regarding RecordRTC:
@@ -254,8 +254,8 @@ recordRTC.stopRecording(function(gifURL) {
 You can say it: "HTML/Canvas Recording using RecordRTC"!
 
 ```html
-<script src="//cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
-<script src="//cdn.webrtc-experiment.com/screenshot.js"></script>
+<script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+<script src="https://cdn.webrtc-experiment.com/screenshot.js"></script>
 
 <div id="elementToShare" style="width:100%;height:100%;background:green;"></div>
 <script>
@@ -274,6 +274,37 @@ recordRTC.stopRecording(function(videoURL) {
 ```
 
 See a demo: [/Canvas-Recording/](https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/)
+
+## Record `<canvas>`
+
+You can even record Canvas2D drawings:
+
+```html
+<script src="https://cdn.webrtc-experiment.com/RecordRTC/Whammy.js"></script>
+<script src="https://cdn.webrtc-experiment.com/RecordRTC/CanvasRecorder.js"></script>
+<canvas></canvas>
+<script>
+var canvas = document.querySelector('canvas');
+var recorder = new CanvasRecorder(window.canvasElementToBeRecorded, {
+    disableLogs: false
+});
+
+// start recording <canvas> drawings
+recorder.record();
+
+// a few minutes later
+recorder.stop(function(blob) {
+    var url = URL.createObjectURL(blob);
+    window.open(url);
+});
+</script>
+```
+
+Live Demo:
+
+* https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/record-canvas-drawings.html
+
+Watch a video: https://vimeo.com/152119435
 
 # API Reference
 

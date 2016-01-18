@@ -54,11 +54,11 @@
         textarea = find('code-text'),
         lineWidth = 5,
         strokeStyle = '#6c96c8',
-        fillStyle = 'transparent',
+        fillStyle = 'white',
         globalAlpha = 1,
         globalCompositeOperation = 'source-over',
         lineCap = 'round',
-        font = '15px Verdana',
+        font = '35px Verdana',
         lineJoin = 'round';
 
     // -------------------------------------------------------------
@@ -83,7 +83,7 @@
     var context = getContext('main-canvas'),
         tempContext = getContext('temp-canvas');
 
-    window.canvasElementToBeRecorded = context.canvas;
+    window.canvasElementToBeRecorded = tempContext.canvas;
 
     // -------------------------------------------------------------
 
@@ -2826,13 +2826,5 @@
 
     addEvent(document, 'keyup', onkeyup);
 
-    // -------------------------------------------------------------
-
-    // -------------------------------------------------------------
-    // scripts on this page directly touches DOM-elements
-    // removing or altering anything may cause failures in the UI event handlers
-    // it is used only to bring collaboration for canvas-surface
-    // -------------------------------------------------------------
-    var lastPoint = [];
-    var selfId = (Math.random() * 10000).toString().replace('.', '');
+    points[points.length] = ['rect', [0, 0, context.canvas.width, context.canvas.height, drawHelper.getOptions()]];
 })();

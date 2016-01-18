@@ -51,7 +51,7 @@ function MediaStreamRecorder(mediaStream, config) {
     // if user chosen only audio option; and he tried to pass MediaStream with
     // both audio and video tracks;
     // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (!isChrome && config.type && config.type === 'audio') {
+    if (!!navigator.mozGetUserMedia && config.type && config.type === 'audio') {
         if (mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
             var context = new AudioContext();
             var mediaStreamSource = context.createMediaStreamSource(mediaStream);

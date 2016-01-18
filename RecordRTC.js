@@ -1,4 +1,4 @@
-// Last time updated: 2016-01-18 2:47:14 PM UTC
+// Last time updated: 2016-01-18 3:35:45 PM UTC
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -899,6 +899,7 @@ function MRecordRTC(mediaStream) {
                 type: 'audio',
                 bufferSize: this.bufferSize,
                 sampleRate: this.sampleRate,
+                numberOfAudioChannels: this.numberOfAudioChannels || 2,
                 disableLogs: this.disableLogs
             });
             if (!this.mediaType.video) {
@@ -911,6 +912,7 @@ function MRecordRTC(mediaStream) {
                 type: 'video',
                 video: this.video,
                 canvas: this.canvas,
+                frameInterval: this.frameInterval || 10,
                 disableLogs: this.disableLogs
             });
             if (!this.mediaType.audio) {

@@ -73,6 +73,7 @@ function MRecordRTC(mediaStream) {
                 type: 'audio',
                 bufferSize: this.bufferSize,
                 sampleRate: this.sampleRate,
+                numberOfAudioChannels: this.numberOfAudioChannels || 2,
                 disableLogs: this.disableLogs
             });
             if (!this.mediaType.video) {
@@ -85,6 +86,7 @@ function MRecordRTC(mediaStream) {
                 type: 'video',
                 video: this.video,
                 canvas: this.canvas,
+                frameInterval: this.frameInterval || 10,
                 disableLogs: this.disableLogs
             });
             if (!this.mediaType.audio) {

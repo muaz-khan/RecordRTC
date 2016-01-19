@@ -44,7 +44,7 @@
 
 function MediaStreamRecorder(mediaStream, config) {
     config = config || {
-        bitsPerSecond: 128000,
+        // bitsPerSecond: 128000,
         mimeType: 'video/webm'
     };
 

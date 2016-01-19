@@ -1,4 +1,4 @@
-// Last time updated: 2016-01-18 3:35:45 PM UTC
+// Last time updated: 2016-01-19 5:50:18 AM UTC
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -741,7 +741,7 @@ function RecordRTCConfiguration(mediaStream, config) {
         }
 
         if (!config.bitsPerSecond) {
-            config.bitsPerSecond = 128000;
+            // config.bitsPerSecond = 128000;
         }
     }
 
@@ -1438,7 +1438,7 @@ function isMediaRecorderCompatible() {
 
 function MediaStreamRecorder(mediaStream, config) {
     config = config || {
-        bitsPerSecond: 128000,
+        // bitsPerSecond: 128000,
         mimeType: 'video/webm'
     };
 

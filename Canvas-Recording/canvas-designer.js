@@ -53,7 +53,7 @@
     var points = [],
         textarea = find('code-text'),
         lineWidth = 5,
-        strokeStyle = '#6c96c8',
+        strokeStyle = 'red',
         fillStyle = 'white',
         globalAlpha = 1,
         globalCompositeOperation = 'source-over',
@@ -84,6 +84,7 @@
         tempContext = getContext('temp-canvas');
 
     window.canvasElementToBeRecorded = tempContext.canvas;
+    tempContext.clearRect = function() {};
 
     // -------------------------------------------------------------
 
@@ -1145,12 +1146,18 @@
         // -------------------------------------------------------------
 
         redraw: function(skipSync) {
+            return;
             context.clearRect(0, 0, innerWidth, innerHeight);
 
             var i, point, length = points.length;
             for (i = 0; i < length; i++) {
-                point = points[i];
-                this[point[0]](context, point[1], point[2]);
+                if(i == 0 && window.screenVideoElement) {
+                    context.drawImage(window.screenVideoElement, 0, -50, context.canvas.width, context.canvas.height);
+                }
+                else {
+                    point = points[i];
+                    this[point[0]](context, point[1], point[2]);
+                }
             }
         },
 
@@ -1405,7 +1412,6 @@
 
             if (is.isDragLastPath) {
                 tempContext.clearRect(0, 0, innerWidth, innerHeight);
-                context.clearRect(0, 0, innerWidth, innerHeight);
                 this.end();
             }
 
@@ -2122,23 +2128,32 @@
 
     var textHandler = {
         isTextPending: false,
-        mousedown: function(e) {
-            if (textHandler.isTextPending) fillText();
-            textHandler.isTextPending = true;
+        writeText: function(keyPressed, isBackKeyPressed) {
+            if(isBackKeyPressed) {
+                var nativeMeasureText = tempContext.measureText(textHandler.lastKeyPress);
+                var measuredText = {};
+                measuredText.width = parseInt(nativeMeasureText.width);
+                measuredText.height = parseInt(22 * 1.5);
 
+                textHandler.x -= measuredText.width + 1;
+                tempContext.fillStyle = 'white';
+                
+                tempContext.fillText(textHandler.lastKeyPress, this.x, this.y - 25);
+                tempContext.fillRect(this.x, this.y - 25, measuredText.width + 3, measuredText.height);
+                return;
+            }
+            tempContext.fillStyle = 'red';
+            tempContext.font = '22px Verdana';
+            tempContext.fillText(keyPressed, this.x, this.y);
+            textHandler.x += parseInt(tempContext.measureText(keyPressed).width);
+            textHandler.lastKeyPress = keyPressed;
+        },
+        mousedown: function(e) {
             textHandler.pageX = e.pageX;
             textHandler.pageY = e.pageY;
 
-            textHandler.x = e.pageX - canvas.offsetLeft - 10;
-            textHandler.y = e.pageY - canvas.offsetTop + 5;
-
-            textInput.style.top = (e.pageY - 10) + 'px';
-            textInput.style.left = (e.pageX - 10) + 'px';
-            textInput.style.color = fillStyle == 'transparent' ? 'Black' : fillStyle;
-
-            setTimeout(function() {
-                textInput.focus();
-            }, 200);
+            textHandler.x = e.pageX - canvas.offsetLeft - 5;
+            textHandler.y = e.pageY - canvas.offsetTop + 10;
         },
         mouseup: function(e) {},
         mousemove: function(e) {}
@@ -2701,7 +2716,7 @@
         else if (cache.isText) textHandler.mousedown(e);
         else if (cache.isImage) imageHandler.mousedown(e);
 
-        drawHelper.redraw();
+        // drawHelper.redraw();
     });
 
     // -------------------------------------------------------------
@@ -2725,7 +2740,7 @@
         else if (cache.isText) textHandler.mouseup(e);
         else if (cache.isImage) imageHandler.mouseup(e);
 
-        drawHelper.redraw();
+        // drawHelper.redraw();
     });
 
     // -------------------------------------------------------------
@@ -2749,7 +2764,7 @@
         else if (cache.isText) textHandler.mousemove(e);
         else if (cache.isImage) imageHandler.mousemove(e);
 
-        drawHelper.redraw();
+        // drawHelper.redraw();
     });
 
     // -------------------------------------------------------------
@@ -2781,6 +2796,10 @@
         }
 
         keyCode = e.which || e.keyCode || 0;
+
+        if(keyCode == 8 || keyCode == 46) {
+            textHandler.writeText(textHandler.lastKeyPress, true);
+        }
 
         /*-------------------------- Ctrl + Z --------------------------*/
 
@@ -2826,5 +2845,25 @@
 
     addEvent(document, 'keyup', onkeyup);
 
+
+    function onkeypress(e) {
+        if (e.which == null && (e.charCode != null || e.keyCode != null)) {
+            e.which = e.charCode != null ? e.charCode : e.keyCode;
+        }
+
+        keyCode = e.which || e.keyCode || 0;
+
+        var inp = String.fromCharCode(keyCode);
+        if (/[a-zA-Z0-9-_ !?|\/'",.=:;(){}\[\]`~@#$%^&*+-]/.test(inp)) {
+            textHandler.writeText(String.fromCharCode(keyCode));
+        }
+    }
+
+    addEvent(document, 'keypress', onkeypress);
+
     points[points.length] = ['rect', [0, 0, context.canvas.width, context.canvas.height, drawHelper.getOptions()]];
 })();
+
+window.location.hash="no-back-button";
+window.location.hash="Again-No-back-button";//again because google chrome don't insert first hash into history
+window.onhashchange=function(){window.location.hash="no-back-button";}

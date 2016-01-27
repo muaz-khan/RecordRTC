@@ -341,7 +341,7 @@
 <body>
 	<section class="design-surface">
 		<canvas id="temp-canvas"></canvas>
-		<canvas id="main-canvas"></canvas>
+		<canvas id="main-canvas" opacity=0></canvas>
 	</section>
 	
 	<!------------------------------------------>
@@ -381,7 +381,7 @@
 		<textarea id="code-text" class="code-text allow-select"></textarea>
 	</section>
 	
-	<section class="preview-panel">
+	<section class="preview-panel" style="display:none;">
 		<div id="design-preview" class="preview-selected">Preview</div>
 		<div id="code-preview">Code</div>
 	</section>
@@ -508,16 +508,17 @@
     	var params = {
     		tools: JSON.stringify({
     			pencil: true,
+    			// dragMultiple: true,
+    			eraser: true,
+    			text: true
     			/*image: true,
 		        line: true,
 		        dragSingle: true,
-		        dragMultiple: true,
-		        eraser: true,
 		        rectangle: true,
 		        arc: true,
 		        bezier: true,
 		        quadratic: true,
-		        text: true*/
+		        */
     		}),
 	        selectedIcon: 'pencil'
     	}
@@ -526,8 +527,10 @@
 	<script src="https://cdn.webrtc-experiment.com/RecordRTC/Whammy.js"></script>
 	<script src="https://cdn.webrtc-experiment.com/RecordRTC/CanvasRecorder.js"></script>
 	<script src="https://cdn.webrtc-experiment.com/RecordRTC/MediaStreamRecorder.js"></script>
+	<script src="https://cdn.webrtc-experiment.com/getScreenId.js"></script>
 
-	<div class="start-top-recording" style="position: absolute;bottom: 0;right: 184px;z-index: 9;">
+	<div class="start-top-recording" style="position: absolute;top: 3px;right: 20px;z-index: 9;">
+		<button id="capture-screen" style="margin-right:40px;">Add Screen</button>
 		<span style="vertical-align:middle;">Fps: </span><input type="number" id="fps" value="10" min="0" max="1000">
 	    <button id="start">Start Canvas Recording</button>
 	    <button id="stop" disabled>Stop</button>
@@ -571,6 +574,50 @@
 		        video.play();
 		    });
 		}, 100);
+	};
+
+	document.getElementById('capture-screen').onclick = function() {
+		this.disabled = true;
+
+		getScreenId(function (error, sourceId, screen_constraints) {
+			if(error) {
+				alert(error);
+				return;
+			}
+
+			if(sourceId === 'firefox') {
+				screen_constraints.video.width = screen.width;
+				screen_constraints.video.height = screen.height;
+			}
+			else {
+				screen_constraints.video.mandatory.maxWidth =
+				screen_constraints.video.mandatory.minWidth = screen.width;
+
+				screen_constraints.video.mandatory.maxHeight =
+				screen_constraints.video.mandatory.minHeight = screen.height;
+
+				screen_constraints.video.mandatory.minAspectRatio = 1.77;
+			}
+
+		    navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+		    navigator.getUserMedia(screen_constraints, function (stream) {
+		    	window.screenVideoElement = document.createElement('video');
+		    	screenVideoElement.onloadedmetadata = function() {
+			    	window.canvasElementToBeRecorded.getContext('2d').drawImage(
+			    		screenVideoElement, 0, -50, 
+			    		window.canvasElementToBeRecorded.width, 
+			    		window.canvasElementToBeRecorded.height);
+
+			    	document.getElementById('capture-screen').disabled = false;
+			    	stream.stop();
+			    };
+
+			    screenVideoElement.src = URL.createObjectURL(stream);
+		    	screenVideoElement.play();
+		    }, function (error) {
+		        alert(JSON.stringify(error));
+		    });
+		});
 	};
 
 	window.onbeforeunload = function() {

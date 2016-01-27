@@ -1,4 +1,4 @@
-// Last time updated: 2016-01-27 12:34:26 PM UTC
+// Last time updated: 2016-01-27 12:46:28 PM UTC
 
 // links:
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
@@ -2300,6 +2300,10 @@ function CanvasRecorder(htmlElement, config) {
             isCanvasSupportsStreamCapturing = true;
         }
     });
+
+    if(!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) {
+        isCanvasSupportsStreamCapturing = false;
+    }
 
     var globalCanvas, globalContext, mediaStreamRecorder;
 

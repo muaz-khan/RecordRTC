@@ -37,6 +37,10 @@ function CanvasRecorder(htmlElement, config) {
         }
     });
 
+    if (!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) {
+        isCanvasSupportsStreamCapturing = false;
+    }
+
     var globalCanvas, globalContext, mediaStreamRecorder;
 
     if (isCanvasSupportsStreamCapturing) {

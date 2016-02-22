@@ -889,7 +889,7 @@ function MRecordRTC(mediaStream) {
      * recorder.startRecording();
      */
     this.startRecording = function() {
-        if (!isChrome && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+        if (isMediaRecorderCompatible() && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
             // Firefox is supporting both audio/video in single blob
             this.mediaType.audio = false;
         }

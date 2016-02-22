@@ -24,13 +24,13 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 
 ## Browsers Support:
 
-| Browser        | Support           |
-| ------------- |-------------|
-| Firefox | [Stable](http://www.mozilla.org/en-US/firefox/new/) / [Aurora](http://www.mozilla.org/en-US/firefox/aurora/) / [Nightly](http://nightly.mozilla.org/) |
-| Google Chrome | [Stable](https://www.google.com/intl/en_uk/chrome/browser/) / [Canary](https://www.google.com/intl/en/chrome/browser/canary.html) / [Beta](https://www.google.com/intl/en/chrome/browser/beta.html) / [Dev](https://www.google.com/intl/en/chrome/browser/index.html?extra=devchannel#eula) |
-| Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  |
-| Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) |
-| Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) |
+| Browser        | Support           | Features |
+| ------------- |-------------|-------------|
+| Firefox | [Stable](http://www.mozilla.org/en-US/firefox/new/) / [Aurora](http://www.mozilla.org/en-US/firefox/aurora/) / [Nightly](http://nightly.mozilla.org/) | Audio+Video (Both local/remote) |
+| Google Chrome | [Stable](https://www.google.com/intl/en_uk/chrome/browser/) / [Canary](https://www.google.com/intl/en/chrome/browser/canary.html) / [Beta](https://www.google.com/intl/en/chrome/browser/beta.html) / [Dev](https://www.google.com/intl/en/chrome/browser/index.html?extra=devchannel#eula) | Audio+Video (Both local/remote) |
+| Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  | Audio/Vidoe Separately |
+| Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio/Vidoe Separately |
+| Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | Only Audio |
 
 ## How RecordRTC encodes wav/webm?
 
@@ -41,18 +41,18 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 
 ## RecordRTC Demos
 
-1. [RecordRTC to Node.js](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/RecordRTC-to-Nodejs)
-2. [RecordRTC to PHP](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/RecordRTC-to-PHP)
-3. [RecordRTC to ASP.NET MVC](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/RecordRTC-to-ASPNETMVC)
-4. [RecordRTC & HTML-2-Canvas i.e. Canvas/HTML Recording!](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/Canvas-Recording)
-5. [MRecordRTC i.e. Multi-RecordRTC!](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/MRecordRTC)
+1. [RecordRTC to Node.js](https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-to-Nodejs)
+2. [RecordRTC to PHP](https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-to-PHP)
+3. [RecordRTC to ASP.NET MVC](https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-to-ASPNETMVC)
+4. [RecordRTC & HTML-2-Canvas i.e. Canvas/HTML Recording!](https://github.com/muaz-khan/RecordRTC/tree/master/Canvas-Recording)
+5. [MRecordRTC i.e. Multi-RecordRTC!](https://github.com/muaz-khan/RecordRTC/tree/master/MRecordRTC)
 6. [RecordRTC on Ruby!](https://github.com/cbetta/record-rtc-experiment)
-7. [RecordRTC over Socket.io](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/RecordRTC-over-Socketio)
+7. [RecordRTC over Socket.io](https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-over-Socketio)
 8. [ffmpeg-asm.js and RecordRTC! Audio/Video Merging & Transcoding!](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/ffmpeg)
-9. [RecordRTC / PHP / FFmpeg](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/PHP-and-FFmpeg)
+9. [RecordRTC / PHP / FFmpeg](https://github.com/muaz-khan/RecordRTC/tree/master/PHP-and-FFmpeg)
 10. [Record Audio and upload to Nodejs server](https://www.npmjs.org/package/record-audio)
 11. [ConcatenateBlobs.js](https://github.com/muaz-khan/ConcatenateBlobs) - Concatenate multiple recordings in single Blob!
-12. [Remote stream recording](https://www.webrtc-experiment.com/demos/remote-stream-recording.html)
+12. [Remote audio-stream recording](https://www.webrtc-experiment.com/demos/remote-stream-recording.html) or [a real p2p demo](https://www.webrtc-experiment.com/RTCMultiConnection/RecordRTC-and-RTCMultiConnection.html)
 13. [Mp3 or Wav Recording](https://www.webrtc-experiment.com/RecordRTC/Record-Mp3-or-Wav.html)
 
 ## How to link?
@@ -91,7 +91,7 @@ E.g.
 
 ```html
 <!-- use 5.2.6 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.2.6/RecordRTC.js"></script>
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.2.8/RecordRTC.js"></script>
 ```
 
 There are some other NPM packages regarding RecordRTC:
@@ -394,6 +394,8 @@ var audioRecorder = RecordRTC(mediaStream, {
 It means that ALL_BROWSERS will be using [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) i.e. WebAudio API for audio recording.
 
 This feature brings remote audio recording support in Firefox, and local audio recording support in Microsoft Edge.
+
+Note: Chrome `>=50` supports remote audio+video recording.
 
 You can even force `WhammyRecorder` on Firefox however webp format isn't yet supported in standard Firefox builds. It simply means that, you're skipping MediaRecorder API in Firefox.
 
@@ -711,51 +713,6 @@ recordRTC.getFromDisk(function(dataURL) {
 ```
 
 In the above example; you can see that `recordRTC` instance object is used instead of global `RecordRTC` object.
-
-# Clarifications
-
-## Is WinXP supported?
-
-No WinXP SP2 based "Chrome" support. However, RecordRTC works on WinXP Service Pack 3.
-
-## Is Chrome on Android supported?
-
-RecordRTC uses WebAudio API for stereo-audio recording. AFAIK, WebAudio is not supported on android chrome releases, yet.
-
-Firefox merely supports audio-recording on Android devices.
-
-## Stereo or Mono?
-
-Audio recording fails for `mono` audio. So, try `stereo` audio only.
-
-MediaRecorder API (in Firefox) seems using mono-audio-recording instead.
-
-## Possible issues/failures:
-
-**This section applies only to StereoAudioRecorder:**
-
-Do you know "RecordRTC" fails recording audio because following conditions fails:
-
-1. Sample rate and channel configuration must be the same for input and output sides on Windows i.e. audio input/output devices mismatch
-2. Only the Default microphone device can be used for capturing.
-3. The requesting scheme is none of the following: http, https, chrome, extension's, or file (only works with `--allow-file-access-from-files`)
-4. The browser cannot create/initialize the metadata database for the API under the profile directory
-
-If you see this error message: `Uncaught Error: SecurityError: DOM Exception 18`; it means that you're using `HTTP`; whilst your webpage is loading worker file (i.e. `audio-recorder.js`) from `HTTPS`. Both files's (i.e. `RecordRTC.js` and `audio-recorder.js`) scheme MUST be same!
-
-## Web Audio APIs requirements
-
-1. If you're on Windows, you have to be running WinXP SP3, Windows Vista or better (will not work on Windows XP SP2 or earlier).
-2. On Windows, audio input hardware must be set to the same sample rate as audio output hardware.
-3. On Mac and Windows, the audio input device must be at least stereo (i.e. a mono/single-channel USB microphone WILL NOT work).
-
-## Why stereo?
-
-If you explorer chromium code; you'll see that some APIs can only be successfully called for `WAV` files with `stereo` audio.
-
-Stereo audio is only supported for WAV files.
-
-RecordRTC is unable to record "mono" audio on chrome; however it seems that we can covert channels from "stereo" to "mono" using WebAudio API, though. MediaRecorder API's encoder only support 48k/16k mono audio channel (on Firefox Nightly).
 
 ## Credits
 

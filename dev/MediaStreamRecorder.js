@@ -25,9 +25,9 @@
  * @example
  * var options = {
  *     mimeType: 'video/mp4', // audio/ogg or video/webm
- *     audioBitsPerSecond : 128000,
- *     videoBitsPerSecond : 2500000,
- *     bitsPerSecond: 2500000  // if this is provided, skip above two
+ *     audioBitsPerSecond : 256 * 8 * 1024,
+ *     videoBitsPerSecond : 256 * 8 * 1024,
+ *     bitsPerSecond: 256 * 8 * 1024  // if this is provided, skip above two
  * }
  * var recorder = new MediaStreamRecorder(MediaStream, options);
  * recorder.record();
@@ -43,8 +43,10 @@
  */
 
 function MediaStreamRecorder(mediaStream, config) {
+    var self = this;
+
     config = config || {
-        // bitsPerSecond: 128000,
+        // bitsPerSecond: 256 * 8 * 1024,
         mimeType: 'video/webm'
     };
 
@@ -88,6 +90,11 @@ function MediaStreamRecorder(mediaStream, config) {
             mediaRecorder = null;
         }
 
+        if (isChrome && !isMediaRecorderCompatible()) {
+            // to support video-only recording on stable
+            recorderHints = 'video/vp8';
+        }
+
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
         // https://wiki.mozilla.org/Gecko:MediaRecorder
         // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
@@ -108,11 +115,11 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
-            if (this.dontFireOnDataAvailableEvent) {
+            if (self.dontFireOnDataAvailableEvent) {
                 return;
             }
 
-            if (!e.data) {
+            if (!e.data || !e.data.size) {
                 return;
             }
 
@@ -229,20 +236,19 @@ function MediaStreamRecorder(mediaStream, config) {
     };
 
     this.onRecordingFinished = function() {
-        /**
-         * @property {Blob} blob - Recorded frames in video/webm blob.
-         * @memberof MediaStreamRecorder
-         * @example
-         * recorder.stop(function() {
-         *     var blob = recorder.blob;
-         * });
-         */
-
         var that = this;
 
         bufferToDataUrl(recordedBuffers, function(dataURL) {
             var file = dataUrlToFile(dataURL);
 
+            /**
+             * @property {Blob} blob - Recorded frames in video/webm blob.
+             * @memberof MediaStreamRecorder
+             * @example
+             * recorder.stop(function() {
+             *     var blob = recorder.blob;
+             * });
+             */
             that.blob = new Blob(recordedBuffers, {
                 type: config.mimeType || 'video/webm'
             });

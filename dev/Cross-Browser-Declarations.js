@@ -81,6 +81,30 @@ if (typeof MediaStream === 'undefined' && typeof webkitMediaStream !== 'undefine
 /*global MediaStream:true */
 if (typeof MediaStream !== 'undefined' && !('stop' in MediaStream.prototype)) {
     MediaStream.prototype.stop = function() {
+        if (!this.getAudioTracks && !!this.getTracks) {
+            this.getAudioTracks = function() {
+                var array = [];
+                this.getTracks.forEach(function(track) {
+                    if (track.kind.toString().indexOf('audio') !== -1) {
+                        array.push(track);
+                    }
+                });
+                return array;
+            };
+        }
+
+        if (!this.getVideoTracks && !!this.getTracks) {
+            this.getVideoTracks = function() {
+                var array = [];
+                this.getTracks.forEach(function(track) {
+                    if (track.kind.toString().indexOf('video') !== -1) {
+                        array.push(track);
+                    }
+                });
+                return array;
+            };
+        }
+
         this.getAudioTracks().forEach(function(track) {
             track.stop();
         });

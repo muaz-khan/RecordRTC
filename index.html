@@ -312,7 +312,7 @@
                     captureAudio(commonConfig);
                     
                     button.mediaCapturedCallback = function() {
-                        button.recordRTC = RecordRTC(button.stream, {
+                        var options = {
                             type: 'audio',
                             mimeType: mimeType,
                             bufferSize: typeof params.bufferSize == 'undefined' ? 0 : parseInt(params.bufferSize),
@@ -320,7 +320,13 @@
                             leftChannel: params.leftChannel || false,
                             disableLogs: params.disableLogs || false,
                             recorderType: webrtcDetectedBrowser === 'edge' ? StereoAudioRecorder : null
-                        });
+                        };
+
+                        if(typeof params.sampleRate == 'undefined') {
+                            delete options.sampleRate;
+                        }
+
+                        button.recordRTC = RecordRTC(button.stream, options);
                         
                         button.recordingEndedCallback = function(url) {
                             var audio = new Audio();
@@ -354,14 +360,20 @@
                                 params.bufferSize = 16384;
                             }
 
-                            var audioRecorder = RecordRTC(button.stream, {
+                            var options = {
                                 type: 'audio',
                                 bufferSize: typeof params.bufferSize == 'undefined' ? 0 : parseInt(params.bufferSize),
                                 sampleRate: typeof params.sampleRate == 'undefined' ? 44100 : parseInt(params.sampleRate),
                                 leftChannel: params.leftChannel || false,
                                 disableLogs: params.disableLogs || false,
                                 recorderType: webrtcDetectedBrowser === 'edge' ? StereoAudioRecorder : null
-                            });
+                            };
+
+                            if(typeof params.sampleRate == 'undefined') {
+                                delete options.sampleRate;
+                            }
+
+                            var audioRecorder = RecordRTC(button.stream, options);
 
                             var videoRecorder = RecordRTC(button.stream, {
                                 type: 'video',

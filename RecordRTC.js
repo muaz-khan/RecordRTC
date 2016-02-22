@@ -1,71 +1,13 @@
-// Last time updated: 2016-01-27 12:46:28 PM UTC
+'use strict';
 
-// links:
+// Last time updated: 2016-02-22 11:28:21 AM UTC
+
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
-// https://cdn.WebRTC-Experiment.com/RecordRTC.js
-// https://www.WebRTC-Experiment.com/RecordRTC.js
-// npm install recordrtc
-// http://recordrtc.org/
 
-// updates?
-/*
--. Added support for MediaRecorder API in Chrome. Currently requires: RecordRTC(stream, {recorderType: MediaStreamRecorder})
--. mimeType, bitsPerSecond, audioBitsPerSecond, videoBitsPerSecond added.
--. CanvasRecorder.js updated to support Firefox. (experimental)
--. Now you can reuse single RecordRTC object i.e. stop/start/stop/start/ and so on.
--. GifRecorder.js can now record HTMLCanvasElement|CanvasRenderingContext2D as well.
--. added: frameInterval:20 for WhammyRecorder.js
--. chrome issue  audio plus 720p-video recording can be fixed by setting bufferSize:16384
--. fixed Firefox save-as dialog i.e. recordRTC.save('filen-name')
--. "indexedDB" bug fixed for Firefox.
--. numberOfAudioChannels:1 can be passed to reduce WAV size in Chrome.
--. StereoRecorder.js is removed. It was redundant. Now RecordRTC is directly using: StereoAudioRecorder.js
--. mergeProps is removed. It was redundant.
--. reformatProps is removed. Now plz pass exact frameRate/sampleRate instead of frame-rate/sample-rate
--. Firefox supports remote-audio-recording since v28 - RecordRTC(remoteStream, { recorderType: StereoAudioRecorder });
--. added 3 methods: initRecorder, setRecordingDuration and clearRecordedData
--. Microsoft Edge support added (only-audio-yet).
--. You can pass "recorderType" - RecordRTC(stream, { recorderType: StereoAudioRecorder });
--. If MediaStream is suddenly stopped in Firefox.
--. Added "disableLogs"         - RecordRTC(stream, { disableLogs: true });
--. You can pass "bufferSize:0" - RecordRTC(stream, { bufferSize: 0 });
--. You can set "leftChannel"   - RecordRTC(stream, { leftChannel: true });
--. Added functionality for analyse black frames and cut them - pull#293
--. if you're recording GIF, you must link: https://cdn.webrtc-experiment.com/gif-recorder.js
--. You can set "frameInterval" for video - RecordRTC(stream, { type: 'video', frameInterval: 100 });
-*/
-
-//------------------------------------
-
-// Browsers Support::
-// Chrome (all versions) [ audio/video separately ]
-// Firefox ( >= 29 ) [ audio/video in single webm/mp4 container or only audio in ogg ]
-// Opera (all versions) [ same as chrome ]
-// Android (Chrome) [ only video ]
-// Android (Opera) [ only video ]
-// Android (Firefox) [ only video ]
-// Microsoft Edge (Only Audio & Gif)
-
-//------------------------------------
+//--------------------------------------------------
 // Muaz Khan     - www.MuazKhan.com
 // MIT License   - www.WebRTC-Experiment.com/licence
-//------------------------------------
-// Note: RecordRTC.js is using 3 other libraries; you need to accept their licences as well.
-//------------------------------------
-// 1. RecordRTC.js
-// 2. MRecordRTC.js
-// 3. Cross-Browser-Declarations.js
-// 4. Storage.js
-// 5. MediaStreamRecorder.js
-// 6. StereoAudioRecorder.js
-// 7. CanvasRecorder.js
-// 8. WhammyRecorder.js
-// 9. Whammy.js
-// 10. DiskStorage.js
-// 11. GifRecorder.js
-//------------------------------------
-
-'use strict';
+//--------------------------------------------------
 
 // ____________
 // RecordRTC.js
@@ -889,7 +831,7 @@ function MRecordRTC(mediaStream) {
      * recorder.startRecording();
      */
     this.startRecording = function() {
-        if (!isChrome && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+        if (isMediaRecorderCompatible() && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
             // Firefox is supporting both audio/video in single blob
             this.mediaType.audio = false;
         }
@@ -1237,6 +1179,30 @@ if (typeof MediaStream === 'undefined' && typeof webkitMediaStream !== 'undefine
 /*global MediaStream:true */
 if (typeof MediaStream !== 'undefined' && !('stop' in MediaStream.prototype)) {
     MediaStream.prototype.stop = function() {
+        if (!this.getAudioTracks && !!this.getTracks) {
+            this.getAudioTracks = function() {
+                var array = [];
+                this.getTracks.forEach(function(track) {
+                    if (track.kind.toString().indexOf('audio') !== -1) {
+                        array.push(track);
+                    }
+                });
+                return array;
+            };
+        }
+
+        if (!this.getVideoTracks && !!this.getTracks) {
+            this.getVideoTracks = function() {
+                var array = [];
+                this.getTracks.forEach(function(track) {
+                    if (track.kind.toString().indexOf('video') !== -1) {
+                        array.push(track);
+                    }
+                });
+                return array;
+            };
+        }
+
         this.getAudioTracks().forEach(function(track) {
             track.stop();
         });
@@ -1419,9 +1385,9 @@ function isMediaRecorderCompatible() {
  * @example
  * var options = {
  *     mimeType: 'video/mp4', // audio/ogg or video/webm
- *     audioBitsPerSecond : 128000,
- *     videoBitsPerSecond : 2500000,
- *     bitsPerSecond: 2500000  // if this is provided, skip above two
+ *     audioBitsPerSecond : 256 * 8 * 1024,
+ *     videoBitsPerSecond : 256 * 8 * 1024,
+ *     bitsPerSecond: 256 * 8 * 1024  // if this is provided, skip above two
  * }
  * var recorder = new MediaStreamRecorder(MediaStream, options);
  * recorder.record();
@@ -1437,8 +1403,10 @@ function isMediaRecorderCompatible() {
  */
 
 function MediaStreamRecorder(mediaStream, config) {
+    var self = this;
+
     config = config || {
-        // bitsPerSecond: 128000,
+        // bitsPerSecond: 256 * 8 * 1024,
         mimeType: 'video/webm'
     };
 
@@ -1482,6 +1450,11 @@ function MediaStreamRecorder(mediaStream, config) {
             mediaRecorder = null;
         }
 
+        if (isChrome && !isMediaRecorderCompatible()) {
+            // to support video-only recording on stable
+            recorderHints = 'video/vp8';
+        }
+
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
         // https://wiki.mozilla.org/Gecko:MediaRecorder
         // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
@@ -1502,11 +1475,11 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
-            if (this.dontFireOnDataAvailableEvent) {
+            if (self.dontFireOnDataAvailableEvent) {
                 return;
             }
 
-            if (!e.data) {
+            if (!e.data || !e.data.size) {
                 return;
             }
 
@@ -1623,20 +1596,19 @@ function MediaStreamRecorder(mediaStream, config) {
     };
 
     this.onRecordingFinished = function() {
-        /**
-         * @property {Blob} blob - Recorded frames in video/webm blob.
-         * @memberof MediaStreamRecorder
-         * @example
-         * recorder.stop(function() {
-         *     var blob = recorder.blob;
-         * });
-         */
-
         var that = this;
 
         bufferToDataUrl(recordedBuffers, function(dataURL) {
             var file = dataUrlToFile(dataURL);
 
+            /**
+             * @property {Blob} blob - Recorded frames in video/webm blob.
+             * @memberof MediaStreamRecorder
+             * @example
+             * recorder.stop(function() {
+             *     var blob = recorder.blob;
+             * });
+             */
             that.blob = new Blob(recordedBuffers, {
                 type: config.mimeType || 'video/webm'
             });
@@ -2301,7 +2273,7 @@ function CanvasRecorder(htmlElement, config) {
         }
     });
 
-    if(!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) {
+    if (!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) {
         isCanvasSupportsStreamCapturing = false;
     }
 

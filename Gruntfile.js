@@ -7,7 +7,7 @@ module.exports = function(grunt) {
         scope: 'devDependencies'
     });
 
-    var banner = '// Last time updated: <%= grunt.template.today("UTC:yyyy-mm-dd h:MM:ss TT Z") %>\n\n';
+    var banner = '\'use strict\';\n\n// Last time updated: <%= grunt.template.today("UTC:yyyy-mm-dd h:MM:ss TT Z") %>\n\n';
 
     // configure project
     grunt.initConfig({

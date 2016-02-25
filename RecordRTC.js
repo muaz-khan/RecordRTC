@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-02-25 8:42:56 AM UTC
+// Last time updated: 2016-02-25 9:01:21 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -840,6 +840,7 @@ function MRecordRTC(mediaStream) {
         }
 
         if (!!mediaType.audio) {
+            recorderType = null;
             if (typeof mediaType.audio === 'function') {
                 recorderType = mediaType.audio;
             }
@@ -857,6 +858,7 @@ function MRecordRTC(mediaStream) {
         }
 
         if (!!mediaType.video) {
+            recorderType = null;
             if (typeof mediaType.video === 'function') {
                 recorderType = mediaType.video;
             }
@@ -885,6 +887,7 @@ function MRecordRTC(mediaStream) {
         }
 
         if (!!mediaType.gif) {
+            recorderType = null;
             if (typeof mediaType.gif === 'function') {
                 recorderType = mediaType.gif;
             }

@@ -1,5 +1,9 @@
 ## [MRecordRTC](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/MRecordRTC) i.e. Multi-RecordRTC! / [Demo](https://www.webrtc-experiment.com/RecordRTC/MRecordRTC/)
 
+[RecordRTC Documentation](http://RecordRTC.org/) / [RecordRTC Wiki Pages](https://github.com/muaz-khan/RecordRTC/wiki) / [RecordRTC Demo](https://www.webrtc-experiment.com/RecordRTC/) / [WebRTC Experiments](https://www.webrtc-experiment.com/)
+
+[![npm](https://img.shields.io/npm/v/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![downloads](https://img.shields.io/npm/dm/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![Build Status: Linux](https://travis-ci.org/muaz-khan/RecordRTC.png?branch=master)](https://travis-ci.org/muaz-khan/RecordRTC)
+
 This [WebRTC](https://www.webrtc-experiment.com/) experiment is using [RecordRTC.js](https://github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC) to record multiple audio/video/gif streams.
 
 1. It simplifies coding for multi-streams recording i.e. audio+video recording
@@ -10,14 +14,14 @@ This [WebRTC](https://www.webrtc-experiment.com/) experiment is using [RecordRTC
 =
 
 ```html
-<script src="//cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+<script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
 <script>
 var recorder = new MRecordRTC();
 recorder.addStream(MediaStream);
 recorder.mediaType = {
-   audio: true,
-   video: true,
-   gif: true
+   audio: true, // or StereoAudioRecorder
+   video: true, // or WhammyRecorder
+   gif: true    // or GifRecorder
 };
 recorder.startRecording();
 recorder.stopRecording(function(url, type) {
@@ -53,6 +57,26 @@ MRecordRTC.getFromDisk('audio', function(dataURL) {
    // only audio blob is returned from disk!
 });
 </script>
+```
+
+=
+
+#### `mediaType`
+
+```javascript
+// normally
+recorder.mediaType = {
+   audio: true,
+   video: true,
+   gif: true
+};
+
+// or advance cases:
+recorder.mediaType = {
+   audio: StereoAudioRecorder, // or MediaStreamRecorder
+   video: WhammyRecorder, // or MediaStreamRecorder
+   gif: GifRecorder // or TRUE
+};
 ```
 
 =

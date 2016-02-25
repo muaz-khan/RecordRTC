@@ -91,7 +91,7 @@ E.g.
 
 ```html
 <!-- use 5.2.6 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.2.8/RecordRTC.js"></script>
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.2.9/RecordRTC.js"></script>
 ```
 
 There are some other NPM packages regarding RecordRTC:

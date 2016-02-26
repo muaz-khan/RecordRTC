@@ -56,10 +56,6 @@ function RecordRTC(mediaStream, config) {
     }
 
     function initRecorder(initCallback) {
-        if (!config.disableLogs) {
-            console.debug('initializing ' + config.type + ' stream recorder.');
-        }
-
         if (initCallback) {
             config.initCallback = function() {
                 initCallback();
@@ -71,6 +67,10 @@ function RecordRTC(mediaStream, config) {
 
         mediaRecorder = new Recorder(mediaStream, config);
         mediaRecorder.record();
+
+        if (!config.disableLogs) {
+            console.debug('Initialized recorderType:', mediaRecorder.constructor.name, 'for output-type:', config.type);
+        }
     }
 
     function stopRecording(callback) {

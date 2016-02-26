@@ -194,7 +194,7 @@
 
                 mRecordRTC.addStream(stream);
                 mRecordRTC.startRecording();
-            }, function(errro) {
+            }, function(error) {
                 alert(JSON.stringify(error));
             });
         };
@@ -310,6 +310,12 @@ recorder.mediaType = {
    audio: true,
    video: true,
    gif: true
+};
+// mimeType is optional and should be set only in advance cases.
+recorder.mimeType = {
+    audio: 'audio/wav',
+    video: 'video/webm',
+    gif:   'image/gif'
 };
 recorder.startRecording();
 recorder.stopRecording(function(url, type) {

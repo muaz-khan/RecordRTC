@@ -57,8 +57,8 @@ function GetRecorderType(mediaStream, config) {
         recorder = config.recorderType;
     }
 
-    if (!config.disableLogs && isChrome && recorder === MediaStreamRecorder) {
-        console.debug('Using MediaRecorder API in chrome!');
+    if (!config.disableLogs && !!recorder && !!recorder.name) {
+        console.debug('Using recorderType:', recorder.name || recorder.constructor.name);
     }
 
     return recorder;

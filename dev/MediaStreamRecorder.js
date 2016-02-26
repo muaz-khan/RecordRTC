@@ -50,22 +50,21 @@ function MediaStreamRecorder(mediaStream, config) {
         mimeType: 'video/webm'
     };
 
-    // if user chosen only audio option; and he tried to pass MediaStream with
-    // both audio and video tracks;
-    // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (!!navigator.mozGetUserMedia && config.type && config.type === 'audio') {
-        if (mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
-            var context = new AudioContext();
-            var mediaStreamSource = context.createMediaStreamSource(mediaStream);
-
-            var destination = context.createMediaStreamDestination();
-            mediaStreamSource.connect(destination);
-
-            mediaStream = destination.stream;
+    if (config.type === 'audio') {
+        if (mediaStream.getVideoTracks().length && mediaStream.getAudioTracks().length) {
+            var stream;
+            if (!!navigator.mozGetUserMedia) {
+                stream = new MediaStream();
+                stream.addTrack(mediaStream.getAudioTracks()[0]);
+            } else {
+                // webkitMediaStream
+                stream = new MediaStream(mediaStream.getAudioTracks());
+            }
+            mediaStream = stream;
         }
 
         if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
-            config.mimeType = 'audio/ogg';
+            config.mimeType = isChrome ? 'audio/webm' : 'audio/ogg';
         }
     }
 
@@ -152,7 +151,6 @@ function MediaStreamRecorder(mediaStream, config) {
             if (mediaRecorder.state !== 'inactive' && mediaRecorder.state !== 'stopped') {
                 mediaRecorder.stop();
             }
-            // self.record(0);
         };
 
         // void start(optional long mTimeSlice)
@@ -285,7 +283,11 @@ function MediaStreamRecorder(mediaStream, config) {
     this.resume = function() {
         if (this.dontFireOnDataAvailableEvent) {
             this.dontFireOnDataAvailableEvent = false;
+
+            var disableLogs = config.disableLogs;
+            config.disableLogs = true;
             this.record();
+            config.disableLogs = disableLogs;
             return;
         }
 

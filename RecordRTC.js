@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-02-25 9:01:21 AM UTC
+// Last time updated: 2016-02-26 8:45:42 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -67,10 +67,6 @@ function RecordRTC(mediaStream, config) {
     }
 
     function initRecorder(initCallback) {
-        if (!config.disableLogs) {
-            console.debug('initializing ' + config.type + ' stream recorder.');
-        }
-
         if (initCallback) {
             config.initCallback = function() {
                 initCallback();
@@ -82,6 +78,10 @@ function RecordRTC(mediaStream, config) {
 
         mediaRecorder = new Recorder(mediaStream, config);
         mediaRecorder.record();
+
+        if (!config.disableLogs) {
+            console.debug('Initialized recorderType:', mediaRecorder.constructor.name, 'for output-type:', config.type);
+        }
     }
 
     function stopRecording(callback) {
@@ -759,8 +759,8 @@ function GetRecorderType(mediaStream, config) {
         recorder = config.recorderType;
     }
 
-    if (!config.disableLogs && isChrome && recorder === MediaStreamRecorder) {
-        console.debug('Using MediaRecorder API in chrome!');
+    if (!config.disableLogs && !!recorder && !!recorder.name) {
+        console.debug('Using recorderType:', recorder.name || recorder.constructor.name);
     }
 
     return recorder;
@@ -780,9 +780,15 @@ function GetRecorderType(mediaStream, config) {
  * var recorder = new MRecordRTC();
  * recorder.addStream(MediaStream);
  * recorder.mediaType = {
- *     audio: true,
- *     video: true,
- *     gif: true
+ *     audio: true, // or StereoAudioRecorder or MediaStreamRecorder
+ *     video: true, // or WhammyRecorder or MediaStreamRecorder
+ *     gif: true    // or GifRecorder
+ * };
+ * // mimeType is optional and should be set only in advance cases.
+ * recorder.mimeType = {
+ *     audio: 'audio/wav',
+ *     video: 'video/webm',
+ *     gif:   'image/gif'
  * };
  * recorder.startRecording();
  * @see For further information:
@@ -833,6 +839,11 @@ function MRecordRTC(mediaStream) {
     this.startRecording = function() {
         var mediaType = this.mediaType;
         var recorderType;
+        var mimeType = this.mimeType || {
+            audio: null,
+            video: null,
+            gif: null
+        };
 
         if (typeof mediaType.audio !== 'function' && isMediaRecorderCompatible() && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
             // Firefox is supporting both audio/video in single blob
@@ -850,7 +861,8 @@ function MRecordRTC(mediaStream) {
                 sampleRate: this.sampleRate,
                 numberOfAudioChannels: this.numberOfAudioChannels || 2,
                 disableLogs: this.disableLogs,
-                recorderType: recorderType
+                recorderType: recorderType,
+                mimeType: mimeType.audio
             });
             if (!mediaType.video) {
                 this.audioRecorder.startRecording();
@@ -862,13 +874,33 @@ function MRecordRTC(mediaStream) {
             if (typeof mediaType.video === 'function') {
                 recorderType = mediaType.video;
             }
-            this.videoRecorder = new RecordRTC(mediaStream, {
+
+            var newStream = mediaStream;
+
+            if (isMediaRecorderCompatible() && !!mediaType.audio && typeof mediaType.audio === 'function') {
+                var videoTrack = mediaStream.getVideoTracks()[0];
+
+                if (!!navigator.mozGetUserMedia) {
+                    newStream = new MediaStream();
+                    newStream.addTrack(videoTrack);
+
+                    if (recorderType && recorderType === WhammyRecorder) {
+                        // Firefox is NOT supporting webp-encoding yet
+                        recorderType = MediaStreamRecorder;
+                    }
+                } else {
+                    newStream = new MediaStream([videoTrack]);
+                }
+            }
+
+            this.videoRecorder = new RecordRTC(newStream, {
                 type: 'video',
                 video: this.video,
                 canvas: this.canvas,
                 frameInterval: this.frameInterval || 10,
                 disableLogs: this.disableLogs,
-                recorderType: recorderType
+                recorderType: recorderType,
+                mimeType: mimeType.video
             });
             if (!mediaType.audio) {
                 this.videoRecorder.startRecording();
@@ -896,7 +928,8 @@ function MRecordRTC(mediaStream) {
                 frameRate: this.frameRate || 200,
                 quality: this.quality || 10,
                 disableLogs: this.disableLogs,
-                recorderType: recorderType
+                recorderType: recorderType,
+                mimeType: mimeType.gif
             });
             this.gifRecorder.startRecording();
         }
@@ -1428,22 +1461,21 @@ function MediaStreamRecorder(mediaStream, config) {
         mimeType: 'video/webm'
     };
 
-    // if user chosen only audio option; and he tried to pass MediaStream with
-    // both audio and video tracks;
-    // using a dirty workaround to generate audio-only stream so that we can get audio/ogg output.
-    if (!!navigator.mozGetUserMedia && config.type && config.type === 'audio') {
-        if (mediaStream.getVideoTracks && mediaStream.getVideoTracks().length) {
-            var context = new AudioContext();
-            var mediaStreamSource = context.createMediaStreamSource(mediaStream);
-
-            var destination = context.createMediaStreamDestination();
-            mediaStreamSource.connect(destination);
-
-            mediaStream = destination.stream;
+    if (config.type === 'audio') {
+        if (mediaStream.getVideoTracks().length && mediaStream.getAudioTracks().length) {
+            var stream;
+            if (!!navigator.mozGetUserMedia) {
+                stream = new MediaStream();
+                stream.addTrack(mediaStream.getAudioTracks()[0]);
+            } else {
+                // webkitMediaStream
+                stream = new MediaStream(mediaStream.getAudioTracks());
+            }
+            mediaStream = stream;
         }
 
         if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
-            config.mimeType = 'audio/ogg';
+            config.mimeType = isChrome ? 'audio/webm' : 'audio/ogg';
         }
     }
 
@@ -1530,7 +1562,6 @@ function MediaStreamRecorder(mediaStream, config) {
             if (mediaRecorder.state !== 'inactive' && mediaRecorder.state !== 'stopped') {
                 mediaRecorder.stop();
             }
-            // self.record(0);
         };
 
         // void start(optional long mTimeSlice)
@@ -1663,7 +1694,11 @@ function MediaStreamRecorder(mediaStream, config) {
     this.resume = function() {
         if (this.dontFireOnDataAvailableEvent) {
             this.dontFireOnDataAvailableEvent = false;
+
+            var disableLogs = config.disableLogs;
+            config.disableLogs = true;
             this.record();
+            config.disableLogs = disableLogs;
             return;
         }
 

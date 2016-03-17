@@ -331,6 +331,7 @@ function MediaStreamRecorder(mediaStream, config) {
                 return false;
             }
         }
+        return true;
     }
 
     var self = this;

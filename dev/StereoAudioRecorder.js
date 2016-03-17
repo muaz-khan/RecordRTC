@@ -65,6 +65,7 @@ function StereoAudioRecorder(mediaStream, config) {
                 return false;
             }
         }
+        return true;
     }
 
     /**

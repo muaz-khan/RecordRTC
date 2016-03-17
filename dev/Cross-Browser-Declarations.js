@@ -164,10 +164,12 @@ function invokeSaveAsDialog(file, fileName) {
     }
 
     if (!file.type) {
-        file.type = 'video/webm';
+        try {
+            file.type = 'video/webm';
+        } catch (e) {}
     }
 
-    var fileExtension = file.type.split('/')[1];
+    var fileExtension = (file.type || 'video/webm').split('/')[1];
 
     if (fileName && fileName.indexOf('.') !== -1) {
         var splitted = fileName.split('.');

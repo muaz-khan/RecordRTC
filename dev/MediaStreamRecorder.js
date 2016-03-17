@@ -27,7 +27,8 @@
  *     mimeType: 'video/mp4', // audio/ogg or video/webm
  *     audioBitsPerSecond : 256 * 8 * 1024,
  *     videoBitsPerSecond : 256 * 8 * 1024,
- *     bitsPerSecond: 256 * 8 * 1024  // if this is provided, skip above two
+ *     bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
+ *     getNativeBlob: true // by default it is false
  * }
  * var recorder = new MediaStreamRecorder(MediaStream, options);
  * recorder.record();
@@ -68,8 +69,6 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     }
 
-    var recordedBuffers = [];
-
     /**
      * This method records MediaStream.
      * @method
@@ -78,6 +77,8 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
+        self.blob = null;
+
         var recorderHints = config;
 
         if (!config.disableLogs) {
@@ -118,11 +119,26 @@ function MediaStreamRecorder(mediaStream, config) {
                 return;
             }
 
-            if (!e.data || !e.data.size) {
+            if (!e.data || !e.data.size || e.data.size < 100 || self.blob) {
                 return;
             }
 
-            recordedBuffers.push(e.data);
+            /**
+             * @property {Blob} blob - Recorded frames in video/webm blob.
+             * @memberof MediaStreamRecorder
+             * @example
+             * recorder.stop(function() {
+             *     var blob = recorder.blob;
+             * });
+             */
+            self.blob = config.getNativeBlob ? e.data : new Blob([e.data], {
+                type: config.mimeType || 'video/webm'
+            });
+
+            if (self.recordingCallback) {
+                self.recordingCallback(self.blob);
+                self.recordingCallback = null;
+            }
         };
 
         mediaRecorder.onerror = function(error) {
@@ -158,7 +174,7 @@ function MediaStreamRecorder(mediaStream, config) {
         // handler. "mTimeSlice < 0" means Session object does not push encoded data to
         // onDataAvailable, instead, it passive wait the client side pull encoded data
         // by calling requestData API.
-        mediaRecorder.start(1);
+        mediaRecorder.start(3.6e+6);
 
         // Start recording. If timeSlice has been provided, mediaRecorder will
         // raise a dataavailable event containing the Blob of collected data on every timeSlice milliseconds.
@@ -172,35 +188,6 @@ function MediaStreamRecorder(mediaStream, config) {
             config.initCallback();
         }
     };
-
-    // both "bufferToDataUrl" and "dataUrlToFile" are taken from "60devs.com"
-    function bufferToDataUrl(buffer, callback) {
-        var blob = new Blob(buffer, {
-            type: 'video/webm'
-        });
-
-        var reader = new FileReader();
-        reader.onload = function() {
-            callback(reader.result);
-        };
-        reader.readAsDataURL(blob);
-    }
-
-    // returns file, that we can send to the server.
-    function dataUrlToFile(dataUrl) {
-        var binary = atob(dataUrl.split(',')[1]),
-            data = [];
-
-        for (var i = 0; i < binary.length; i++) {
-            data.push(binary.charCodeAt(i));
-        }
-
-        var File = window.File || window.Blob;
-
-        return new File([new Uint8Array(data)], 'recorded-video.webm', {
-            type: 'video/webm'
-        });
-    }
 
     /**
      * This method stops recording MediaStream.
@@ -227,33 +214,6 @@ function MediaStreamRecorder(mediaStream, config) {
             mediaRecorder.requestData();
             mediaRecorder.stop();
         }
-
-        if (recordedBuffers.length) {
-            this.onRecordingFinished();
-        }
-    };
-
-    this.onRecordingFinished = function() {
-        var that = this;
-
-        bufferToDataUrl(recordedBuffers, function(dataURL) {
-            var file = dataUrlToFile(dataURL);
-
-            /**
-             * @property {Blob} blob - Recorded frames in video/webm blob.
-             * @memberof MediaStreamRecorder
-             * @example
-             * recorder.stop(function() {
-             *     var blob = recorder.blob;
-             * });
-             */
-            that.blob = new Blob(recordedBuffers, {
-                type: config.mimeType || 'video/webm'
-            });
-
-            that.recordingCallback();
-            recordedBuffers = [];
-        });
     };
 
     /**

@@ -94,7 +94,7 @@
                 <a href="https://github.com/muaz-khan/RecordRTC">RecordRTC</a>: <a href="https://www.webrtc-experiment.com/" target="_blank">WebRTC</a> audio/video recording ®
                 <a href="https://github.com/muaz-khan" target="_blank">Muaz Khan</a>
             </h1>
-            <p>
+            <p style="margin:0;margin-bottom:-30px;">
                 <a href="https://www.webrtc-experiment.com/">HOME</a>
                 <span> &copy; </span>
                 <a href="http://www.MuazKhan.com/" target="_blank">Muaz Khan</a> .
@@ -102,6 +102,12 @@
                 <a href="https://github.com/muaz-khan?tab=repositories" target="_blank" title="Github Profile">Github</a> .
                 <a href="https://github.com/muaz-khan/RecordRTC/issues?state=open" target="_blank">Latest issues</a> .
                 <a href="https://github.com/muaz-khan/RecordRTC/commits/master" target="_blank">What's New?</a>
+
+                <br>
+
+                <a href="https://www.npmjs.com/package/recordrtc"><img src="https://img.shields.io/npm/v/recordrtc.svg"></a>
+                <a href="https://www.npmjs.com/package/recordrtc"><img src="https://img.shields.io/npm/dm/recordrtc.svg"></a>
+                <a href="https://travis-ci.org/muaz-khan/RecordRTC"><img src="https://travis-ci.org/muaz-khan/RecordRTC.png?branch=master"></a>
             </p>
         </header>
 
@@ -419,10 +425,12 @@
                             mimeType: mimeType,
                             disableLogs: params.disableLogs || false,
                             // bitsPerSecond: 25 * 8 * 1025 // 25 kbits/s
+                            getNativeBlob: false // enable it for longer recordings
                         });
                         
                         button.recordingEndedCallback = function(url) {
                             recordingPlayer.muted = false;
+                            recordingPlayer.removeAttribute('muted');
                             recordingPlayer.src = url;
                             recordingPlayer.play();
 
@@ -471,6 +479,8 @@
                     };
                 }
 
+                // note: audio+tab is supported in Chrome 50+
+                // todo: add audio+tab recording
                 if(recordingMedia.value === 'record-audio-plus-screen') {
                     captureAudioPlusScreen(commonConfig);
                     
@@ -479,12 +489,13 @@
                             type: 'video',
                             mimeType: mimeType,
                             disableLogs: params.disableLogs || false,
-                            // we can't pass bitrates or framerates here
-                            // Firefox MediaRecorder API lakes these features
+                            // bitsPerSecond: 25 * 8 * 1025 // 25 kbits/s
+                            getNativeBlob: false // enable it for longer recordings
                         });
                         
                         button.recordingEndedCallback = function(url) {
                             recordingPlayer.muted = false;
+                            recordingPlayer.removeAttribute('muted');
                             recordingPlayer.src = url;
                             recordingPlayer.play();
 
@@ -563,6 +574,7 @@
                         return;
                     }
 
+                    delete screenConstraints.video.mozMediaSource;
                     captureUserMedia(screenConstraints, function(screenStream) {
                         recordingPlayer.srcObject = screenStream;
                         recordingPlayer.play();
@@ -599,6 +611,7 @@
 
                     screenConstraints.audio = true;
 
+                    delete screenConstraints.video.mozMediaSource;
                     captureUserMedia(screenConstraints, function(screenStream) {
                         recordingPlayer.srcObject = screenStream;
                         recordingPlayer.play();

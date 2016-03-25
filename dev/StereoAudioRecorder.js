@@ -310,7 +310,7 @@ function StereoAudioRecorder(mediaStream, config) {
              *     var buffer = recorder.buffer;
              * });
              */
-            self.buffer = new ArrayBuffer(view);
+            self.buffer = new ArrayBuffer(view.buffer.byteLength);
 
             /**
              * @property {DataView} view - The recorded data-view object.

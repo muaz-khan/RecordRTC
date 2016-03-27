@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-03-17 12:41:43 PM UTC
+// Last time updated: 2016-03-25 12:41:43 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -2049,7 +2049,7 @@ function StereoAudioRecorder(mediaStream, config) {
              *     var buffer = recorder.buffer;
              * });
              */
-            self.buffer = new ArrayBuffer(view);
+            self.buffer = new ArrayBuffer(view.buffer.byteLength);
 
             /**
              * @property {DataView} view - The recorded data-view object.

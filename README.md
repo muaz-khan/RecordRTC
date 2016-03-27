@@ -619,14 +619,14 @@ var options = {
 var recorder = RecordRTC(mediaStream, options);
 ```
 
-## `videooBitsPerSecond`
+## `videoBitsPerSecond`
 
 The chosen bitrate for the video component of the media.
 
 ```javascript
 var options = {
   mimeType 'video/webm', // or video/mp4
-  videooBitsPerSecond: 128000
+  videoBitsPerSecond: 128000
 };
 var recorder = RecordRTC(mediaStream, options);
 ```

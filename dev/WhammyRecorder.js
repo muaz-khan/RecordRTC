@@ -331,6 +331,10 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
+
+        if (isStopDrawing) {
+            this.record();
+        }
     };
 
     /**

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-04-15 3:06:46 PM UTC
+// Last time updated: 2016-04-15 3:24:52 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -2484,6 +2484,10 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
+
+        if (!isRecording) {
+            this.record();
+        }
     };
 
     /**
@@ -2897,6 +2901,10 @@ function WhammyRecorder(mediaStream, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
+
+        if (isStopDrawing) {
+            this.record();
+        }
     };
 
     /**

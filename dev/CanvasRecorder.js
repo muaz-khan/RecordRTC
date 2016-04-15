@@ -216,6 +216,10 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
+
+        if (!isRecording) {
+            this.record();
+        }
     };
 
     /**

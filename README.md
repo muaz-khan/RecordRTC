@@ -91,7 +91,7 @@ E.g.
 
 ```html
 <!-- use 5.2.6 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.0/RecordRTC.js"></script>
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.1/RecordRTC.js"></script>
 ```
 
 There are some other NPM packages regarding RecordRTC:
@@ -733,6 +733,13 @@ In the above example; you can see that `recordRTC` instance object is used inste
 The domain www.RecordRTC.org is open-sourced here:
 
 * https://github.com/muaz-khan/RecordRTC/tree/gh-pages
+
+## Issues/Questions?
+
+* Stackoverflow: http://stackoverflow.com/questions/tagged/recordrtc
+* Github: https://github.com/muaz-khan/RecordRTC/issues
+* Disqus: https://www.webrtc-experiment.com/RecordRTC/#ask
+* Email: muazkh@gmail.com
 
 ## License
 

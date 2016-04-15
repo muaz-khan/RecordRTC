@@ -476,7 +476,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (isMediaStreamActive() === false) {
             if (!config.disableLogs) {
-                console.error('MediaStream seems stopped.');
+                console.log('MediaStream seems stopped.');
             }
             jsAudioNode.disconnect();
             recording = false;

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-03-25 12:41:43 PM UTC
+// Last time updated: 2016-04-15 3:06:46 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1729,6 +1729,9 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         if (isMediaStreamActive() === false) {
+            if (!config.disableLogs) {
+                console.log('MediaStream seems stopped.');
+            }
             self.stop();
             return;
         }
@@ -2215,7 +2218,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (isMediaStreamActive() === false) {
             if (!config.disableLogs) {
-                console.error('MediaStream seems stopped.');
+                console.log('MediaStream seems stopped.');
             }
             jsAudioNode.disconnect();
             recording = false;
@@ -3658,9 +3661,9 @@ function GifRecorder(mediaStream, config) {
                 // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
                 // Tweak for Android Chrome
                 video.play();
-            }
 
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
 
             if (config.onGifPreview) {
                 config.onGifPreview(canvas.toDataURL('image/png'));
@@ -3757,8 +3760,10 @@ function GifRecorder(mediaStream, config) {
     if (isHTMLObject) {
         if (mediaStream instanceof CanvasRenderingContext2D) {
             context = mediaStream;
+            canvas = context.canvas;
         } else if (mediaStream instanceof HTMLCanvasElement) {
             context = mediaStream.getContext('2d');
+            canvas = mediaStream;
         }
     }
 

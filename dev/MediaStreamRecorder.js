@@ -304,6 +304,9 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         if (isMediaStreamActive() === false) {
+            if (!config.disableLogs) {
+                console.log('MediaStream seems stopped.');
+            }
             self.stop();
             return;
         }

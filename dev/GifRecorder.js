@@ -118,9 +118,9 @@ function GifRecorder(mediaStream, config) {
                 // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
                 // Tweak for Android Chrome
                 video.play();
-            }
 
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
 
             if (config.onGifPreview) {
                 config.onGifPreview(canvas.toDataURL('image/png'));
@@ -217,8 +217,10 @@ function GifRecorder(mediaStream, config) {
     if (isHTMLObject) {
         if (mediaStream instanceof CanvasRenderingContext2D) {
             context = mediaStream;
+            canvas = context.canvas;
         } else if (mediaStream instanceof HTMLCanvasElement) {
             context = mediaStream.getContext('2d');
+            canvas = mediaStream;
         }
     }
 

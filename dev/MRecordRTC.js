@@ -77,9 +77,18 @@ function MRecordRTC(mediaStream) {
             gif: null
         };
 
-        if (typeof mediaType.audio !== 'function' && isMediaRecorderCompatible() && mediaStream && mediaStream.getAudioTracks && mediaStream.getAudioTracks().length && mediaStream.getVideoTracks().length) {
+        if (typeof mediaType.audio !== 'function' && isMediaRecorderCompatible() && mediaStream.getAudioTracks && !mediaStream.getAudioTracks().length) {
             // Firefox is supporting both audio/video in single blob
-            this.mediaType.audio = false;
+            mediaType.audio = false;
+        }
+
+        if (typeof mediaType.video !== 'function' && isMediaRecorderCompatible() && mediaStream.getVideoTracks && !mediaStream.getVideoTracks().length) {
+            // Firefox is supporting both audio/video in single blob
+            mediaType.video = false;
+        }
+
+        if (!mediaType.audio && !mediaType.video) {
+            throw 'MediaStream must have either audio or video tracks.';
         }
 
         if (!!mediaType.audio) {
@@ -87,6 +96,7 @@ function MRecordRTC(mediaStream) {
             if (typeof mediaType.audio === 'function') {
                 recorderType = mediaType.audio;
             }
+
             this.audioRecorder = new RecordRTC(mediaStream, {
                 type: 'audio',
                 bufferSize: this.bufferSize,
@@ -96,6 +106,7 @@ function MRecordRTC(mediaStream) {
                 recorderType: recorderType,
                 mimeType: mimeType.audio
             });
+
             if (!mediaType.video) {
                 this.audioRecorder.startRecording();
             }
@@ -134,6 +145,7 @@ function MRecordRTC(mediaStream) {
                 recorderType: recorderType,
                 mimeType: mimeType.video
             });
+
             if (!mediaType.audio) {
                 this.videoRecorder.startRecording();
             }
@@ -141,13 +153,18 @@ function MRecordRTC(mediaStream) {
 
         if (!!mediaType.audio && !!mediaType.video) {
             var self = this;
-            self.videoRecorder.initRecorder(function() {
-                self.audioRecorder.initRecorder(function() {
-                    // Both recorders are ready to record things accurately
-                    self.videoRecorder.startRecording();
-                    self.audioRecorder.startRecording();
+            if (isMediaRecorderCompatible()) {
+                self.audioRecorder = null;
+                self.videoRecorder.startRecording();
+            } else {
+                self.videoRecorder.initRecorder(function() {
+                    self.audioRecorder.initRecorder(function() {
+                        // Both recorders are ready to record things accurately
+                        self.videoRecorder.startRecording();
+                        self.audioRecorder.startRecording();
+                    });
                 });
-            });
+            }
         }
 
         if (!!mediaType.gif) {

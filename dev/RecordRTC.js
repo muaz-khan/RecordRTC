@@ -159,7 +159,7 @@ function RecordRTC(mediaStream, config) {
             throw 'Pass a callback function over getDataURL.';
         }
 
-        var blob = _mediaRecorder ? _mediaRecorder.blob : mediaRecorder.blob;
+        var blob = _mediaRecorder ? _mediaRecorder.blob : (mediaRecorder || {}).blob;
 
         if (!blob) {
             if (!config.disableLogs) {

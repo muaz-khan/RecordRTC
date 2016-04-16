@@ -169,3 +169,7 @@ var DiskStorage = {
     dataStoreName: 'recordRTC',
     dbName: null
 };
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.DiskStorage = DiskStorage;
+}

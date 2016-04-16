@@ -91,12 +91,25 @@ E.g.
 
 ```html
 <!-- use 5.2.6 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.2/RecordRTC.js"></script>
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.3/RecordRTC.js"></script>
 ```
 
 There are some other NPM packages regarding RecordRTC:
 
 * [https://www.npmjs.org/search?q=RecordRTC](https://www.npmjs.org/search?q=RecordRTC)
+
+Here is how to use `require`:
+
+```javascript
+var RecordRTC = require('recordrtc');
+var Whammy = RecordRTC.Whammy;
+var WhammyRecorder = RecordRTC.WhammyRecorder;
+var StereoAudioRecorder = RecordRTC.StereoAudioRecorder;
+// and so on
+
+var video = new Whammy.Video(100);
+var recorder = new StereoAudioRecorder(stream, options);
+```
 
 ## How to capture stream?
 

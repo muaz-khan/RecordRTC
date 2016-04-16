@@ -395,3 +395,7 @@ MRecordRTC.getFromDisk = RecordRTC.getFromDisk;
  * });
  */
 MRecordRTC.writeToDisk = RecordRTC.writeToDisk;
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.MRecordRTC = MRecordRTC;
+}

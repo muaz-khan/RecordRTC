@@ -299,3 +299,7 @@ function CanvasRecorder(htmlElement, config) {
 
     var whammy = new Whammy.Video(100);
 }
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.CanvasRecorder = CanvasRecorder;
+}

@@ -523,3 +523,7 @@ function StereoAudioRecorder(mediaStream, config) {
     // to prevent self audio to be connected with speakers
     jsAudioNode.connect(context.destination);
 }
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.StereoAudioRecorder = StereoAudioRecorder;
+}

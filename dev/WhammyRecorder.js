@@ -356,3 +356,7 @@ function WhammyRecorder(mediaStream, config) {
     var lastTime;
     var whammy;
 }
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.WhammyRecorder = WhammyRecorder;
+}

@@ -3,6 +3,17 @@
 
 // animation-frame used in WebM recording
 
+if (typeof window === 'undefined' && typeof global !== 'undefined') {
+    global.navigator = {
+        userAgent: ''
+    };
+
+    /*global window:true */
+    var window = global;
+} else if (typeof window === 'undefined') {
+    // window = this;
+}
+
 /*jshint -W079 */
 var requestAnimationFrame = window.requestAnimationFrame;
 if (typeof requestAnimationFrame === 'undefined') {

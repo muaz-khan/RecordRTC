@@ -243,3 +243,7 @@ function GifRecorder(mediaStream, config) {
 
     var gifEncoder;
 }
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.GifRecorder = GifRecorder;
+}

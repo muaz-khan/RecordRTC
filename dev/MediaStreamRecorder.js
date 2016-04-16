@@ -314,3 +314,7 @@ function MediaStreamRecorder(mediaStream, config) {
         setTimeout(looper, 1000); // check every second
     })();
 }
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.MediaStreamRecorder = MediaStreamRecorder;
+}

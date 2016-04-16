@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-04-15 4:24:45 PM UTC
+// Last time updated: 2016-04-16 3:50:28 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1164,10 +1164,25 @@ MRecordRTC.getFromDisk = RecordRTC.getFromDisk;
  */
 MRecordRTC.writeToDisk = RecordRTC.writeToDisk;
 
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.MRecordRTC = MRecordRTC;
+}
+
 // _____________________________
 // Cross-Browser-Declarations.js
 
 // animation-frame used in WebM recording
+
+if (typeof window === 'undefined' && typeof global !== 'undefined') {
+    global.navigator = {
+        userAgent: ''
+    };
+
+    /*global window:true */
+    var window = global;
+} else if (typeof window === 'undefined') {
+    // window = this;
+}
 
 /*jshint -W079 */
 var requestAnimationFrame = window.requestAnimationFrame;
@@ -1395,6 +1410,10 @@ if (typeof AudioContext !== 'undefined') {
     Storage.AudioContext = AudioContext;
 } else if (typeof webkitAudioContext !== 'undefined') {
     Storage.AudioContext = webkitAudioContext;
+}
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.Storage = Storage;
 }
 
 function isMediaRecorderCompatible() {
@@ -1755,6 +1774,10 @@ function MediaStreamRecorder(mediaStream, config) {
 
         setTimeout(looper, 1000); // check every second
     })();
+}
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.MediaStreamRecorder = MediaStreamRecorder;
 }
 
 // source code from: http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js
@@ -2283,6 +2306,10 @@ function StereoAudioRecorder(mediaStream, config) {
     jsAudioNode.connect(context.destination);
 }
 
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.StereoAudioRecorder = StereoAudioRecorder;
+}
+
 // _________________
 // CanvasRecorder.js
 
@@ -2583,6 +2610,10 @@ function CanvasRecorder(htmlElement, config) {
     var lastTime = new Date().getTime();
 
     var whammy = new Whammy.Video(100);
+}
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.CanvasRecorder = CanvasRecorder;
 }
 
 // _________________
@@ -2942,6 +2973,10 @@ function WhammyRecorder(mediaStream, config) {
     var video;
     var lastTime;
     var whammy;
+}
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.WhammyRecorder = WhammyRecorder;
 }
 
 // https://github.com/antimatter15/whammy/blob/master/LICENSE
@@ -3378,6 +3413,10 @@ var Whammy = (function() {
     };
 })();
 
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.Whammy = Whammy;
+}
+
 // ______________ (indexed-db)
 // DiskStorage.js
 
@@ -3549,6 +3588,10 @@ var DiskStorage = {
     dataStoreName: 'recordRTC',
     dbName: null
 };
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.DiskStorage = DiskStorage;
+}
 
 // ______________
 // GifRecorder.js
@@ -3794,4 +3837,8 @@ function GifRecorder(mediaStream, config) {
     var startTime, endTime, lastFrameTime;
 
     var gifEncoder;
+}
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.GifRecorder = GifRecorder;
 }

@@ -754,6 +754,16 @@ The domain www.RecordRTC.org is open-sourced here:
 * Disqus: https://www.webrtc-experiment.com/RecordRTC/#ask
 * Email: muazkh@gmail.com
 
+## NPM Package
+
+NPM package contains following files:
+
+1. RecordRTC.js
+2. RecordRTC.min.js
+3. gif-recorder.js (for those who wanna record Gifs)
+4. screenshot.js (for those who wanna record Canvas2D or Webpage)
+5. index.html & server.js (localhost demo)
+
 ## License
 
 [RecordRTC.js](https://github.com/muaz-khan/RecordRTC) is released under [MIT licence](https://www.webrtc-experiment.com/licence/) . Copyright (c) [Muaz Khan](http://www.MuazKhan.com).

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-04-16 3:50:28 PM UTC
+// Last time updated: 2016-04-18 2:23:01 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -3713,7 +3713,9 @@ function GifRecorder(mediaStream, config) {
                 // via: https://github.com/muaz-khan/WebRTC-Experiment/pull/316
                 // Tweak for Android Chrome
                 video.play();
+            }
 
+            if(!isHTMLObject) {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
             }
 

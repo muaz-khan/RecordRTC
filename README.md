@@ -6,6 +6,8 @@
 
 > [RecordRTC](https://www.webrtc-experiment.com/RecordRTC/) is a JavaScript-based media-recording library for modern web-browsers (supporting WebRTC getUserMedia API). It is optimized for different devices and browsers to bring all client-side (pluginfree) recording solutions in single place.
 
+* [Youtube Video Tutorial](https://www.youtube.com/watch?v=YrLzTgdJ-Kg)
+
 # Check all releases:
 
 * https://github.com/muaz-khan/RecordRTC/releases
@@ -54,6 +56,10 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 11. [ConcatenateBlobs.js](https://github.com/muaz-khan/ConcatenateBlobs) - Concatenate multiple recordings in single Blob!
 12. [Remote audio-stream recording](https://www.webrtc-experiment.com/demos/remote-stream-recording.html) or [a real p2p demo](https://www.webrtc-experiment.com/RTCMultiConnection/RecordRTC-and-RTCMultiConnection.html)
 13. [Mp3 or Wav Recording](https://www.webrtc-experiment.com/RecordRTC/Record-Mp3-or-Wav.html)
+
+You can also try a chrome extension for screen recording:
+
+* https://chrome.google.com/webstore/detail/recordrtc/ndcljioonkecdnaaihodjgiliohngojp
 
 ## How to link?
 

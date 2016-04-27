@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-04-18 2:23:01 PM UTC
+// Last time updated: 2016-04-27 7:48:48 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -748,8 +748,7 @@ function GetRecorderType(mediaStream, config) {
         recorder = CanvasRecorder;
     }
 
-    // todo: enable below block when MediaRecorder in Chrome gets out of flags; and it also supports audio recording.
-    if (isMediaRecorderCompatible() && isChrome && recorder !== CanvasRecorder && recorder !== GifRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
+    if (isMediaRecorderCompatible() && recorder !== CanvasRecorder && recorder !== GifRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
         if (mediaStream.getVideoTracks().length) {
             recorder = MediaStreamRecorder;
         }
@@ -1425,17 +1424,13 @@ function isMediaRecorderCompatible() {
         return true;
     }
 
-    if (!isChrome) {
-        return false;
-    }
-
     var nVer = navigator.appVersion;
     var nAgt = navigator.userAgent;
     var fullVersion = '' + parseFloat(navigator.appVersion);
     var majorVersion = parseInt(navigator.appVersion, 10);
     var nameOffset, verOffset, ix;
 
-    if (isChrome) {
+    if (isChrome || isOpera) {
         verOffset = nAgt.indexOf('Chrome');
         fullVersion = nAgt.substring(verOffset + 7);
     }
@@ -3715,7 +3710,7 @@ function GifRecorder(mediaStream, config) {
                 video.play();
             }
 
-            if(!isHTMLObject) {
+            if (!isHTMLObject) {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
             }
 

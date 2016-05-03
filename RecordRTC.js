@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-04-27 7:48:48 AM UTC
+// Last time updated: 2016-05-03 8:19:31 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1304,12 +1304,6 @@ if (typeof MediaStream !== 'undefined') {
                 }
             });
         };
-    }
-}
-
-if (typeof location !== 'undefined') {
-    if (location.href.indexOf('file:') === 0) {
-        console.error('Please load this HTML file on HTTP or HTTPS.');
     }
 }
 

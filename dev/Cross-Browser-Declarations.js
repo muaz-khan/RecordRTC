@@ -138,12 +138,6 @@ if (typeof MediaStream !== 'undefined') {
     }
 }
 
-if (typeof location !== 'undefined') {
-    if (location.href.indexOf('file:') === 0) {
-        console.error('Please load this HTML file on HTTP or HTTPS.');
-    }
-}
-
 // below function via: http://goo.gl/B3ae8c
 /**
  * @param {number} bytes - Pass bytes and get formafted string.

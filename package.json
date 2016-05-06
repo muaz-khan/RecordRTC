@@ -1,7 +1,7 @@
 {
   "name": "recordrtc",
   "preferGlobal": false,
-  "version": "5.3.4",
+  "version": "5.3.5",
   "author": {
     "name": "Muaz Khan",
     "email": "muazkh@gmail.com",
@@ -32,6 +32,7 @@
     "email": "muazkh@gmail.com"
   },
   "homepage": "http://RecordRTC.org/",
+  "tonicExampleFilename": "npm-test.js",
   "_id": "recordrtc@",
   "_from": "recordrtc@",
   "devDependencies": {

@@ -3,17 +3,6 @@
 
 // animation-frame used in WebM recording
 
-if (typeof window === 'undefined' && typeof global !== 'undefined') {
-    global.navigator = {
-        userAgent: ''
-    };
-
-    /*global window:true */
-    var window = global;
-} else if (typeof window === 'undefined') {
-    // window = this;
-}
-
 /*jshint -W079 */
 var requestAnimationFrame = window.requestAnimationFrame;
 if (typeof requestAnimationFrame === 'undefined') {
@@ -65,7 +54,7 @@ if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     URL = webkitURL;
 }
 
-if (typeof navigator !== 'undefined') {
+if (typeof navigator !== 'undefined') { // maybe window.navigator?
     if (typeof navigator.webkitGetUserMedia !== 'undefined') {
         navigator.getUserMedia = navigator.webkitGetUserMedia;
     }
@@ -73,10 +62,6 @@ if (typeof navigator !== 'undefined') {
     if (typeof navigator.mozGetUserMedia !== 'undefined') {
         navigator.getUserMedia = navigator.mozGetUserMedia;
     }
-} else {
-    // if you're using NPM or solutions where "navigator" is NOT available,
-    // just define it globally before loading RecordRTC.js script.
-    throw 'Please make sure to define a global variable named as "navigator"';
 }
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);

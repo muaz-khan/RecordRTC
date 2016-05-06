@@ -61,48 +61,32 @@ You can also try a chrome extension for screen recording:
 
 * https://chrome.google.com/webstore/detail/recordrtc/ndcljioonkecdnaaihodjgiliohngojp
 
-## How to link?
+# How to link?
+
+## [NPM](https://www.npmjs.com/package/recordrtc) install
 
 ```
 npm install recordrtc
 
 # you can use with "require" (browserify/nodejs)
 var RecordRTC = require('recordrtc');
-var recorder = RecordRTC(mediaStream, { type: 'audio'});
+
+var recorder = RecordRTC({}, {
+    type: 'video',
+    recorderType: RecordRTC.WhammyRecorder
+});
+
+console.log('\n--------\nRecordRTC\n--------\n');
+console.log(recorder);
+
+console.log('\n--------\nstartRecording\n--------\n');
+recorder.startRecording();
+console.log('\n--------\nprocess.exit()\n--------\n');
+
+process.exit()
 ```
 
-or using [Bower](http://bower.io):
-
-```
-bower install recordrtc
-```
-
-To use it:
-
-```html
-<script src="./node_modules/recordrtc/RecordRTC.js"></script>
-
-<!-- or -->
-<script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
-
-<!-- or -->
-<script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
-```
-
-It is suggested to link specific release:
-
-* https://github.com/muaz-khan/RecordRTC/releases
-
-E.g.
-
-```html
-<!-- use 5.2.6 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.3/RecordRTC.js"></script>
-```
-
-There are some other NPM packages regarding RecordRTC:
-
-* [https://www.npmjs.org/search?q=RecordRTC](https://www.npmjs.org/search?q=RecordRTC)
+* https://tonicdev.com/npm/recordrtc
 
 Here is how to use `require`:
 
@@ -115,6 +99,45 @@ var StereoAudioRecorder = RecordRTC.StereoAudioRecorder;
 
 var video = new Whammy.Video(100);
 var recorder = new StereoAudioRecorder(stream, options);
+```
+
+```html
+<!-- link npm package scripts -->
+<script src="./node_modules/recordrtc/RecordRTC.js"></script>
+```
+
+There are some other NPM packages regarding RecordRTC:
+
+* [https://www.npmjs.org/search?q=RecordRTC](https://www.npmjs.org/search?q=RecordRTC)
+
+## [bower](http://bower.io) install
+
+```
+bower install recordrtc
+```
+
+```html
+<!-- link bower package scripts -->
+<script src="./bower_components/recordrtc/RecordRTC.js"></script>
+```
+
+## CDN
+
+```html
+<!-- CDN -->
+<script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+<!-- non-CDN -->
+<script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+```
+
+## Releases
+
+You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
+
+```html
+<!-- use 5.3.5 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.5/RecordRTC.js"></script>
 ```
 
 ## How to capture stream?

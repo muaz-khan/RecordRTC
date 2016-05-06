@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-05-03 8:19:31 AM UTC
+// Last time updated: 2016-05-06 5:21:33 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1167,21 +1167,95 @@ if (typeof RecordRTC !== 'undefined') {
     RecordRTC.MRecordRTC = MRecordRTC;
 }
 
+var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko) Fake/12.3.4567.89 Fake/123.45';
+
+(function(that) {
+    if (!that) {
+        return;
+    }
+
+    if (typeof window !== 'undefined') {
+        return;
+    }
+
+    if (typeof global === 'undefined') {
+        return;
+    }
+
+    global.navigator = {
+        userAgent: browserFakeUserAgent,
+        getUserMedia: function() {}
+    };
+
+    if (!global.console) {
+        global.console = {};
+    }
+
+    if (typeof global.console.debug === 'undefined') {
+        global.console.debug = global.console.info = global.console.error = global.console.log = global.console.log || function() {
+            console.log(arguments);
+        };
+    }
+
+    if (typeof document === 'undefined') {
+        /*global document:true */
+        that.document = {};
+
+        document.createElement = document.captureStream = document.mozCaptureStream = function() {
+            var obj = {
+                getContext: function() {
+                    return obj;
+                },
+                play: function() {},
+                pause: function() {},
+                drawImage: function() {},
+                toDataURL: function() {
+                    return '';
+                }
+            };
+            return obj;
+        };
+
+        that.HTMLVideoElement = function() {};
+    }
+
+    if (typeof location === 'undefined') {
+        /*global location:true */
+        that.location = {
+            protocol: 'file:',
+            href: '',
+            hash: ''
+        };
+    }
+
+    if (typeof screen === 'undefined') {
+        /*global screen:true */
+        that.screen = {
+            width: 0,
+            height: 0
+        };
+    }
+
+    if (typeof URL === 'undefined') {
+        /*global screen:true */
+        that.URL = {
+            createObjectURL: function() {
+                return '';
+            },
+            revokeObjectURL: function() {
+                return '';
+            }
+        };
+    }
+
+    /*global window:true */
+    that.window = global;
+})(typeof global !== 'undefined' ? global : null);
+
 // _____________________________
 // Cross-Browser-Declarations.js
 
 // animation-frame used in WebM recording
-
-if (typeof window === 'undefined' && typeof global !== 'undefined') {
-    global.navigator = {
-        userAgent: ''
-    };
-
-    /*global window:true */
-    var window = global;
-} else if (typeof window === 'undefined') {
-    // window = this;
-}
 
 /*jshint -W079 */
 var requestAnimationFrame = window.requestAnimationFrame;
@@ -1234,7 +1308,7 @@ if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     URL = webkitURL;
 }
 
-if (typeof navigator !== 'undefined') {
+if (typeof navigator !== 'undefined') { // maybe window.navigator?
     if (typeof navigator.webkitGetUserMedia !== 'undefined') {
         navigator.getUserMedia = navigator.webkitGetUserMedia;
     }
@@ -1242,10 +1316,6 @@ if (typeof navigator !== 'undefined') {
     if (typeof navigator.mozGetUserMedia !== 'undefined') {
         navigator.getUserMedia = navigator.mozGetUserMedia;
     }
-} else {
-    // if you're using NPM or solutions where "navigator" is NOT available,
-    // just define it globally before loading RecordRTC.js script.
-    throw 'Please make sure to define a global variable named as "navigator"';
 }
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);

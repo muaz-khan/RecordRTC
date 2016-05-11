@@ -219,6 +219,48 @@ function MRecordRTC(mediaStream) {
     };
 
     /**
+     * This method pauses recording.
+     * @method
+     * @memberof MRecordRTC
+     * @example
+     * recorder.pauseRecording();
+     */
+    this.pauseRecording = function() {
+        if (this.audioRecorder) {
+            this.audioRecorder.pauseRecording();
+        }
+
+        if (this.videoRecorder) {
+            this.videoRecorder.pauseRecording();
+        }
+
+        if (this.gifRecorder) {
+            this.gifRecorder.pauseRecording();
+        }
+    };
+
+    /**
+     * This method resumes recording.
+     * @method
+     * @memberof MRecordRTC
+     * @example
+     * recorder.resumeRecording();
+     */
+    this.resumeRecording = function() {
+        if (this.audioRecorder) {
+            this.audioRecorder.resumeRecording();
+        }
+
+        if (this.videoRecorder) {
+            this.videoRecorder.resumeRecording();
+        }
+
+        if (this.gifRecorder) {
+            this.gifRecorder.resumeRecording();
+        }
+    };
+
+    /**
      * This method can be used to manually get all recorded blobs.
      * @param {function} callback - All recorded blobs are passed back to the "callback" function.
      * @method

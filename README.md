@@ -136,8 +136,8 @@ bower install recordrtc
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.3.5 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.5/RecordRTC.js"></script>
+<!-- use 5.3.6 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.6/RecordRTC.js"></script>
 ```
 
 ## How to capture stream?
@@ -756,6 +756,35 @@ recordRTC.getFromDisk(function(dataURL) {
 
 In the above example; you can see that `recordRTC` instance object is used instead of global `RecordRTC` object.
 
+## Promises
+
+```html
+<script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+<!-- link this file as well -->
+<script src="/dev/RecordRTC.promises.js"></script>
+
+<script>
+// use "RecordRTCPromisesHandler" instead of "RecordRTC"
+var recorder = new RecordRTCPromisesHandler(mediaStream, options);
+recorder.startRecording().then(function() {
+
+}).catch(function(error) {
+    //
+});
+
+recorder.stopRecording().then(function(url) {
+    var blob = recorder.blob;
+
+    recorder.getDataURL().then(function(dataURL) {
+        //
+    }).catch(function(error) {})
+}).catch(function(error) {
+    //
+});
+</script>
+```
+
 ## Credits
 
 1. [Recorderjs](https://github.com/mattdiamond/Recorderjs) for audio recording
@@ -782,16 +811,6 @@ The domain www.RecordRTC.org is open-sourced here:
 * Github: https://github.com/muaz-khan/RecordRTC/issues
 * Disqus: https://www.webrtc-experiment.com/RecordRTC/#ask
 * Email: muazkh@gmail.com
-
-## NPM Package
-
-NPM package contains following files:
-
-1. RecordRTC.js
-2. RecordRTC.min.js
-3. gif-recorder.js (for those who wanna record Gifs)
-4. screenshot.js (for those who wanna record Canvas2D or Webpage)
-5. index.html & server.js (localhost demo)
 
 ## License
 

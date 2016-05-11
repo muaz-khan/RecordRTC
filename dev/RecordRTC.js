@@ -26,6 +26,10 @@ function RecordRTC(mediaStream, config) {
         throw 'MediaStream is mandatory.';
     }
 
+    config = config || {
+        type: 'video'
+    };
+
     config = new RecordRTCConfiguration(mediaStream, config);
 
     // a reference to user's recordRTC object

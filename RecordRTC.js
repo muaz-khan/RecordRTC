@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-05-06 5:21:33 PM UTC
+// Last time updated: 2016-05-11 3:47:57 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -36,6 +36,10 @@ function RecordRTC(mediaStream, config) {
     if (!mediaStream) {
         throw 'MediaStream is mandatory.';
     }
+
+    config = config || {
+        type: 'video'
+    };
 
     config = new RecordRTCConfiguration(mediaStream, config);
 

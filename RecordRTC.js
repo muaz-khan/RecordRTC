@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-05-11 11:37:50 AM UTC
+// Last time updated: 2016-05-19 7:33:42 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 

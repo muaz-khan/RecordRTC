@@ -49,3 +49,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
 
     this.blob = null;
 }
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.RecordRTCPromisesHandler = RecordRTCPromisesHandler;
+}

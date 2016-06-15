@@ -2570,7 +2570,7 @@ function CanvasRecorder(htmlElement, config) {
         var that = this;
 
         if (isCanvasSupportsStreamCapturing && mediaStreamRecorder) {
-            var slef = this;
+            var self = this;
             mediaStreamRecorder.stop(function() {
                 for (var prop in mediaStreamRecorder) {
                     self[prop] = mediaStreamRecorder[prop];

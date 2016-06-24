@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-06-17 9:27:11 AM UTC
+// Last time updated: 2016-06-24 7:36:34 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1676,7 +1676,12 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // starting a recording session; which will initiate "Reading Thread"
         // "Reading Thread" are used to prevent main-thread blocking scenarios
-        mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
+        try {
+            mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
+        }
+        catch(e) {
+            mediaRecorder = new MediaRecorder(mediaStream);
+        }
 
         if ('canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
             if (!config.disableLogs) {
@@ -1779,7 +1784,13 @@ function MediaStreamRecorder(mediaStream, config) {
             return;
         }
 
-        this.recordingCallback = callback || function() {};
+        this.recordingCallback = function(blob) {
+            mediaRecorder = null;
+
+            if(callback) {
+                callback(blob);
+            }
+        };
 
         // mediaRecorder.state === 'recording' means that media recorder is associated with "session"
         // mediaRecorder.state === 'stopped' means that media recorder is detached from the "session" ... in this case; "session" will also be deleted.

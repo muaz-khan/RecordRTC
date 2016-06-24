@@ -6,7 +6,7 @@
 
 > [RecordRTC](https://www.webrtc-experiment.com/RecordRTC/) is a JavaScript-based media-recording library for modern web-browsers (supporting WebRTC getUserMedia API). It is optimized for different devices and browsers to bring all client-side (pluginfree) recording solutions in single place.
 
-* [Youtube Video Tutorial](https://www.youtube.com/watch?v=YrLzTgdJ-Kg)
+<a href="https://www.youtube.com/watch?v=YrLzTgdJ-Kg"><img src="https://cdn.webrtc-experiment.com/images/RecordRTC-YouTube.png" alt="YouTube Video Tutorial for RecordRTC!" /></a>
 
 # Check all releases:
 

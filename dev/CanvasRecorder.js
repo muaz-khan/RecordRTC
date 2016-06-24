@@ -43,7 +43,7 @@ function CanvasRecorder(htmlElement, config) {
         chromeVersion = parseInt(matchArray[2], 10);
     }
 
-    if ((!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) && chromeVersion < 53) {
+    if ((!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) && chromeVersion < 52) {
         isCanvasSupportsStreamCapturing = false;
     }
 

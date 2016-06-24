@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-06-24 7:36:34 PM UTC
+// Last time updated: 2016-06-24 10:48:46 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1678,8 +1678,7 @@ function MediaStreamRecorder(mediaStream, config) {
         // "Reading Thread" are used to prevent main-thread blocking scenarios
         try {
             mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
-        }
-        catch(e) {
+        } catch (e) {
             mediaRecorder = new MediaRecorder(mediaStream);
         }
 
@@ -1787,7 +1786,7 @@ function MediaStreamRecorder(mediaStream, config) {
         this.recordingCallback = function(blob) {
             mediaRecorder = null;
 
-            if(callback) {
+            if (callback) {
                 callback(blob);
             }
         };
@@ -2480,7 +2479,7 @@ function CanvasRecorder(htmlElement, config) {
         chromeVersion = parseInt(matchArray[2], 10);
     }
 
-    if ((!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) && chromeVersion < 53) {
+    if ((!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) && chromeVersion < 52) {
         isCanvasSupportsStreamCapturing = false;
     }
 

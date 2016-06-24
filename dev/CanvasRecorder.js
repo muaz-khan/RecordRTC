@@ -37,13 +37,15 @@ function CanvasRecorder(htmlElement, config) {
         }
     });
 
+    var _isChrome = (!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) && !!window.chrome;
+
     var chromeVersion = 50;
     var matchArray = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
-    if (isChrome && matchArray && matchArray[2]) {
+    if (_isChrome && matchArray && matchArray[2]) {
         chromeVersion = parseInt(matchArray[2], 10);
     }
 
-    if ((!!window.webkitRTCPeerConnection || !!window.webkitGetUserMedia) && chromeVersion < 52) {
+    if (_isChrome && chromeVersion < 52) {
         isCanvasSupportsStreamCapturing = false;
     }
 

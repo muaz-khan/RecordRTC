@@ -221,7 +221,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         if (mediaRecorder.state === 'recording') {
             // "stop" method auto invokes "requestData"!
-            mediaRecorder.requestData();
+            // mediaRecorder.requestData();
             mediaRecorder.stop();
         }
     };

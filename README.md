@@ -59,6 +59,8 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 14. [Record entire DIV including video, image, textarea, input, drag/move/resize, everything](https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/)
 15. [Record canvas 2D drawings, lines, shapes, texts, images, drag/resize/enlarge/move via a huge drawing tool!](https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/record-canvas-drawings.html)
 16. [Record Canvas2D Animation](https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/Canvas-Animation-Recording.html)
+17. [WebGL animation recording](https://www.webrtc-experiment.com/RecordRTC/webgl/)
+18. [Plotly - WebGL animation recording](https://www.webrtc-experiment.com/RecordRTC/webgl/plotly.html)
 
 You can also try a chrome extension for screen recording:
 
@@ -139,8 +141,8 @@ bower install recordrtc
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.3.8 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.3.8/RecordRTC.js"></script>
+<!-- use 5.4.0 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.0/RecordRTC.js"></script>
 ```
 
 ## How to capture stream?

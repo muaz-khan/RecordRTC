@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-06-24 10:56:24 PM UTC
+// Last time updated: 2016-08-11 4:09:01 PM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1796,7 +1796,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         if (mediaRecorder.state === 'recording') {
             // "stop" method auto invokes "requestData"!
-            mediaRecorder.requestData();
+            // mediaRecorder.requestData();
             mediaRecorder.stop();
         }
     };

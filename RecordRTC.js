@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-08-11 4:09:01 PM UTC
+// Last time updated: 2016-08-17 9:06:10 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1363,7 +1363,7 @@ if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     URL = webkitURL;
 }
 
-if (typeof navigator !== 'undefined') { // maybe window.navigator?
+if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undefined') { // maybe window.navigator?
     if (typeof navigator.webkitGetUserMedia !== 'undefined') {
         navigator.getUserMedia = navigator.webkitGetUserMedia;
     }

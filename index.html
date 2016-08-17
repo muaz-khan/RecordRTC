@@ -163,6 +163,33 @@
 
                 window.params = params;
             })();
+
+            function addStreamStopListener(stream, callback) {
+                var streamEndedEvent = 'ended';
+
+                if ('oninactive' in stream) {
+                    streamEndedEvent = 'inactive';
+                }
+
+                stream.addEventListener(streamEndedEvent, function() {
+                    callback();
+                    callback = function() {};
+                }, false);
+
+                stream.getAudioTracks().forEach(function(track) {
+                    track.addEventListener(streamEndedEvent, function() {
+                        callback();
+                        callback = function() {};
+                    }, false);
+                });
+
+                stream.getVideoTracks().forEach(function(track) {
+                    track.addEventListener(streamEndedEvent, function() {
+                        callback();
+                        callback = function() {};
+                    }, false);
+                });
+            }
         </script>
         
         <script>
@@ -517,9 +544,9 @@
                     
                     config.onMediaCaptured(videoStream);
                     
-                    videoStream.onended = function() {
+                    addStreamStopListener(videoStream, function() {
                         config.onMediaStopped();
-                    };
+                    });
                 }, function(error) {
                     config.onMediaCapturingFailed(error);
                 });
@@ -532,9 +559,9 @@
                     
                     config.onMediaCaptured(audioStream);
                     
-                    audioStream.onended = function() {
+                    addStreamStopListener(audioStream, function() {
                         config.onMediaStopped();
-                    };
+                    });
                 }, function(error) {
                     config.onMediaCapturingFailed(error);
                 });
@@ -547,9 +574,9 @@
                     
                     config.onMediaCaptured(audioVideoStream);
                     
-                    audioVideoStream.onended = function() {
+                    addStreamStopListener(audioVideoStream, function() {
                         config.onMediaStopped();
-                    };
+                    });
                 }, function(error) {
                     config.onMediaCapturingFailed(error);
                 });
@@ -581,9 +608,9 @@
                         
                         config.onMediaCaptured(screenStream);
                         
-                        screenStream.onended = function() {
+                        addStreamStopListener(screenStream, function() {
                             config.onMediaStopped();
-                        };
+                        });
                     }, function(error) {
                         config.onMediaCapturingFailed(error);
                     });
@@ -618,9 +645,9 @@
                         
                         config.onMediaCaptured(screenStream);
                         
-                        screenStream.onended = function() {
+                        addStreamStopListener(screenStream, function() {
                             config.onMediaStopped();
-                        };
+                        });
                     }, function(error) {
                         config.onMediaCapturingFailed(error);
                     });

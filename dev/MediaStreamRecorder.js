@@ -64,8 +64,13 @@ function MediaStreamRecorder(mediaStream, config) {
             mediaStream = stream;
         }
 
-        if (!config.mimeType || config.mimeType.indexOf('audio') === -1) {
+        if (!config.mimeType || config.mimeType.toString().toLowerCase().indexOf('audio') === -1) {
             config.mimeType = isChrome ? 'audio/webm' : 'audio/ogg';
+        }
+
+        if (config.mimeType && config.mimeType.toString().toLowerCase() !== 'audio/ogg' && !!navigator.mozGetUserMedia) {
+            // forcing better codecs on Firefox (via #166)
+            config.mimeType = 'audio/ogg';
         }
     }
 

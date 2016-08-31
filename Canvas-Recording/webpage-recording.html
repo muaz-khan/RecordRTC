@@ -182,7 +182,7 @@ document.getElementById('start').onclick = function() {
     isRecordingStarted = true;
 
     playVideo(function() {
-        recorder.startRecording();    
+        recorder.startRecording();
         setTimeout(function() {
             document.getElementById('stop').disabled = false;
         }, 1000);
@@ -190,7 +190,7 @@ document.getElementById('start').onclick = function() {
 };
 document.getElementById('stop').onclick = function() {
     this.disabled = true;
-    
+
     isStoppedRecording = true;
 
     recorder.stopRecording(function() {
@@ -218,7 +218,7 @@ function playVideo(callback) {
         videoElement.onloadedmetadata = function() {
             callback();
         };
-        videoElement.srcObject = stream;
+        videoElement.src = URL.createObjectURL(stream);
         videoElement.play();
     }
 
@@ -232,4 +232,4 @@ function playVideo(callback) {
     navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
 }
 </script>
-<a href="https://www.webrtc-experiment.com/" style="border-bottom: 1px solid red; color: red; font-size: 1.2em; position: absolute; right: 0; text-decoration: none; top: 0;">←WebRTC Experiments Homepage</a>
+<a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/" style="border-bottom: 1px solid red; color: red; font-size: 1.2em; position: absolute; right: 0; text-decoration: none; top: 0;">Other Canvas-Recording Demos</a>

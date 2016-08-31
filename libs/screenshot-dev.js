@@ -1,10 +1,10 @@
-// Last time updated at July 28, 2016, 08:32:23
+// Last time updated at August 31, 2016, 08:32:23
 
 // Muaz Khan     - https://github.com/muaz-khan
 // MIT License   - https://www.webrtc-experiment.com/licence/
 // Documentation - https://github.com/muaz-khan/WebRTC-Experiment/tree/master/part-of-screen-sharing
 
-// Note: All libraries listed in this file are "external libraries" 
+// Note: All libraries listed in this file are "external libraries"
 // ----  and has their own copyrights. Taken from "html2canvas" project.
 
 /*
@@ -2241,7 +2241,7 @@ NodeParser.prototype.paintElement = function(container) {
     }, this);
 
     this.renderer.clip(container.backgroundClip, function() {
-        switch (container.node.nodeName) {
+       switch (container.node.nodeName) {
         case "svg":
         case "IFRAME":
             var imgContainer = this.images.get(container.node);
@@ -2251,6 +2251,19 @@ NodeParser.prototype.paintElement = function(container) {
                 log("Error loading <" + container.node.nodeName + ">", container.node);
             }
             break;
+        case "VIDEO":
+              // custom code written by Muaz Khan (www.muazkhan.com)
+              // to support <video> screenshots!
+              var imageContainer = {
+                image: container.node,
+                src: '',
+                tainted: false,
+                promise: function() {}
+              };
+
+              // renderImage(ctx, tempCanvas, tempCanvas, bounds, borders);
+              this.renderer.renderImage(container, bounds, container.borders, imageContainer);
+              break;
         case "IMG":
             var imageContainer = this.images.get(container.node.src);
             if (imageContainer) {
@@ -2267,17 +2280,6 @@ NodeParser.prototype.paintElement = function(container) {
         case "TEXTAREA":
             this.paintFormValue(container);
             break;
-        case "VIDEO":
-          // custom code written by Muaz Khan (www.muazkhan.com)
-          // to support <video> screenshots!
-          var tempCanvas = document.createElement('canvas');
-          tempCanvas.width = element.videoWidth || element.clientWidth || 320;
-          tempCanvas.height = element.videoHeight || element.clientHeight || 240;
-          var tempContext = tempCanvas.getContext('2d');
-          tempContext.drawImage(element, 0, 0, tempCanvas.width, tempCanvas.height);
-          
-          renderImage(ctx, tempCanvas, tempCanvas, bounds, borders);
-          break;
       }
     }, this);
 };
@@ -3289,7 +3291,7 @@ CanvasRenderer.prototype.taints = function(imageContainer) {
 
 CanvasRenderer.prototype.drawImage = function(imageContainer, sx, sy, sw, sh, dx, dy, dw, dh) {
     if (!this.taints(imageContainer) || this.options.allowTaint) {
-        this.ctx.drawImage(imageContainer.image, sx, sy, sw, sh, dx, dy, dw, dh);
+      this.ctx.drawImage(imageContainer.image, sx, sy, sw, sh, dx, dy, dw, dh);
     }
 };
 
@@ -6205,7 +6207,7 @@ fabric.Collection = {
 
   var slice = Array.prototype.slice;
 
-  
+
 
   /**
    * Invokes method on all items in a given array
@@ -6325,7 +6327,7 @@ fabric.Collection = {
 
 (function() {
 
-  
+
 
   /**
    * Camelizes a string

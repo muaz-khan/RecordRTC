@@ -311,7 +311,7 @@ function MRecordRTC(mediaStream) {
      */
     this.getDataURL = function(callback) {
         this.getBlob(function(blob) {
-            if(blob.audio && blob.video) {
+            if (blob.audio && blob.video) {
                 getDataURL(blob.audio, function(_audioDataURL) {
                     getDataURL(blob.video, function(_videoDataURL) {
                         callback({
@@ -320,21 +320,19 @@ function MRecordRTC(mediaStream) {
                         });
                     });
                 });
-          }
-          else if(blob.audio) {
-              getDataURL(blob.audio, function(_audioDataURL) {
-                  callback({
-                      audio: _audioDataURL
-                  });
-              });
-          }
-          else if(blob.video) {
-              getDataURL(blob.video, function(_videoDataURL) {
-                  callback({
-                      video: _videoDataURL
-                  });
-              });
-          }
+            } else if (blob.audio) {
+                getDataURL(blob.audio, function(_audioDataURL) {
+                    callback({
+                        audio: _audioDataURL
+                    });
+                });
+            } else if (blob.video) {
+                getDataURL(blob.video, function(_videoDataURL) {
+                    callback({
+                        video: _videoDataURL
+                    });
+                });
+            }
         });
 
         function getDataURL(blob, callback00) {

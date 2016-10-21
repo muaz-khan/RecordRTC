@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2016-08-28 3:42:15 AM UTC
+// Last time updated: 2016-10-21 11:04:26 AM UTC
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -1091,14 +1091,30 @@ function MRecordRTC(mediaStream) {
      */
     this.getDataURL = function(callback) {
         this.getBlob(function(blob) {
-            getDataURL(blob.audio, function(_audioDataURL) {
-                getDataURL(blob.video, function(_videoDataURL) {
-                    callback({
-                        audio: _audioDataURL,
-                        video: _videoDataURL
+            if(blob.audio && blob.video) {
+                getDataURL(blob.audio, function(_audioDataURL) {
+                    getDataURL(blob.video, function(_videoDataURL) {
+                        callback({
+                            audio: _audioDataURL,
+                            video: _videoDataURL
+                        });
                     });
                 });
-            });
+          }
+          else if(blob.audio) {
+              getDataURL(blob.audio, function(_audioDataURL) {
+                  callback({
+                      audio: _audioDataURL
+                  });
+              });
+          }
+          else if(blob.video) {
+              getDataURL(blob.video, function(_videoDataURL) {
+                  callback({
+                      video: _videoDataURL
+                  });
+              });
+          }
         });
 
         function getDataURL(blob, callback00) {

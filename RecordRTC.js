@@ -1,13 +1,16 @@
-'use strict';
+// Last time updated: 2016-10-24 5:12:59 AM UTC
 
-// Last time updated: 2016-10-21 11:04:26 AM UTC
+// ________________
+// RecordRTC v5.4.0
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
-//--------------------------------------------------
+// --------------------------------------------------
 // Muaz Khan     - www.MuazKhan.com
 // MIT License   - www.WebRTC-Experiment.com/licence
-//--------------------------------------------------
+// --------------------------------------------------
+
+'use strict';
 
 // ____________
 // RecordRTC.js
@@ -1091,7 +1094,7 @@ function MRecordRTC(mediaStream) {
      */
     this.getDataURL = function(callback) {
         this.getBlob(function(blob) {
-            if(blob.audio && blob.video) {
+            if (blob.audio && blob.video) {
                 getDataURL(blob.audio, function(_audioDataURL) {
                     getDataURL(blob.video, function(_videoDataURL) {
                         callback({
@@ -1100,21 +1103,19 @@ function MRecordRTC(mediaStream) {
                         });
                     });
                 });
-          }
-          else if(blob.audio) {
-              getDataURL(blob.audio, function(_audioDataURL) {
-                  callback({
-                      audio: _audioDataURL
-                  });
-              });
-          }
-          else if(blob.video) {
-              getDataURL(blob.video, function(_videoDataURL) {
-                  callback({
-                      video: _videoDataURL
-                  });
-              });
-          }
+            } else if (blob.audio) {
+                getDataURL(blob.audio, function(_audioDataURL) {
+                    callback({
+                        audio: _audioDataURL
+                    });
+                });
+            } else if (blob.video) {
+                getDataURL(blob.video, function(_videoDataURL) {
+                    callback({
+                        video: _videoDataURL
+                    });
+                });
+            }
         });
 
         function getDataURL(blob, callback00) {

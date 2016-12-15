@@ -1,4 +1,4 @@
-// Last time updated: 2016-10-24 5:12:59 AM UTC
+e/ Last time updated: 2016-10-24 5:12:59 AM UTC
 
 // ________________
 // RecordRTC v5.4.0
@@ -56,7 +56,7 @@ function RecordRTC(mediaStream, config) {
 
         if (mediaRecorder) {
             mediaRecorder.clearRecordedData();
-            mediaRecorder.resume();
+            mediaRecorder.record();
 
             if (self.recordingDuration) {
                 handleRecordingDuration();

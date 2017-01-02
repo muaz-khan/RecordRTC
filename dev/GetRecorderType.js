@@ -47,7 +47,7 @@ function GetRecorderType(mediaStream, config) {
     }
 
     if (isMediaRecorderCompatible() && recorder !== CanvasRecorder && recorder !== GifRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
-        if (mediaStream.getVideoTracks().length) {
+        if (mediaStream.getVideoTracks().length || (mediaStream.getAudioTracks().length && MediaRecorder.isTypeSupported('audio/webm'))) {
             recorder = MediaStreamRecorder;
         }
     }

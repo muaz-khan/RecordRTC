@@ -19,14 +19,12 @@
 function GetRecorderType(mediaStream, config) {
     var recorder;
 
-    // StereoAudioRecorder can work with all three: Edge, Firefox and Chrome
-    // todo: detect if it is Edge, then auto use: StereoAudioRecorder
+    // StereoAudioRecorder can work with all three
     if (isChrome || isEdge || isOpera) {
-        // Media Stream Recording API has not been implemented in chrome yet;
-        // That's why using WebAudio API to record stereo audio in WAV format
         recorder = StereoAudioRecorder;
     }
 
+    // MediaRecorder since Firefox 25
     if (typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype && !isChrome) {
         recorder = MediaStreamRecorder;
     }
@@ -46,9 +44,17 @@ function GetRecorderType(mediaStream, config) {
         recorder = CanvasRecorder;
     }
 
+    // MediaRecorder for Chrome 49+
     if (isMediaRecorderCompatible() && recorder !== CanvasRecorder && recorder !== GifRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
-        if (mediaStream.getVideoTracks().length) {
-            recorder = MediaStreamRecorder;
+        if (mediaStream.getVideoTracks().length || mediaStream.getAudioTracks().length) {
+            if (config.type === 'audio') {
+                // audio/webm is supported by chrome and audio/ogg by firefox
+                if (MediaRecorder.isTypeSupported('audio/webm') || MediaRecorder.isTypeSupported('audio/ogg')) {
+                    recorder = MediaStreamRecorder;
+                }
+            } else {
+                recorder = MediaStreamRecorder;
+            }
         }
     }
 

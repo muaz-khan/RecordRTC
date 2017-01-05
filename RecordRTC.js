@@ -1,4 +1,4 @@
-// Last time updated: 2016-12-25 3:20:46 PM UTC
+// Last time updated: 2017-01-05 10:11:56 AM UTC
 
 // ________________
 // RecordRTC v5.4.0
@@ -765,8 +765,19 @@ function GetRecorderType(mediaStream, config) {
     }
 
     if (isMediaRecorderCompatible() && recorder !== CanvasRecorder && recorder !== GifRecorder && typeof MediaRecorder !== 'undefined' && 'requestData' in MediaRecorder.prototype) {
-        if (mediaStream.getVideoTracks().length) {
-            recorder = MediaStreamRecorder;
+        if (mediaStream.getVideoTracks().length || mediaStream.getAudioTracks().length) {
+            // audio-only recording
+            if (config.type === 'audio') {
+                if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported('audio/webm')) {
+                    recorder = MediaStreamRecorder;
+                }
+                // else recorder = StereoAudioRecorder;
+            } else {
+                // video or screen tracks
+                if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported('video/webm')) {
+                    recorder = MediaStreamRecorder;
+                }
+            }
         }
     }
 

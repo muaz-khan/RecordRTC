@@ -1,4 +1,6 @@
-# [RecordRTC](https://github.com/muaz-khan/RecordRTC): [WebRTC](https://www.webrtc-experiment.com/) audio/video recording
+# RecordRTC: WebRTC JavaScript Library for Audio+Video+Screen Recording
+
+# Demo: https://www.webrtc-experiment.com/RecordRTC/
 
 [RecordRTC Documentation](http://RecordRTC.org/) / [RecordRTC Wiki Pages](https://github.com/muaz-khan/RecordRTC/wiki) / [RecordRTC Demo](https://www.webrtc-experiment.com/RecordRTC/) / [WebRTC Experiments](https://www.webrtc-experiment.com/)
 

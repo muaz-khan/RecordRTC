@@ -240,6 +240,7 @@
             var recordingMedia = recordingDIV.querySelector('.recording-media');
             var recordingPlayer = recordingDIV.querySelector('video');
             var mediaContainerFormat = recordingDIV.querySelector('.media-container-format');
+            var mimeType = 'video/webm';
 
             window.onbeforeunload = function() {
                 recordingDIV.querySelector('button').disabled = false;
@@ -329,9 +330,17 @@
                     }
                 };
 
-                var mimeType = 'video/webm';
                 if(mediaContainerFormat.value === 'Mp4') {
-                    mimeType = 'video/mp4; codecs=h264';
+                    mimeType = 'video/webm\;codecs=h264';
+
+                    if(typeof MediaRecorder.isTypeSupported === 'function') {
+                        if(MediaRecorder.isTypeSupported('video/mpeg')) {
+                            mimeType = 'video/mpeg';
+                        }
+                        else {
+                            mimeType = 'video/webm\;codecs=h264';
+                        }
+                    }
                 }
 
                 if(recordingMedia.value === 'record-audio') {
@@ -864,8 +873,8 @@
                 recordingDIV.querySelector('#save-to-disk').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
 
-                    var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.webm', {
-                        type: 'video/webm'
+                    var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm'), {
+                        type: mimeType
                     });
 
                     invokeSaveAsDialog(file, file.name);
@@ -874,15 +883,15 @@
                 recordingDIV.querySelector('#open-new-tab').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
 
-                    var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.webm', {
-                        type: 'video/webm'
+                    var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm'), {
+                        type: mimeType
                     });
 
                     window.open(URL.createObjectURL(file));
                 };
 
-                var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.webm', {
-                    type: 'video/webm'
+                var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm'), {
+                    type: mimeType
                 });
 
                 window.open(URL.createObjectURL(file));

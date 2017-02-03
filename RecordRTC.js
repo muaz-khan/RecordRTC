@@ -1,4 +1,4 @@
-// Last time updated: 2017-01-05 10:11:56 AM UTC
+// Last time updated: 2017-02-03 12:20:23 PM UTC
 
 // ________________
 // RecordRTC v5.4.0
@@ -1703,6 +1703,16 @@ function MediaStreamRecorder(mediaStream, config) {
             recorderHints = 'video/vp8';
         }
 
+        if (typeof MediaRecorder.isTypeSupported === 'function' && recorderHints.mimeType) {
+            if (!MediaRecorder.isTypeSupported(recorderHints.mimeType)) {
+                if (!config.disableLogs) {
+                    console.warn('MediaRecorder API seems unable to record mimeType:', recorderHints.mimeType);
+                }
+
+                recorderHints.mimeType = config.type === 'audio' ? 'audio/webm' : 'video/webm';
+            }
+        }
+
         // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
         // https://wiki.mozilla.org/Gecko:MediaRecorder
         // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
@@ -1715,7 +1725,7 @@ function MediaStreamRecorder(mediaStream, config) {
             mediaRecorder = new MediaRecorder(mediaStream);
         }
 
-        if ('canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
+        if (!MediaRecorder.isTypeSupported && 'canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
             if (!config.disableLogs) {
                 console.warn('MediaRecorder API seems unable to record mimeType:', config.mimeType);
             }

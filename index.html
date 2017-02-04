@@ -166,12 +166,13 @@
 
             <div style="text-align: center; display: none;">
                 <button id="save-to-disk">Save To Disk</button>
+                <button id="upload-to-server">Upload to PHP Server</button>
                 <button id="open-new-tab">Open New Tab</button>
             </div>
 
-            <br>
-
-            <video controls muted></video>
+            <div style="margin-top: 10px;">
+                <video controls muted></video>
+            </div>
         </section>
 
         <script>
@@ -445,8 +446,7 @@
                                 audio.autoplay = true;
 
                                 audio.onloadedmetadata = function() {
-                                    recordingPlayer.src = videoRecorder.toURL();
-                                    recordingPlayer.play();
+                                    setVideoURL(videoRecorder);
                                 };
 
                                 recordingPlayer.parentNode.appendChild(document.createElement('hr'));
@@ -474,12 +474,11 @@
                         button.recordingEndedCallback = function(url) {
                             recordingPlayer.muted = false;
                             recordingPlayer.removeAttribute('muted');
-                            recordingPlayer.src = url;
-                            recordingPlayer.play();
+                            
+                            setVideoURL(url);
 
                             recordingPlayer.onended = function() {
-                                recordingPlayer.pause();
-                                recordingPlayer.src = URL.createObjectURL(button.recordRTC.getBlob());
+                                setVideoURL(button.recordRTC);
                             };
                         };
 
@@ -514,8 +513,7 @@
                                 return;
                             }
 
-                            recordingPlayer.src = url;
-                            recordingPlayer.play();
+                            setVideoURL(url);
                         };
 
                         button.recordRTC.startRecording();
@@ -539,12 +537,10 @@
                         button.recordingEndedCallback = function(url) {
                             recordingPlayer.muted = false;
                             recordingPlayer.removeAttribute('muted');
-                            recordingPlayer.src = url;
-                            recordingPlayer.play();
+                            setVideoURL(url);
 
                             recordingPlayer.onended = function() {
-                                recordingPlayer.pause();
-                                recordingPlayer.src = URL.createObjectURL(button.recordRTC.getBlob());
+                                setVideoURL(button.recordRTC);
                             };
                         };
 
@@ -869,11 +865,13 @@
             }
 
             function saveToDiskOrOpenNewTab(recordRTC) {
+                var fileName = 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm');
+
                 recordingDIV.querySelector('#save-to-disk').parentNode.style.display = 'block';
                 recordingDIV.querySelector('#save-to-disk').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
 
-                    var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm'), {
+                    var file = new File([recordRTC.getBlob()], fileName, {
                         type: mimeType
                     });
 
@@ -883,18 +881,146 @@
                 recordingDIV.querySelector('#open-new-tab').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
 
-                    var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm'), {
+                    var file = new File([recordRTC.getBlob()], fileName, {
                         type: mimeType
                     });
 
                     window.open(URL.createObjectURL(file));
                 };
 
-                var file = new File([recordRTC.getBlob()], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm'), {
+                // upload to PHP server
+                recordingDIV.querySelector('#upload-to-server').disabled = false;
+                recordingDIV.querySelector('#upload-to-server').onclick = function() {
+                    if(!recordRTC) return alert('No recording found.');
+                    this.disabled = true;
+
+                    var button = this;
+                    uploadToServer(fileName, recordRTC, function(progress, fileURL) {
+                        if(progress === 'ended') {
+                            button.disabled = false;
+                            button.innerHTML = 'Click to download from server';
+                            button.onclick = function() {
+                                SaveFileURLToDisk(fileURL, fileName);
+                            };
+
+                            setVideoURL(fileURL);
+                            return;
+                        }
+                        button.innerHTML = progress;
+                    });
+                };
+            }
+
+            function uploadToServer(fileName, recordRTC, callback) {
+                var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.getBlob();
+                
+                blob = new File([blob], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + (mimeType.indexOf('h264') != -1 ? 'mp4' : 'webm'), {
                     type: mimeType
                 });
 
-                window.open(URL.createObjectURL(file));
+                // create FormData
+                var formData = new FormData();
+                formData.append('video-filename', fileName);
+                formData.append('video-blob', blob);
+
+                callback('Uploading recorded-file to server.');
+
+                makeXMLHttpRequest('https://webrtcweb.com/RecordRTC/', formData, function(progress) {
+                    if (progress !== 'upload-ended') {
+                        callback(progress);
+                        return;
+                    }
+
+                    var initialURL = 'https://webrtcweb.com/RecordRTC/uploads/';
+
+                    callback('ended', initialURL + fileName);
+                });
+            }
+
+            function makeXMLHttpRequest(url, data, callback) {
+                var request = new XMLHttpRequest();
+                request.onreadystatechange = function() {
+                    if (request.readyState == 4 && request.status == 200) {
+                        callback('upload-ended');
+                    }
+                };
+
+                request.upload.onloadstart = function() {
+                    callback('Upload started...');
+                };
+
+                request.upload.onprogress = function(event) {
+                    callback('Upload Progress ' + Math.round(event.loaded / event.total * 100) + "%");
+                };
+
+                request.upload.onload = function() {
+                    callback('progress-about-to-end');
+                };
+
+                request.upload.onload = function() {
+                    callback('progress-ended');
+                };
+
+                request.upload.onerror = function(error) {
+                    callback('Failed to upload to server');
+                    console.error('XMLHttpRequest failed', error);
+                };
+
+                request.upload.onabort = function(error) {
+                    callback('Upload aborted.');
+                    console.error('XMLHttpRequest aborted', error);
+                };
+
+                request.open('POST', url);
+                request.send(data);
+            }
+
+            function SaveFileURLToDisk(fileUrl, fileName) {
+                var hyperlink = document.createElement('a');
+                hyperlink.href = fileUrl;
+                hyperlink.target = '_blank';
+                hyperlink.download = fileName || fileUrl;
+
+                (document.body || document.documentElement).appendChild(hyperlink);
+                hyperlink.onclick = function() {
+                   (document.body || document.documentElement).removeChild(hyperlink);
+                };
+
+                var mouseEvent = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+
+                hyperlink.dispatchEvent(mouseEvent);
+                
+                // NEVER use "revoeObjectURL" here
+                // you can use it inside "onclick" handler, though.
+                // (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
+
+                // if you're writing cross-browser function:
+                if(!navigator.mozGetUserMedia) { // i.e. if it is NOT Firefox
+                   window.URL.revokeObjectURL(hyperlink.href);
+                }
+            }
+
+            function setVideoURL(url) {
+                if(url instanceof Blob || url instanceof File) {
+                    url = URL.createObjectURL(url);
+                }
+
+                if(url instanceof RecordRTC || url.getBlob) {
+                    url = URL.createObjectURL(url.getBlob());
+                }
+
+                var parentNode = recordingPlayer.parentNode;
+                parentNode.removeChild(recordingPlayer);
+                recordingPlayer = document.createElement('video');
+                recordingPlayer.controls = true;
+                parentNode.appendChild(recordingPlayer);
+
+                recordingPlayer.src = url;
+                recordingPlayer.play();
             }
         </script>
 

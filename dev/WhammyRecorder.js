@@ -61,8 +61,8 @@ function WhammyRecorder(mediaStream, config) {
             };
         }
 
-        canvas.width = config.canvas.width;
-        canvas.height = config.canvas.height;
+        canvas.width = config.canvas.width || 320;
+        canvas.height = config.canvas.height || 240;
 
         context = canvas.getContext('2d');
 

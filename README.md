@@ -36,7 +36,27 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio/Video Separately |
 | Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | Only Audio |
 
-## How RecordRTC encodes wav/webm?
+## RecordRTC Encoders Format
+
+#### vp9
+
+<a href="https://www.webrtc-experiment.com/images/RecordRTC-vp9.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-vp9.png" alt="RecordRTC vp9" /></a>
+
+#### vp8
+
+<a href="https://www.webrtc-experiment.com/images/RecordRTC-vp8.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-vp8.png" alt="RecordRTC vp8" /></a>
+
+#### h264
+
+<a href="https://www.webrtc-experiment.com/images/RecordRTC-h264.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-h264.png" alt="RecordRTC h264" /></a>
+
+#### pcm
+
+<a href="https://www.webrtc-experiment.com/images/RecordRTC-pcm.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-pcm.png" alt="RecordRTC pcm" /></a>
+
+#### opus
+
+<a href="https://www.webrtc-experiment.com/images/RecordRTC-opus.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-opus.png" alt="RecordRTC opus" /></a>
 
 |Media File|Bitrate/Framerate|encoders|Framesize|additional info|
 | ------------- |-------------|-------------|-------------|-------------|

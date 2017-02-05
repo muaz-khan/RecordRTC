@@ -1,4 +1,4 @@
-// Last time updated: 2017-02-03 12:20:23 PM UTC
+// Last time updated: 2017-02-05 5:17:27 PM UTC
 
 // ________________
 // RecordRTC v5.4.0
@@ -2850,8 +2850,8 @@ function WhammyRecorder(mediaStream, config) {
             };
         }
 
-        canvas.width = config.canvas.width;
-        canvas.height = config.canvas.height;
+        canvas.width = config.canvas.width || 320;
+        canvas.height = config.canvas.height || 240;
 
         context = canvas.getContext('2d');
 
@@ -3824,11 +3824,11 @@ function GifRecorder(mediaStream, config) {
                 };
             }
 
-            canvas.width = config.canvas.width;
-            canvas.height = config.canvas.height;
+            canvas.width = config.canvas.width || 320;
+            canvas.height = config.canvas.height || 240;
 
-            video.width = config.video.width;
-            video.height = config.video.height;
+            video.width = config.video.width || 320;
+            video.height = config.video.height || 240;
         }
 
         // external library to record as GIF images

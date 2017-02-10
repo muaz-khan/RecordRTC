@@ -1,9 +1,6 @@
 // ______________________
 // MediaStreamRecorder.js
 
-// todo: need to show alert boxes for incompatible cases
-// encoder only supports 48k/16k mono audio channel
-
 /*
  * Implementation of https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
  * The MediaRecorder accepts a mediaStream as input source passed from UA. When recorder starts,
@@ -24,11 +21,11 @@
  * @class
  * @example
  * var options = {
- *     mimeType: 'video/mp4', // audio/ogg or video/webm
+ *     mimeType: 'video/webm',
  *     audioBitsPerSecond : 256 * 8 * 1024,
  *     videoBitsPerSecond : 256 * 8 * 1024,
  *     bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
- *     getNativeBlob: true // by default it is false
+ *     getNativeBlob: true // by default: it is false
  * }
  * var recorder = new MediaStreamRecorder(MediaStream, options);
  * recorder.record();

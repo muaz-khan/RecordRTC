@@ -36,7 +36,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio/Video Separately |
 | Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | Only Audio |
 
-## RecordRTC Encoders Format
+## RecordRTC Containers Format
 
 #### vp9
 
@@ -187,9 +187,9 @@ navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catc
 </script>
 ```
 
-## Record audio+video in Firefox
+## Record audio+video
 
-You'll be recording both audio/video in single WebM container. Though you can edit RecordRTC.js to record in mp4.
+You'll be recording both audio/video in single WebM or Mp4 container.
 
 ```javascript
 var recordRTC;
@@ -198,7 +198,7 @@ function successCallback(stream) {
     // RecordRTC usage goes here
 
     var options = {
-      mimeType: 'video/webm', // or video/mp4 or audio/ogg
+      mimeType: 'video/webm', // or video/webm\;codecs=h264 or video/webm\;codecs=vp9
       audioBitsPerSecond: 128000,
       videoBitsPerSecond: 128000,
       bitsPerSecond: 128000 // if this line is provided, skip above two
@@ -225,12 +225,10 @@ btnStopRecording.onclick = function () {
 };
 ```
 
-Demo: [AudioVideo-on-Firefox.html](https://www.webrtc-experiment.com/RecordRTC/AudioVideo-on-Firefox.html)
-
 ## Record only Audio
 
 ```javascript
-var recordRTC = RecordRTC(mediaStream);
+var recordRTC = RecordRTC(audioStream);
 recordRTC.startRecording();
 recordRTC.stopRecording(function(audioURL) {
     audio.src = audioURL;
@@ -239,6 +237,40 @@ recordRTC.stopRecording(function(audioURL) {
     recordRTC.getDataURL(function(dataURL) { });
 });
 ```
+
+## Record Multiple Videos
+
+You can record 4 parallel videos/streams (**WebRTC Conference**):
+
+```javascript
+var arrayOfStreams = [localStream, remoteStream1, remoteStream2, remoteStream3];
+
+var recordRTC = RecordRTC(arrayOfStreams, {
+  type: 'video',
+  mimeType: 'video/webm', // or video/webm\;codecs=h264 or video/webm\;codecs=vp9
+  previewStream: function(stream) {
+    // it is optional
+    // it allows you preview the recording video
+  }
+});
+recordRTC.startRecording();
+recordRTC.stopRecording(function(audioURL) {
+    audio.src = audioURL;
+
+    var recordedBlob = recordRTC.getBlob();
+    recordRTC.getDataURL(function(dataURL) { });
+});
+```
+
+> This simply means that: **You can record 4 users video conference in single WebM or Mp4 container!**
+
+Note: This feature still requires `chrome://flags/#enable-experimental-web-platform-features` flag on Chrome.
+
+Points:
+
+1. Instead of passing single `MediaStream`, you are passing array of `MediaStreams`
+2. You are keeping the `type=video`
+3. You will get single webm or mp4 according to your `mimeType`
 
 ## Echo Issues
 
@@ -650,11 +682,11 @@ You can pass custom sample-rate values only on Mac (or additionally maybe on Win
 
 ## `mimeType`
 
-This option allows you set MediaRecorder output format (currently works only in Firefox; Chrome support coming soon):
+This option allows you set MediaRecorder output format:
 
 ```javascript
 var options = {
-  mimeType 'video/webm', // or video/mp4 or audio/ogg
+  mimeType 'video/webm', // or video/webm\;codecs=h264 or video/webm\;codecs=vp9
   bitsPerSecond: 128000
 };
 var recorder = RecordRTC(mediaStream, options);

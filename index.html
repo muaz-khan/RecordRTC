@@ -86,6 +86,7 @@
 
     <!-- for Edige/FF/Chrome/Opera/etc. getUserMedia support -->
     <script src="https://cdn.webrtc-experiment.com/gumadapter.js"></script>
+    <script src="https://cdn.webrtc-experiment.com/DetectRTC.js"> </script>
 </head>
 
 <body>
@@ -133,6 +134,9 @@
                     <option>gif</option>
                     <option>whammy</option>
                 </select>
+
+                <input type="checkbox" id="chk-MultiStreamRecorder" style="margin:0;width:auto;">
+                <label for="chk-MultiStreamRecorder" style="font-size: 15px;margin:0;width: auto;cursor: pointer;-webkit-user-select:none;user-select:none;">All cameras?</label>
 
                 <button>Start Recording</button>
 
@@ -284,6 +288,13 @@
                     function stopStream() {
                         if(button.stream && button.stream.stop) {
                             button.stream.stop();
+                            button.stream = null;
+                        }
+
+                        if(button.stream instanceof Array) {
+                            button.stream.forEach(function(stream) {
+                                stream.stop();
+                            });
                             button.stream = null;
                         }
 
@@ -482,6 +493,12 @@
                                 options.videoBitsPerSecond = videoBitsPerSecond;
                             }
 
+                            if(chkMultiStreamRecorder.checked === true) {
+                                options.previewStream = function(previewStream) {
+                                    setVideoURL(previewStream, true);
+                                };
+                            }
+
                             var audioRecorder = RecordRTC(button.stream, options);
 
                             options.type = type;
@@ -532,6 +549,12 @@
 
                         if(videoBitsPerSecond) {
                             options.videoBitsPerSecond = videoBitsPerSecond;
+                        }
+
+                        if(chkMultiStreamRecorder.checked === true) {
+                            options.previewStream = function(previewStream) {
+                                setVideoURL(previewStream, true);
+                            };
                         }
 
                         button.recordRTC = RecordRTC(button.stream, options);
@@ -648,6 +671,15 @@
             function captureAudioPlusVideo(config) {
                 captureUserMedia({video: true, audio: true}, function(audioVideoStream) {
                     config.onMediaCaptured(audioVideoStream);
+
+                    if(audioVideoStream instanceof Array) {
+                        audioVideoStream.forEach(function(stream) {
+                            addStreamStopListener(stream, function() {
+                                config.onMediaStopped();
+                            });
+                        });
+                        return;
+                    }
 
                     addStreamStopListener(audioVideoStream, function() {
                         config.onMediaStopped();
@@ -882,6 +914,11 @@
                 if(isBlackBerry && !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia)) {
                     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
                     navigator.getUserMedia(mediaConstraints, successCallback, errorCallback);
+                    return;
+                }
+
+                if(chkMultiStreamRecorder.checked === true) {
+                    captureAllCameras(successCallback, errorCallback);
                     return;
                 }
 
@@ -1486,6 +1523,93 @@
               }
               return url;
             };
+        </script>
+
+        <script>
+            // MultiStreamRecorder
+            var chkMultiStreamRecorder = document.querySelector('#chk-MultiStreamRecorder');
+
+            chkMultiStreamRecorder.addEventListener('change', function() {
+                if(chkMultiStreamRecorder.checked === true) {
+                    // localStorage.setItem('chkMultiStreamRecorder', true);
+                }
+                else {
+                    // chkMultiStreamRecorder.removeItem('chkMultiStreamRecorder');
+                }
+            }, false);
+
+            if(localStorage.getItem('chkMultiStreamRecorder')) {
+                // chkMultiStreamRecorder.checked = true;
+            }
+
+            if(webrtcDetectedBrowser != 'chrome') {
+                chkMultiStreamRecorder.disabled = true;
+                chkMultiStreamRecorder.checked = false;
+            }
+            
+            function captureAllCameras(successCallback, errorCallback) {
+                var streams = [];
+                var donotDuplicateDevices = {};
+
+                DetectRTC.videoInputDevices.forEach(function(device, idx) {
+                    var mediaConstraints = {
+                        audio: true,
+                        video: {
+                            mandatory: {},
+                            optional: [{
+                                sourceId: device.id
+                            }]
+                        }
+                    };
+
+                    if(webrtcDetectedBrowser === 'firefox') {
+                        mediaConstraints = {
+                            audio: true,
+                            video: {
+                                deviceId: device.id
+                            }
+                        };
+
+                        console.error(mediaConstraints);
+                    }
+
+                    navigator.mediaDevices.getUserMedia(mediaConstraints).then(function(stream) {
+                        if(!donotDuplicateDevices[device.id]) {
+                            donotDuplicateDevices[device.id] = true;
+
+                            if(streams.length < 5) {
+                                // only 4-streams are allowed, currently
+                                streams.push(stream);
+                            }
+                        }
+
+                        if(idx == DetectRTC.videoInputDevices.length - 1) {
+                            successCallback(streams);
+                        }
+                    }).catch(function(error) {
+                        if(error && error.name === 'ConstraintNotSatisfiedError') {
+                            alert('Your camera or browser does NOT supports selected resolutions or frame-rates. \n\nPlease select "default" resolutions.');
+                        }
+
+                        errorCallback(error);
+                    });
+                })
+            }
+
+            [mediaContainerFormat, chkMultiStreamRecorder, recordingMedia].forEach(function(element) {
+                element.addEventListener('change', function() {
+                    if(chkMultiStreamRecorder.checked === true) {
+                        if(mediaContainerFormat.value.toString().search(/vp8|vp9|h264/g) === -1) {
+                            mediaContainerFormat.value = 'vp8';
+                        }
+
+                        if(recordingMedia.value.toString().search(/video/g) === -1) {
+                            recordingMedia.value = 'record-audio-plus-video';
+                            recordingMedia.onchange();
+                        }
+                    }
+                }, false);
+            });
         </script>
 
         <section class="experiment" style="padding: 10px 20px;">

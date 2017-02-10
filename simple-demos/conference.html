@@ -1,0 +1,74 @@
+<style>
+    html, body, video, canvas {
+        margin: 0!important;
+        padding: 0!important;
+        overflow: hidden!important;
+        width: 100%;
+    }
+</style>
+
+<title>Multi-Videos (Conference) recording using RecordRTC</title>
+
+<script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+<script src="https://cdn.webrtc-experiment.com/DetectRTC.js"> </script>
+<script>
+var allCameraStreams = [];
+
+function captureAllCameras(callback) {
+    var streams = [];
+    var donotDuplicateDevices = {};
+
+    DetectRTC.videoInputDevices.forEach(function(device, idx) {
+        navigator.webkitGetUserMedia({
+            audio: false,
+            video: {
+                mandatory: {},
+                optional: [{
+                    sourceId: device.id
+                }]
+            }
+        }, function(stream) {
+            if (!donotDuplicateDevices[device.id]) {
+                donotDuplicateDevices[device.id] = true;
+                streams.push(stream);
+            }
+
+            allCameraStreams.push(stream);
+
+            if (idx == DetectRTC.videoInputDevices.length - 1) {
+                callback(streams);
+            }
+        }, function() {
+            console.error(arguments);
+        });
+    })
+}
+
+DetectRTC.load(function() {
+    captureAllCameras(function(streams) {
+        var recorder = RecordRTC(streams, {
+            type: 'video',
+            mimeType: 'video/webm'
+        });
+
+        recorder.startRecording();
+
+        setTimeout(function() {
+            recorder.stopRecording(function() {
+                var blob = recorder.getBlob();
+                document.write('<video autoplay controls loop src="' + URL.createObjectURL(blob) + '"></video>');
+
+                allCameraStreams.forEach(function(stream) {
+                    stream.getVideoTracks().forEach(function(track) {
+                        track.stop();
+                    });
+
+                    stream.getAudioTracks().forEach(function(track) {
+                        track.stop();
+                    });
+                })
+            });
+        }, 5000)
+    });
+});
+</script>

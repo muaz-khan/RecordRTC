@@ -254,8 +254,8 @@ var recordRTC = RecordRTC(arrayOfStreams, {
   }
 });
 recordRTC.startRecording();
-recordRTC.stopRecording(function(audioURL) {
-    audio.src = audioURL;
+recordRTC.stopRecording(function(singleWebM) {
+    video.src = singleWebM;
 
     var recordedBlob = recordRTC.getBlob();
     recordRTC.getDataURL(function(dataURL) { });

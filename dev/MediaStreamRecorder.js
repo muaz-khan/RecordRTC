@@ -136,6 +136,14 @@ function MediaStreamRecorder(mediaStream, config) {
             }
 
             if (!e.data || !e.data.size || e.data.size < 100 || self.blob) {
+                // make sure that stopRecording always getting fired
+                // even if there is invalid data
+                if (self.recordingCallback) {
+                    self.recordingCallback(new Blob([], {
+                        type: recorderHints.mimeType || 'video/webm'
+                    }));
+                    self.recordingCallback = null;
+                }
                 return;
             }
 
@@ -148,7 +156,7 @@ function MediaStreamRecorder(mediaStream, config) {
              * });
              */
             self.blob = config.getNativeBlob ? e.data : new Blob([e.data], {
-                type: config.mimeType || 'video/webm'
+                type: recorderHints.mimeType || 'video/webm'
             });
 
             if (self.recordingCallback) {

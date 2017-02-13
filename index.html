@@ -138,7 +138,10 @@
                 <input type="checkbox" id="chk-MultiStreamRecorder" style="margin:0;width:auto;">
                 <label for="chk-MultiStreamRecorder" style="font-size: 15px;margin:0;width: auto;cursor: pointer;-webkit-user-select:none;user-select:none;">All cameras?</label>
 
-                <button>Start Recording</button>
+                <br>
+
+                <button id="btn-start-recording">Start Recording</button>
+                <button id="btn-pause-recording" style="display: none; font-size: 15px;">Pause Recording</button>
 
                 <hr style="border-top: 0;border-bottom: 1px solid rgb(189, 189, 189);margin: 4px -12px;margin-top: 8px;">
                 <select class="media-resolutions">
@@ -266,22 +269,25 @@
             var defaultWidth;
             var defaultHeight;
 
+            var btnStartRecording = document.querySelector('#btn-start-recording');
+
             window.onbeforeunload = function() {
-                recordingDIV.querySelector('button').disabled = false;
+                btnStartRecording.disabled = false;
                 recordingMedia.disabled = false;
                 mediaContainerFormat.disabled = false;
             };
 
-            recordingDIV.querySelector('button').onclick = function(event) {
-                var button = recordingDIV.querySelector('button');
+            btnStartRecording.onclick = function(event) {
+                var button = btnStartRecording;
 
                 if(button.innerHTML === 'Stop Recording') {
+                    btnPauseRecording.style.display = 'none';
                     button.disabled = true;
                     button.disableStateWaiting = true;
                     setTimeout(function() {
                         button.disabled = false;
                         button.disableStateWaiting = false;
-                    }, 2 * 1000);
+                    }, 2000);
 
                     button.innerHTML = 'Star Recording';
 
@@ -451,6 +457,7 @@
                         };
 
                         button.recordRTC.startRecording();
+                        btnPauseRecording.style.display = '';
                     };
                 }
 
@@ -509,6 +516,7 @@
                                 audioRecorder.initRecorder(function() {
                                     audioRecorder.startRecording();
                                     videoRecorder.startRecording();
+                                    btnPauseRecording.style.display = '';
                                 });
                             });
 
@@ -555,6 +563,26 @@
                             options.previewStream = function(previewStream) {
                                 setVideoURL(previewStream, true);
                             };
+
+                            var width = 320;
+                            var height = 240;
+
+                            var select = document.querySelector('.media-resolutions');
+                            var value = select.value;
+
+                            if(value != 'default') {
+                                value = value.split('x');
+
+                                if(value.length == 2) {
+                                    width = parseInt(value[0]);
+                                    height = parseInt(value[1]);
+                                }
+                            }
+
+                            options.video = {
+                                width: width,
+                                height: height
+                            };
                         }
 
                         button.recordRTC = RecordRTC(button.stream, options);
@@ -564,6 +592,7 @@
                         };
 
                         button.recordRTC.startRecording();
+                        btnPauseRecording.style.display = '';
                     };
                 }
 
@@ -601,6 +630,7 @@
                         };
 
                         button.recordRTC.startRecording();
+                        btnPauseRecording.style.display = '';
                     };
                 }
 
@@ -640,6 +670,7 @@
                         };
 
                         button.recordRTC.startRecording();
+                        btnPauseRecording.style.display = '';
                     };
                 }
             };
@@ -715,7 +746,7 @@
                         addStreamStopListener(screenStream, function() {
                             // config.onMediaStopped();
 
-                            recordingDIV.querySelector('button').onclick();
+                            btnStartRecording.onclick();
                         });
                     }, function(error) {
                         config.onMediaCapturingFailed(error);
@@ -1208,7 +1239,7 @@
                         if(typeof recordingPlayer.play === 'function') {
                             recordingPlayer.play();
                         }
-                    }, 20000);
+                    }, 2000);
                 }, false);
 
                 recordingPlayer.poster = '';
@@ -1569,8 +1600,6 @@
                                 deviceId: device.id
                             }
                         };
-
-                        console.error(mediaConstraints);
                     }
 
                     navigator.mediaDevices.getUserMedia(mediaConstraints).then(function(stream) {
@@ -1610,6 +1639,43 @@
                     }
                 }, false);
             });
+        </script>
+
+        <script>
+            var btnPauseRecording = document.querySelector('#btn-pause-recording');
+            btnPauseRecording.onclick = function() {
+                if(!btnStartRecording.recordRTC) {
+                    btnPauseRecording.style.display = 'none';
+                    return;
+                }
+
+                btnPauseRecording.disabled = true;
+                if(btnPauseRecording.innerHTML === 'Pause Recording') {
+                    btnStartRecording.disabled = true;
+                    btnStartRecording.style.fontSize = '15px';
+                    btnStartRecording.recordRTC.pauseRecording();
+                    recordingPlayer.pause();
+
+                    btnPauseRecording.style.fontSize = 'inherit';
+                    setTimeout(function() {
+                        btnPauseRecording.innerHTML = 'Resume Recording';
+                        btnPauseRecording.disabled = false;
+                    }, 2000);
+                }
+
+                if(btnPauseRecording.innerHTML === 'Resume Recording') {
+                    btnStartRecording.disabled = false;
+                    btnStartRecording.style.fontSize = 'inherit';
+                    btnStartRecording.recordRTC.resumeRecording();
+                    recordingPlayer.play();
+
+                    btnPauseRecording.style.fontSize = '15px';
+                    btnPauseRecording.innerHTML = 'Pause Recording';
+                    setTimeout(function() {
+                        btnPauseRecording.disabled = false;
+                    }, 2000);
+                }
+            };
         </script>
 
         <section class="experiment" style="padding: 10px 20px;">

@@ -163,8 +163,8 @@ bower install recordrtc
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.4.0 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.0/RecordRTC.js"></script>
+<!-- use 5.4.1 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.1/RecordRTC.js"></script>
 ```
 
 ## How to capture stream?
@@ -573,6 +573,8 @@ var recordVideo = RecordRTC(MediaStream, options);
 ```
 
 ## `pauseRecording`
+
+> Note: Firefox seems has a bug. It is unable to pause the recording. Seems internal bug because they correctly changes `mediaRecorder.state` from `recording` to `paused` but they are unable to pause internal recorders.
 
 RecordRTC pauses recording buffers/frames.
 

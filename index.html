@@ -141,7 +141,7 @@
                 <br>
 
                 <button id="btn-start-recording">Start Recording</button>
-                <button id="btn-pause-recording" style="display: none; font-size: 15px;">Pause Recording</button>
+                <button id="btn-pause-recording" style="display: none; font-size: 15px;">Pause</button>
 
                 <hr style="border-top: 0;border-bottom: 1px solid rgb(189, 189, 189);margin: 4px -12px;margin-top: 8px;">
                 <select class="media-resolutions">
@@ -1650,7 +1650,7 @@
                 }
 
                 btnPauseRecording.disabled = true;
-                if(btnPauseRecording.innerHTML === 'Pause Recording') {
+                if(btnPauseRecording.innerHTML === 'Pause') {
                     btnStartRecording.disabled = true;
                     btnStartRecording.style.fontSize = '15px';
                     btnStartRecording.recordRTC.pauseRecording();
@@ -1670,7 +1670,7 @@
                     recordingPlayer.play();
 
                     btnPauseRecording.style.fontSize = '15px';
-                    btnPauseRecording.innerHTML = 'Pause Recording';
+                    btnPauseRecording.innerHTML = 'Pause';
                     setTimeout(function() {
                         btnPauseRecording.disabled = false;
                     }, 2000);

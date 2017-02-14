@@ -1,4 +1,4 @@
-// Last time updated: 2017-02-13 9:58:18 AM UTC
+// Last time updated: 2017-02-14 5:18:41 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -876,16 +876,18 @@ function MRecordRTC(mediaStream) {
         };
 
         if (typeof mediaType.audio !== 'function' && isMediaRecorderCompatible() && mediaStream.getAudioTracks && !mediaStream.getAudioTracks().length) {
-            // Firefox supports both audio/video in single blob
             mediaType.audio = false;
         }
 
         if (typeof mediaType.video !== 'function' && isMediaRecorderCompatible() && mediaStream.getVideoTracks && !mediaStream.getVideoTracks().length) {
-            // Firefox supports both audio/video in single blob
             mediaType.video = false;
         }
 
-        if (!mediaType.audio && !mediaType.video) {
+        if (typeof mediaType.gif !== 'function' && isMediaRecorderCompatible() && mediaStream.getVideoTracks && !mediaStream.getVideoTracks().length) {
+            mediaType.gif = false;
+        }
+
+        if (!mediaType.audio && !mediaType.video && !mediaType.gif) {
             throw 'MediaStream must have either audio or video tracks.';
         }
 

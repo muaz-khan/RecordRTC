@@ -272,6 +272,25 @@ Points:
 2. You are keeping the `type=video`
 3. You will get single webm or mp4 according to your `mimeType`
 
+## `addStream`
+
+> This section is related to above section "Record Multiple Videos".
+
+`MultiStreamRecorder.js` now supports `addStream` method; which allows you add additinoal streams on the fly (during a recording):
+
+```javascript
+recorder.startRecording();
+
+setTimeout(function() {
+	recorder.addStream(anotherStream);
+}, 5000);
+```
+
+Points:
+
+1. You can add any kind of stream: audio and/or video.
+2. You can add any number of streams; there is no limit.
+
 ## Echo Issues
 
 Simply set `volume=0` or `muted=true` over `<audio>` or `<video>` element:

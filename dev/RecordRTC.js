@@ -381,6 +381,24 @@ function RecordRTC(mediaStream, config) {
         },
 
         /**
+         * Add extra media-streams to existing recordings.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.addStream(MediaStream);
+         */
+        addStream: function(stream) {
+            if (!mediaRecorder) {
+                return console.warn(WARNING);
+            }
+
+            if (typeof mediaRecorder.addStream === 'function') {
+                mediaRecorder.addStream(stream);
+            }
+        },
+
+        /**
          * This method saves the blob/file to disk (by invoking save-as dialog). It takes a single (optional) argument i.e. FileName
          * @method
          * @memberof RecordRTC

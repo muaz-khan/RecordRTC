@@ -1,4 +1,4 @@
-// Last time updated: 2017-02-14 5:18:41 AM UTC
+// Last time updated: 2017-02-17 6:31:53 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -392,6 +392,24 @@ function RecordRTC(mediaStream, config) {
             }
 
             return URL.createObjectURL(mediaRecorder.blob);
+        },
+
+        /**
+         * Add extra media-streams to existing recordings.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.addStream(MediaStream);
+         */
+        addStream: function(stream) {
+            if (!mediaRecorder) {
+                return console.warn(WARNING);
+            }
+
+            if (typeof mediaRecorder.addStream === 'function') {
+                mediaRecorder.addStream(stream);
+            }
         },
 
         /**
@@ -4043,7 +4061,11 @@ if (typeof RecordRTC !== 'undefined') {
  * @class
  * @example
  * var options = {
- *     mimeType: 'video/webm'
+ *     mimeType: 'video/webm',
+ *		video: {
+ *          width: 360,
+ *          height: 240
+ *      }
  * }
  * var recorder = new MultiStreamRecorder(ArrayOfMediaStreams, options);
  * recorder.record();
@@ -4064,7 +4086,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     options = options || {
         mimeType: 'video/webm',
         video: {
-            width: 320,
+            width: 360,
             height: 240
         }
     };
@@ -4078,7 +4100,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     }
 
     if (!options.video.width) {
-        options.video.width = 320;
+        options.video.width = 360;
     }
 
     if (!options.video.height) {
@@ -4107,12 +4129,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
             options.previewStream(mixedVideoStream);
         }
 
-        mediaRecorder = new MediaStreamRecorder(mixedVideoStream, {
-            mimeType: 'video/webm'
-        });
-
-        canvas.width = videos.length > 1 ? videos[0].width * 2 : videos[0].width;
-        canvas.height = videos.length > 2 ? videos[0].height * 2 : videos[0].height;
+        mediaRecorder = new MediaStreamRecorder(mixedVideoStream, options);
 
         drawVideosToCanvas();
 
@@ -4143,7 +4160,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
     function getMixedAudioStream() {
         // via: @pehrsons
-        var audioContext = new AudioContext();
+        self.audioContext = new AudioContext();
         var audioSources = [];
 
         var audioTracksLength = 0;
@@ -4154,18 +4171,18 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
             audioTracksLength++;
 
-            audioSources.push(audioContext.createMediaStreamSource(stream));
+            audioSources.push(self.audioContext.createMediaStreamSource(stream));
         });
 
         if (!audioTracksLength) {
             return;
         }
 
-        var audioiDestination = audioContext.createMediaStreamDestination();
+        self.audioDestination = self.audioContext.createMediaStreamDestination();
         audioSources.forEach(function(audioSource) {
-            audioSource.connect(audioiDestination);
+            audioSource.connect(self.audioDestination);
         });
-        return audioiDestination.stream;
+        return self.audioDestination.stream;
     }
 
     var videos = [];
@@ -4212,6 +4229,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         var videosLength = videos.length;
+		
+		canvas.width = videosLength > 1 ? videos[0].width * 2 : videos[0].width;
+        canvas.height = videosLength > 2 ? videos[0].height * 2 : videos[0].height;
+		
         videos.forEach(function(video, idx) {
             if (videosLength === 1) {
                 context.drawImage(video, 0, 0, video.width, video.height);
@@ -4319,6 +4340,37 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         if (mediaRecorder) {
             mediaRecorder.clearRecordedData();
+        }
+    };
+
+    /**
+     * Add extra media-streams to existing recordings.
+     * @method
+     * @memberof MultiStreamRecorder
+     * @example
+     * recorder.addStream(MediaStream);
+     */
+    this.addStream = function(stream) {
+        if (stream instanceof Array && stream.length) {
+            stream.forEach(this.addStream);
+            return;
+        }
+        arrayOfMediaStreams.push(stream);
+
+        if (!mediaRecorder) {
+            return;
+        }
+
+        if (stream.getVideoTracks().length) {
+            var video = getVideo(stream);
+            video.width = options.video.width;
+            video.height = options.video.height;
+            videos.push(video);
+        }
+
+        if (stream.getAudioTracks().length && self.audioContext) {
+            var audioSource = self.audioContext.createMediaStreamSource(stream);
+            audioSource.connect(self.audioDestination);
         }
     };
 }

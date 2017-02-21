@@ -116,6 +116,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         self.audioContext = new AudioContext();
         var audioSources = [];
 
+        self.gainNode = self.audioContext.createGain();
+        self.gainNode.connect(self.audioContext.destination);
+        self.gainNode.gain.value = 0; // don't hear self
+
         var audioTracksLength = 0;
         arrayOfMediaStreams.forEach(function(stream) {
             if (!stream.getAudioTracks().length) {
@@ -124,7 +128,9 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
             audioTracksLength++;
 
-            audioSources.push(self.audioContext.createMediaStreamSource(stream));
+            var audioSource = self.audioContext.createMediaStreamSource(stream);
+            audioSource.connect(self.gainNode);
+            audioSources.push(audioSource);
         });
 
         if (!audioTracksLength) {
@@ -151,6 +157,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
             var video = getVideo(stream);
             video.width = options.video.width;
             video.height = options.video.height;
+            video.stream = stream;
             videos.push(video);
         });
 
@@ -170,6 +177,8 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     function getVideo(stream) {
         var video = document.createElement('video');
         video.src = URL.createObjectURL(stream);
+        video.muted = true;
+        video.volume = 0;
         video.play();
         return video;
     }
@@ -183,66 +192,62 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         var videosLength = videos.length;
 
-        canvas.width = videosLength > 1 ? videos[0].width * 2 : videos[0].width;
-        canvas.height = videosLength > 2 ? videos[0].height * 2 : videos[0].height;
-
-        videos.forEach(function(video, idx) {
-            if (videosLength === 1) {
-                context.drawImage(video, 0, 0, video.width, video.height);
-                return;
-            }
-
-            if (videosLength === 2) {
-                var x = 0;
-                var y = 0;
-
-                if (idx === 1) {
-                    x = video.width;
-                }
-
-                context.drawImage(video, x, y, video.width, video.height);
-                return;
-            }
-
-            if (videosLength === 3) {
-                var x = 0;
-                var y = 0;
-
-                if (idx === 1) {
-                    x = video.width;
-                }
-
-                if (idx === 2) {
-                    y = video.height;
-                }
-
-                context.drawImage(video, x, y, video.width, video.height);
-                return;
-            }
-
-            if (videosLength === 4) {
-                var x = 0;
-                var y = 0;
-
-                if (idx === 1) {
-                    x = video.width;
-                }
-
-                if (idx === 2) {
-                    y = video.height;
-                }
-
-                if (idx === 3) {
-                    x = video.width;
-                    y = video.height;
-                }
-
-                context.drawImage(video, x, y, video.width, video.height);
-                return;
+        var fullcanvas = false;
+        videos.forEach(function(video) {
+            if (video.stream.fullcanvas) {
+                fullcanvas = video.stream;
             }
         });
 
+        if (fullcanvas) {
+            canvas.width = fullcanvas.width;
+            canvas.height = fullcanvas.height;
+        } else {
+            canvas.width = videosLength > 1 ? videos[0].width * 2 : videos[0].width;
+            canvas.height = videosLength > 2 ? videos[0].height * 2 : videos[0].height;
+        }
+
+        videos.forEach(drawImage);
+
         setTimeout(drawVideosToCanvas, options.frameInterval);
+    }
+
+    function drawImage(video, idx) {
+        var x = 0;
+        var y = 0;
+        var width = video.width;
+        var height = video.height;
+
+        if (idx === 1) {
+            x = video.width;
+        }
+
+        if (idx === 2) {
+            y = video.height;
+        }
+
+        if (idx === 3) {
+            x = video.width;
+            y = video.height;
+        }
+
+        if (typeof video.stream.left !== 'undefined') {
+            x = video.stream.left;
+        }
+
+        if (typeof video.stream.top !== 'undefined') {
+            y = video.stream.top;
+        }
+
+        if (typeof video.stream.width !== 'undefined') {
+            width = video.stream.width;
+        }
+
+        if (typeof video.stream.height !== 'undefined') {
+            height = video.stream.height;
+        }
+
+        context.drawImage(video, x, y, width, height);
     }
 
     var canvas = document.createElement('canvas');
@@ -250,7 +255,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
     canvas.style = 'opacity:0;position:absolute;z-index:-1;top: -100000000;left:-1000000000;';
 
-    document.body.appendChild(canvas);
+    (document.body || document.documentElement).appendChild(canvas);
 
     /**
      * This method pauses the recording process.

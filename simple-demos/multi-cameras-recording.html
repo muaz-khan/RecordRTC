@@ -9,7 +9,7 @@
 
 <title>Multi-Videos (Conference) recording using RecordRTC</title>
 
-<video controls autoplay loop></video>
+<video controls autoplay></video>
 
 <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
 <script src="https://cdn.webrtc-experiment.com/DetectRTC.js"> </script>
@@ -22,7 +22,7 @@ function captureAllCameras(callback) {
 
     DetectRTC.videoInputDevices.forEach(function(device, idx) {
         navigator.webkitGetUserMedia({
-            audio: false,
+            audio: true,
             video: {
                 mandatory: {},
                 optional: [{
@@ -48,10 +48,15 @@ function captureAllCameras(callback) {
 
 DetectRTC.load(function() {
     captureAllCameras(function(streams) {
+		if(streams.length == 1) {
+			streams.push(streams[0]);
+		}
+		
         var recorder = RecordRTC(streams, {
             type: 'video',
             mimeType: 'video/webm',
 			previewStream: function(s) {
+				document.querySelector('video').muted = true;
 				document.querySelector('video').src = URL.createObjectURL(s);
 			}
         });
@@ -61,6 +66,8 @@ DetectRTC.load(function() {
         setTimeout(function() {
             recorder.stopRecording(function() {
                 var blob = recorder.getBlob();
+				
+				document.querySelector('video').muted = false;
                 document.querySelector('video').src = URL.createObjectURL(blob);
 
                 allCameraStreams.forEach(function(stream) {
@@ -73,7 +80,7 @@ DetectRTC.load(function() {
                     });
                 })
             });
-        }, 10 * 1000)
+        }, 5 * 1000)
     });
 });
 </script>

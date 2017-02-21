@@ -243,7 +243,7 @@ recordRTC.stopRecording(function(audioURL) {
 Demos:
 
 1. [Record all your cameras](https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/multi-cameras-recording.html)
-2. [Record screen as well as your video!](https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/video-plus-screen-recording)
+2. [Record screen as well as your video!](https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/video-plus-screen-recording.html)
 
 You can record 4 parallel videos/streams (**WebRTC Conference**):
 

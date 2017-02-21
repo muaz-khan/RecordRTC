@@ -1230,6 +1230,10 @@
                 }
 
                 recordingPlayer = document.createElement(elem);
+				
+				if(arg instanceof MediaStream) {
+					recordingPlayer.muted = true;
+				}
 
                 recordingPlayer.addEventListener('loadedmetadata', function() {
                     if(navigator.userAgent.toLowerCase().indexOf('android') == -1) return;

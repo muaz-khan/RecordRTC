@@ -264,8 +264,6 @@ recordRTC.stopRecording(function(singleWebM) {
 
 > This simply means that: **You can record 4 users video conference in single WebM or Mp4 container!**
 
-Note: This feature still requires `chrome://flags/#enable-experimental-web-platform-features` flag on Chrome.
-
 Points:
 
 1. Instead of passing single `MediaStream`, you are passing array of `MediaStreams`

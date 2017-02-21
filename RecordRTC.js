@@ -1,4 +1,4 @@
-// Last time updated: 2017-02-17 6:31:53 AM UTC
+// Last time updated: 2017-02-21 7:34:45 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -4208,7 +4208,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         } else if ('mozCaptureStream' in canvas) {
             capturedStream = canvas.mozCaptureStream();
         } else if (!options.disableLogs) {
-            console.error('captureStream API requires this flag: chrome://flags/#enable-experimental-web-platform-features');
+            console.error('Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
         }
 
         return capturedStream;
@@ -4229,10 +4229,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         var videosLength = videos.length;
-		
-		canvas.width = videosLength > 1 ? videos[0].width * 2 : videos[0].width;
+
+        canvas.width = videosLength > 1 ? videos[0].width * 2 : videos[0].width;
         canvas.height = videosLength > 2 ? videos[0].height * 2 : videos[0].height;
-		
+
         videos.forEach(function(video, idx) {
             if (videosLength === 1) {
                 context.drawImage(video, 0, 0, video.width, video.height);

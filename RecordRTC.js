@@ -1,4 +1,4 @@
-// Last time updated: 2017-02-21 12:23:12 PM UTC
+// Last time updated: 2017-02-26 2:40:58 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -2717,6 +2717,11 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.pause = function() {
         isPausedRecording = true;
+
+        if (mediaStreamRecorder instanceof MediaStreamRecorder) {
+            mediaStreamRecorder.pause();
+            return;
+        }
     };
 
     /**
@@ -2728,6 +2733,11 @@ function CanvasRecorder(htmlElement, config) {
      */
     this.resume = function() {
         isPausedRecording = false;
+
+        if (mediaStreamRecorder instanceof MediaStreamRecorder) {
+            mediaStreamRecorder.resume();
+            return;
+        }
 
         if (!isRecording) {
             this.record();
@@ -4224,8 +4234,8 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     function getVideo(stream) {
         var video = document.createElement('video');
         video.src = URL.createObjectURL(stream);
-		video.muted = true;
-		video.volume = 0;
+        video.muted = true;
+        video.volume = 0;
         video.play();
         return video;
     }

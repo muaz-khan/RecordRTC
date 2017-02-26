@@ -279,7 +279,7 @@ Points:
 
 > This section is related to above section "Record Multiple Videos".
 
-`MultiStreamRecorder.js` now supports `addStream` method; which allows you add additinoal streams on the fly (during a recording):
+`MultiStreamRecorder.js` now supports `addStream` method; which allows you add additional streams on the fly (during a recording):
 
 ```javascript
 recorder.startRecording();

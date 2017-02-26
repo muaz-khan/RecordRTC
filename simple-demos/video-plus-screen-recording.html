@@ -15,9 +15,10 @@
 <script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
 <script src="https://cdn.WebRTC-Experiment.com/getScreenId.js"></script>
 <script>
+navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+
 function captureScreen(cb) {
 	getScreenId(function (error, sourceId, screen_constraints) {
-		navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
 		navigator.getUserMedia(screen_constraints, cb, function (error) {
 		  console.error('getScreenId error', error);
 
@@ -27,7 +28,6 @@ function captureScreen(cb) {
 }
 
 function captureCamera(cb) {
-	navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
 	navigator.getUserMedia({audio: true, video: true}, cb, function (error) {});
 }
 

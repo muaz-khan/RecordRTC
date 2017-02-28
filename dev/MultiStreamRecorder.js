@@ -248,6 +248,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         context.drawImage(video, x, y, width, height);
+
+        if (typeof video.stream.onRender === 'function') {
+            video.stream.onRender(context, x, y, width, height);
+        }
     }
 
     var canvas = document.createElement('canvas');

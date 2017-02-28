@@ -1,4 +1,4 @@
-// Last time updated: 2017-02-26 2:40:58 AM UTC
+// Last time updated: 2017-02-28 5:19:23 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -4305,6 +4305,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         context.drawImage(video, x, y, width, height);
+		
+		if(typeof video.stream.onRender === 'function') {
+			video.stream.onRender(context, x, y, width, height);
+		}
     }
 
     var canvas = document.createElement('canvas');

@@ -32,29 +32,29 @@ function captureAllCameras(callback) {
         }, function(stream) {
             if (!donotDuplicateDevices[device.id]) {
                 donotDuplicateDevices[device.id] = true;
-				
-				stream.onRender = function(context, x, y, width, height) {
-					context.font = '20px Georgia';
-					
-					var userName = timeout + ' seconds remaining';
-					var measuredTextWidth = parseInt(context.measureText(userName).width);
-					
-					x = x + (parseInt((width - measuredTextWidth)) / 2);
-					y = height - 40;
-					
-					context.strokeStyle = 'rgb(255, 0, 0)';
-					context.fillStyle = 'rgba(255, 255, 0, .5)';
-					roundRect(context, x - 20, y - 25, measuredTextWidth + 40, 35, 20, true);
-					
-					var gradient = context.createLinearGradient(0, 0, width * 2, 0);
-					gradient.addColorStop('0', 'magenta');
-					gradient.addColorStop('0.5', 'blue');
-					gradient.addColorStop('1.0', 'red');
-					context.fillStyle = gradient;
-					
-					context.fillText(userName, x, y);
-				};
-				
+
+                stream.onRender = function(context, x, y, width, height) {
+                    context.font = '20px Georgia';
+
+                    var userName = timeout + ' seconds remaining';
+                    var measuredTextWidth = parseInt(context.measureText(userName).width);
+
+                    x = x + (parseInt((width - measuredTextWidth)) / 2);
+                    y = height - 40;
+
+                    context.strokeStyle = 'rgb(255, 0, 0)';
+                    context.fillStyle = 'rgba(255, 255, 0, .5)';
+                    roundRect(context, x - 20, y - 25, measuredTextWidth + 40, 35, 20, true);
+
+                    var gradient = context.createLinearGradient(0, 0, width * 2, 0);
+                    gradient.addColorStop('0', 'magenta');
+                    gradient.addColorStop('0.5', 'blue');
+                    gradient.addColorStop('1.0', 'red');
+                    context.fillStyle = gradient;
+
+                    context.fillText(userName, x, y);
+                };
+
                 streams.push(stream);
             }
 
@@ -73,33 +73,33 @@ var timeout = 10; // 10 seconds
 
 DetectRTC.load(function() {
     captureAllCameras(function(streams) {
-		if(streams.length == 1) {
-			streams.push(streams[0]);
-		}
-		
+        if (streams.length == 1) {
+            streams.push(streams[0]);
+        }
+
         var recorder = RecordRTC(streams, {
             type: 'video',
             mimeType: 'video/webm',
-			previewStream: function(s) {
-				document.querySelector('video').muted = true;
-				document.querySelector('video').src = URL.createObjectURL(s);
-			}
+            previewStream: function(s) {
+                document.querySelector('video').muted = true;
+                document.querySelector('video').src = URL.createObjectURL(s);
+            }
         });
 
         recorder.startRecording();
 
         (function looper() {
-			timeout--;
-			
-			if(timeout > 0) {
-				setTimeout(looper, 1000);
-				return;
-			}
-			
+            timeout--;
+
+            if (timeout > 0) {
+                setTimeout(looper, 1000);
+                return;
+            }
+
             recorder.stopRecording(function() {
                 var blob = recorder.getBlob();
-				
-				document.querySelector('video').muted = false;
+
+                document.querySelector('video').muted = false;
                 document.querySelector('video').src = URL.createObjectURL(blob);
 
                 allCameraStreams.forEach(function(stream) {
@@ -134,7 +134,7 @@ DetectRTC.load(function() {
  * @param {Boolean} [fill = false] Whether to fill the rectangle.
  * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
  */
- // via: http://stackoverflow.com/a/3368118/552182
+// via: http://stackoverflow.com/a/3368118/552182
 function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
     if (typeof stroke == 'undefined') {
         stroke = true;

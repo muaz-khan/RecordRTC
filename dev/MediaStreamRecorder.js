@@ -182,6 +182,16 @@ function MediaStreamRecorder(mediaStream, config) {
                 }
             }
 
+            (function(looper) {
+                if (!self.manuallyStopped && mediaRecorder && mediaRecorder.state === 'inactive') {
+                    // 10 minutes, enough?
+                    mediaRecorder.start(10 * 60 * 1000);
+                    return;
+                }
+
+                setTimeout(looper, 1000);
+            })();
+
             // When the stream is "ended" set recording to 'inactive' 
             // and stop gathering data. Callers should not rely on 
             // exactness of the timeSlice value, especially 
@@ -198,7 +208,7 @@ function MediaStreamRecorder(mediaStream, config) {
         // handler. "mTimeSlice < 0" means Session object does not push encoded data to
         // onDataAvailable, instead, it passive wait the client side pull encoded data
         // by calling requestData API.
-        mediaRecorder.start(3.6e+6);
+        mediaRecorder.start(3.6e+6); // default is 60 minutes; enough?
 
         // Start recording. If timeSlice has been provided, mediaRecorder will
         // raise a dataavailable event containing the Blob of collected data on every timeSlice milliseconds.
@@ -224,6 +234,8 @@ function MediaStreamRecorder(mediaStream, config) {
      * });
      */
     this.stop = function(callback) {
+        self.manuallyStopped = true; // used inside the mediaRecorder.onerror
+
         if (!mediaRecorder) {
             return;
         }

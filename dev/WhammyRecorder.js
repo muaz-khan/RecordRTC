@@ -147,15 +147,18 @@ function WhammyRecorder(mediaStream, config) {
         var i = -1,
             length = o.length;
 
-        var loop = function() {
+        (function loop() {
             i++;
             if (i === length) {
                 o.callback();
                 return;
             }
-            o.functionToLoop(loop, i);
-        };
-        loop(); //init
+
+            // "setTimeout" added by Jim McLeod
+            setTimeout(function() {
+                o.functionToLoop(loop, i);
+            }, 1);
+        })();
     }
 
 

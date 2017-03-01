@@ -194,6 +194,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         var fullcanvas = false;
         videos.forEach(function(video) {
+            if (!video.stream) {
+                video.stream = {};
+            }
+
             if (video.stream.fullcanvas) {
                 fullcanvas = video.stream;
             }
@@ -250,7 +254,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         context.drawImage(video, x, y, width, height);
 
         if (typeof video.stream.onRender === 'function') {
-            video.stream.onRender(context, x, y, width, height);
+            video.stream.onRender(context, x, y, width, height, video.stream);
         }
     }
 
@@ -327,6 +331,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
             var video = getVideo(stream);
             video.width = options.video.width;
             video.height = options.video.height;
+            video.stream = stream;
             videos.push(video);
         }
 

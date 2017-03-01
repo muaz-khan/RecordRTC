@@ -1,4 +1,4 @@
-// Last time updated: 2017-02-28 5:19:23 AM UTC
+// Last time updated: 2017-03-01 10:44:03 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -2975,15 +2975,18 @@ function WhammyRecorder(mediaStream, config) {
         var i = -1,
             length = o.length;
 
-        var loop = function() {
+        (function loop() {
             i++;
             if (i === length) {
                 o.callback();
                 return;
             }
-            o.functionToLoop(loop, i);
-        };
-        loop(); //init
+
+            // "setTimeout" added by Jim McLeod
+            setTimeout(function() {
+                o.functionToLoop(loop, i);
+            }, 1);
+        })();
     }
 
 
@@ -4251,6 +4254,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         var fullcanvas = false;
         videos.forEach(function(video) {
+            if (!video.stream) {
+                video.stream = {};
+            }
+
             if (video.stream.fullcanvas) {
                 fullcanvas = video.stream;
             }
@@ -4305,10 +4312,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         context.drawImage(video, x, y, width, height);
-		
-		if(typeof video.stream.onRender === 'function') {
-			video.stream.onRender(context, x, y, width, height);
-		}
+
+        if (typeof video.stream.onRender === 'function') {
+            video.stream.onRender(context, x, y, width, height, video.stream);
+        }
     }
 
     var canvas = document.createElement('canvas');
@@ -4384,6 +4391,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
             var video = getVideo(stream);
             video.width = options.video.width;
             video.height = options.video.height;
+            video.stream = stream;
             videos.push(video);
         }
 

@@ -80,6 +80,8 @@ module.exports = function(grunt) {
                     webkitCancelAnimationFrame: true,
                     mozRequestAnimationFrame: true,
                     mozCancelAnimationFrame: true,
+                    msRequestAnimationFrame: true,
+                    msCancelAnimationFrame: true,
                     MediaStream: true,
                     webkitMediaStream: true,
                     html2canvas: true,

@@ -134,6 +134,7 @@ record.onclick = function() {
 
         var videoOnlyStream = new MediaStream();
         videoOnlyStream.addTrack(stream.getVideoTracks()[0]);
+        recordVideo = RecordRTC(videoOnlyStream, {
             type: 'video',
             // recorderType: MediaStreamRecorder || WhammyRecorder
         });

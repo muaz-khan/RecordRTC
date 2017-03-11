@@ -214,10 +214,28 @@ function RecordRTC(mediaStream, config) {
         }
     }
 
-    function handleRecordingDuration() {
-        setTimeout(function() {
+    function handleRecordingDuration(counter) {
+        counter = counter || 0;
+        counter++;
+
+        if (self.blob && self.blob.size) {
+            // manually stopped
+            if (!config.disableLogs) {
+                console.info('Ignored recording duration.');
+            }
+            return;
+        }
+
+        if (counter >= self.recordingDuration) {
             stopRecording(self.onRecordingStopped);
-        }, self.recordingDuration);
+            return;
+        }
+
+        counter += 1000; // 1-second
+
+        setTimeout(function() {
+            handleRecordingDuration(counter);
+        }, 1000);
     }
 
     var WARNING = 'It seems that "startRecording" is not invoked for ' + config.type + ' recorder.';
@@ -287,16 +305,16 @@ function RecordRTC(mediaStream, config) {
          * @example
          * recordRTC.setRecordingDuration();
          */
-        setRecordingDuration: function(milliseconds, callback) {
-            if (typeof milliseconds === 'undefined') {
-                throw 'milliseconds is required.';
+        setRecordingDuration: function(recordingDuration, callback) {
+            if (typeof recordingDuration === 'undefined') {
+                throw 'recordingDuration is required.';
             }
 
-            if (typeof milliseconds !== 'number') {
-                throw 'milliseconds must be a number.';
+            if (typeof recordingDuration !== 'number') {
+                throw 'recordingDuration must be a number.';
             }
 
-            self.recordingDuration = milliseconds;
+            self.recordingDuration = recordingDuration;
             self.onRecordingStopped = callback || function() {};
 
             return {

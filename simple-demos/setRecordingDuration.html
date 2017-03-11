@@ -1,0 +1,70 @@
+<style>
+    html, body, video, canvas {
+        margin: 0!important;
+        padding: 0!important;
+        overflow: hidden!important;
+        width: 100%;
+    }
+</style>
+
+<title>setRecordingDuration using RecordRTC</title>
+
+<br>
+<label for="txt-recording-duration">Set recording duration (milliseconds)</label>
+<input type="text" id="txt-recording-duration" value="5000">
+<button id="btn-start-recording">Start Recording</button>
+<button id="btn-stop-recording">Stop</button>
+
+<hr>
+<video controls autoplay></video>
+
+<script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+<script>
+var video = document.querySelector('video');
+
+function captureCamera(callback) {
+    navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+    navigator.getUserMedia({ audio: true, video: true }, function(camera) {
+        callback(camera);
+    }, function(error) {
+        alert(error.toStrign());
+    })
+}
+
+function stopRecordingCallback() {
+    var blob = recorder.getBlob();
+    video.src = URL.createObjectURL(blob);
+    video.play();
+
+    recorder.camera.stop();
+}
+
+var recorder; // globally accessible
+
+document.getElementById('btn-start-recording').onclick = function() {
+    this.disabled = true;
+    captureCamera(function(camera) {
+        video.src = URL.createObjectURL(camera);
+        video.play();
+
+        recorder = RecordRTC(camera, {
+            type: 'video'
+        });
+
+        var recordingDuration = parseInt(document.getElementById('txt-recording-duration').value) || 5000;
+        recorder.setRecordingDuration(recordingDuration).onRecordingStopped(stopRecordingCallback);
+
+        recorder.startRecording();
+
+        // release camera on stopRecording
+        recorder.camera = camera;
+
+        document.getElementById('btn-stop-recording').disabled = false;
+    });
+};
+
+document.getElementById('btn-stop-recording').onclick = function() {
+    this.disabled = true;
+    recorder.stopRecording(stopRecordingCallback);
+};
+</script>

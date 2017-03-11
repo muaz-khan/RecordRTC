@@ -216,7 +216,6 @@ function RecordRTC(mediaStream, config) {
 
     function handleRecordingDuration(counter) {
         counter = counter || 0;
-        counter++;
 
         if (self.blob && self.blob.size) {
             // manually stopped

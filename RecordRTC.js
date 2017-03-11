@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-03-11 2:20:27 PM UTC
+// Last time updated: 2017-03-11 2:27:37 PM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -230,11 +230,10 @@ function RecordRTC(mediaStream, config) {
 
     function handleRecordingDuration(counter) {
         counter = counter || 0;
-        counter++;
-
+        
         if (self.blob && self.blob.size) {
             // manually stopped
-            if(!config.disableLogs) {
+            if (!config.disableLogs) {
                 console.info('Ignored recording duration.');
             }
             return;

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-03-11 2:27:37 PM UTC
+// Last time updated: 2017-03-12 6:32:29 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -58,6 +58,8 @@ function RecordRTC(mediaStream, config) {
             mediaRecorder.clearRecordedData();
             mediaRecorder.record();
 
+            setState('recording');
+
             if (self.recordingDuration) {
                 handleRecordingDuration();
             }
@@ -86,6 +88,8 @@ function RecordRTC(mediaStream, config) {
         mediaRecorder = new Recorder(mediaStream, config);
         mediaRecorder.record();
 
+        setState('recording');
+
         if (!config.disableLogs) {
             console.debug('Initialized recorderType:', mediaRecorder.constructor.name, 'for output-type:', config.type);
         }
@@ -94,6 +98,24 @@ function RecordRTC(mediaStream, config) {
     function stopRecording(callback) {
         if (!mediaRecorder) {
             return console.warn(WARNING);
+        }
+
+        if (self.state === 'paused') {
+            setState('recording');
+
+            self.resumeRecording();
+
+            setTimeout(function() {
+                stopRecording(callback);
+            }, 1);
+            return;
+        }
+
+        if (self.state !== 'recording') {
+            if (!config.disableLogs) {
+                console.warn('Unable to stop the recording. Recording state: ', self.state);
+            }
+            return;
         }
 
         /*jshint validthis:true */
@@ -109,6 +131,8 @@ function RecordRTC(mediaStream, config) {
             mediaRecorder.stop();
             _callback();
         }
+
+        setState('stopped');
 
         function _callback(__blob) {
             for (var item in mediaRecorder) {
@@ -157,6 +181,15 @@ function RecordRTC(mediaStream, config) {
             return console.warn(WARNING);
         }
 
+        if (self.state !== 'recording') {
+            if (!config.disableLogs) {
+                console.warn('Unable to pause the recording. Recording state: ', self.state);
+            }
+            return;
+        }
+
+        setState('paused');
+
         mediaRecorder.pause();
 
         if (!config.disableLogs) {
@@ -168,6 +201,15 @@ function RecordRTC(mediaStream, config) {
         if (!mediaRecorder) {
             return console.warn(WARNING);
         }
+
+        if (self.state !== 'paused') {
+            if (!config.disableLogs) {
+                console.warn('Unable to resume the recording. Recording state: ', self.state);
+            }
+            return;
+        }
+
+        setState('recording');
 
         // not all libs have this method yet
         mediaRecorder.resume();
@@ -230,12 +272,15 @@ function RecordRTC(mediaStream, config) {
 
     function handleRecordingDuration(counter) {
         counter = counter || 0;
-        
-        if (self.blob && self.blob.size) {
-            // manually stopped
-            if (!config.disableLogs) {
-                console.info('Ignored recording duration.');
-            }
+
+        if (self.state === 'paused') {
+            setTimeout(function() {
+                handleRecordingDuration(counter);
+            }, 1000);
+            return;
+        }
+
+        if (self.state === 'stopped') {
             return;
         }
 
@@ -249,6 +294,11 @@ function RecordRTC(mediaStream, config) {
         setTimeout(function() {
             handleRecordingDuration(counter);
         }, 1000);
+    }
+
+    function setState(state) {
+        self.state = state;
+        self.onStateChanged(state);
     }
 
     var WARNING = 'It seems that "startRecording" is not invoked for ' + config.type + ' recorder.';
@@ -508,7 +558,7 @@ function RecordRTC(mediaStream, config) {
         blob: null,
 
         /**
-         * @todo Add descriptions.
+         * This works only with {recorderType:StereoAudioRecorder}
          * @property {number} bufferSize - Either audio device's default buffer-size, or your custom value.
          * @memberof RecordRTC
          * @instance
@@ -520,7 +570,7 @@ function RecordRTC(mediaStream, config) {
         bufferSize: 0,
 
         /**
-         * @todo Add descriptions.
+         * This works only with {recorderType:StereoAudioRecorder}
          * @property {number} sampleRate - Audio device's default sample rates.
          * @memberof RecordRTC
          * @instance
@@ -532,7 +582,7 @@ function RecordRTC(mediaStream, config) {
         sampleRate: 0,
 
         /**
-         * @todo Add descriptions.
+         * {recorderType:StereoAudioRecorder} returns ArrayBuffer object.
          * @property {ArrayBuffer} buffer - Audio ArrayBuffer, supported only in Chrome.
          * @memberof RecordRTC
          * @instance
@@ -544,7 +594,7 @@ function RecordRTC(mediaStream, config) {
         buffer: null,
 
         /**
-         * @todo Add descriptions.
+         * {recorderType:StereoAudioRecorder} returns DataView object.
          * @property {DataView} view - Audio DataView, supported only in Chrome.
          * @memberof RecordRTC
          * @instance
@@ -553,7 +603,48 @@ function RecordRTC(mediaStream, config) {
          *     var dataView = recordRTC.view;
          * });
          */
-        view: null
+        view: null,
+
+        /**
+         * This method resets the recorder. So that you can reuse single recorder instance many times.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.reset();
+         * recordRTC.startRecording();
+         */
+        reset: function() {
+            mediaRecorder = null;
+            setState('inactive');
+            self.blob = null;
+        },
+
+        /**
+         * This method is called whenever recorder's state changes.
+         * @method
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * recordRTC.onStateChanged = function(state) {
+         *     console.log('Recorder state: ', state);
+         * };
+         */
+        onStateChanged: function(state) {
+            if (!config.disableLogs) {
+                console.info('Recorder state changed:', state);
+            }
+        },
+
+        /**
+         * A recorder can have inactive, recording, paused or stopped states.
+         * @property {String} state - Current recording state.
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * alert(recordRTC.state);
+         */
+        state: 'inactive'
     };
 
     if (!this) {

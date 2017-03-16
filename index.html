@@ -450,6 +450,10 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
+                        if(webrtcDetectedBrowser === 'edge') {
+                            options.numberOfAudioChannels = 1;
+                        }
+
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -1016,7 +1020,7 @@
                 console.warn('Neither MediaRecorder API nor webp is supported in Microsoft Edge. You cam merely record audio.');
 
                 recordingMedia.innerHTML = '<option value="record-audio">Audio</option>';
-                setMediaContainerFormat(['WAV']);
+                setMediaContainerFormat(['pcm']);
             }
 
             function saveToDiskOrOpenNewTab(recordRTC) {

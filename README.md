@@ -40,6 +40,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 
 1. Angular2 - [check article](https://medium.com/@SumanthShankar/integrate-recordrtc-with-angular-2-typescript-942c9c4ca93f#.7x5yf2nr5) and [demo github repository](https://github.com/ShankarSumanth/Angular2-RecordRTC) - via [#186](https://github.com/muaz-khan/RecordRTC/issues/186)
 2. React.js - [check this article](http://suzannewang.com/recordrtc/) and [demo github repository](https://github.com/szwang/recordrtc-react)
+3. Video.js - [check this github repository](https://github.com/collab-project/videojs-record)
 
 > Want to add more? Please make a pull-request to update [`README.md`](https://github.com/muaz-khan/RecordRTC/blob/master/README.md)
 

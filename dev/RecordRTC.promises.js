@@ -22,7 +22,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
         return new Promise(function(resolve, reject) {
             try {
                 self.recordRTC.stopRecording(function(url) {
-                    self.blob = self.recordRTC.blob;
+                    self.blob = self.recordRTC.getBlob();
                     resolve(url);
                 });
             } catch (e) {
@@ -44,12 +44,12 @@ function RecordRTCPromisesHandler(mediaStream, options) {
     };
 
     this.getBlob = function() {
-        return this.blob;
+        return this.recordRTC.getBlob();
     };
 
     this.blob = null;
 }
 
-if (typeof RecordRTC !== 'undefined') {
-    RecordRTC.RecordRTCPromisesHandler = RecordRTCPromisesHandler;
+if (typeof module !== 'undefined') {
+    module.exports = RecordRTCPromisesHandler;
 }

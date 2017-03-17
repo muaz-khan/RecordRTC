@@ -852,9 +852,6 @@ In the above example; you can see that `recordRTC` instance object is used inste
 ```html
 <script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
 
-<!-- link this file as well -->
-<script src="/dev/RecordRTC.promises.js"></script>
-
 <script>
 // use "RecordRTCPromisesHandler" instead of "RecordRTC"
 var recorder = new RecordRTCPromisesHandler(mediaStream, options);

@@ -14,11 +14,7 @@
  * @class
  * @example
  * var options = {
- *     mimeType: 'video/webm',
- *		video: {
- *          width: 360,
- *          height: 240
- *      }
+ *     mimeType: 'video/webm'
  * }
  * var recorder = new MultiStreamRecorder(ArrayOfMediaStreams, options);
  * recorder.record();
@@ -30,7 +26,7 @@
  * });
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStreams} mediaStreams - Array of MediaStreams.
- * @param {object} config - {disableLogs:true, frameInterval: 10, mimeType: "video/webm"}
+ * @param {object} config - {disableLogs:true, frameInterval: 1, mimeType: "video/webm"}
  */
 
 function MultiStreamRecorder(arrayOfMediaStreams, options) {
@@ -108,13 +104,20 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         mediaRecorder.stop(function(blob) {
             callback(blob);
+
+            self.clearRecordedData();
         });
     };
 
     function getMixedAudioStream() {
         // via: @pehrsons
-        self.audioContext = new AudioContext();
-        var audioSources = [];
+        if (!Storage.AudioContextConstructor) {
+            Storage.AudioContextConstructor = new Storage.AudioContext();
+        }
+
+        self.audioContext = Storage.AudioContextConstructor;
+
+        self.audioSources = [];
 
         self.gainNode = self.audioContext.createGain();
         self.gainNode.connect(self.audioContext.destination);
@@ -130,7 +133,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
             var audioSource = self.audioContext.createMediaStreamSource(stream);
             audioSource.connect(self.gainNode);
-            audioSources.push(audioSource);
+            self.audioSources.push(audioSource);
         });
 
         if (!audioTracksLength) {
@@ -138,7 +141,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         self.audioDestination = self.audioContext.createMediaStreamDestination();
-        audioSources.forEach(function(audioSource) {
+        self.audioSources.forEach(function(audioSource) {
             audioSource.connect(self.audioDestination);
         });
         return self.audioDestination.stream;
@@ -170,6 +173,8 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         } else if (!options.disableLogs) {
             console.error('Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
         }
+
+        canvas.stream = capturedStream;
 
         return capturedStream;
     }
@@ -217,6 +222,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     }
 
     function drawImage(video, idx) {
+        if (isStoppedRecording) {
+            return;
+        }
+
         var x = 0;
         var y = 0;
         var width = video.width;
@@ -300,12 +309,38 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      */
     this.clearRecordedData = function() {
         videos = [];
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        isStoppedRecording = false;
-        mediaRecorder = null;
+        isStoppedRecording = true;
 
         if (mediaRecorder) {
             mediaRecorder.clearRecordedData();
+        }
+
+        mediaRecorder = null;
+
+        if (self.gainNode) {
+            self.gainNode.disconnect();
+            self.gainNode = null;
+        }
+
+        if (self.audioSources.length) {
+            self.audioSources.forEach(function(source) {
+                source.disconnect();
+            });
+            self.audioSources = [];
+        }
+
+        if (self.audioDestination) {
+            self.audioDestination.disconnect();
+            self.audioDestination = null;
+        }
+
+        self.audioContext = null;
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (canvas.stream) {
+            canvas.stream.stop();
+            canvas.stream = null;
         }
     };
 
@@ -338,6 +373,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         if (stream.getAudioTracks().length && self.audioContext) {
             var audioSource = self.audioContext.createMediaStreamSource(stream);
             audioSource.connect(self.audioDestination);
+            self.audioSources.push(audioSource);
         }
     };
 }

@@ -49,7 +49,8 @@ module.exports = function(grunt) {
                     'dev/Whammy.js',
                     'dev/DiskStorage.js',
                     'dev/GifRecorder.js',
-                    'dev/MultiStreamRecorder.js'
+                    'dev/MultiStreamRecorder.js',
+                    'dev/RecordRTC.promises.js'
                 ],
                 dest: 'RecordRTC.js',
             },
@@ -90,6 +91,7 @@ module.exports = function(grunt) {
                     webkitAudioContext: true,
                     mozAudioContext: true,
                     AudioContext: true,
+                    Promise: true,
                     JSON: true,
                     typeof: true,
                     define: true

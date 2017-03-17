@@ -310,7 +310,7 @@ function RecordRTC(mediaStream, config) {
         startRecording: startRecording,
 
         /**
-         * This method stops the recording. It takes a single "callback" parameter. It is strongly recommended to get "blob" or "URI" inside the callback to make sure all recorders finished their job.
+         * This method stops the recording. It is strongly recommended to get "blob" or "URI" inside the callback to make sure all recorders finished their job.
          * @param {function} callback - Callback to get the recorded blob.
          * @method
          * @memberof RecordRTC
@@ -325,11 +325,11 @@ function RecordRTC(mediaStream, config) {
         stopRecording: stopRecording,
 
         /**
-         * @todo Firefox is unable to pause the recording. Fix it.
          * This method pauses the recording. You can resume recording using "resumeRecording" method.
          * @method
          * @memberof RecordRTC
          * @instance
+         * @todo Firefox is unable to pause the recording. Fix it.
          * @example
          * recorder.pauseRecording();  // pause the recording
          * recorder.resumeRecording(); // resume again
@@ -348,11 +348,11 @@ function RecordRTC(mediaStream, config) {
         resumeRecording: resumeRecording,
 
         /**
-         * @todo This method should be deprecated.
          * This method initializes the recording.
          * @method
          * @memberof RecordRTC
          * @instance
+         * @todo This method should be deprecated.
          * @example
          * recorder.initRecorder();
          */
@@ -396,11 +396,11 @@ function RecordRTC(mediaStream, config) {
         },
 
         /**
-         * @todo Figure out the difference between "reset" and "clearRecordedData" methods.
          * This method can be used to clear/reset all the recorded data.
          * @method
          * @memberof RecordRTC
          * @instance
+         * @todo Figure out the difference between "reset" and "clearRecordedData" methods.
          * @example
          * recorder.clearRecordedData();
          */
@@ -535,13 +535,13 @@ function RecordRTC(mediaStream, config) {
         },
 
         /**
-         * @todo This method should be deprecated.
          * This method appends an array of webp images to the recorded video-blob. It takes an "array" object.
          * @type {Array.<Array>}
          * @param {Array} arrayOfWebPImages - Array of webp images.
          * @method
          * @memberof RecordRTC
          * @instance
+         * @todo This method should be deprecated.
          * @example
          * var arrayOfWebPImages = [];
          * arrayOfWebPImages.push({
@@ -584,6 +584,7 @@ function RecordRTC(mediaStream, config) {
          * @instance
          * @example
          * recorder = RecordRTC(audioStream, {
+         *     type: 'audio',
          *     bufferSize:  16384
          * });
          */
@@ -596,6 +597,7 @@ function RecordRTC(mediaStream, config) {
          * @instance
          * @example
          * recorder = RecordRTC(audioStream, {
+         *     type: 'audio',
          *     sampleRate: 96000
          * });
          */

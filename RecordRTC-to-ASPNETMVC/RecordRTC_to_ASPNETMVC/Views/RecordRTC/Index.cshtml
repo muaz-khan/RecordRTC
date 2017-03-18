@@ -127,7 +127,7 @@
                         var mediaElement = document.createElement('video');
 
                         var source = document.createElement('source');
-                        source.src = location.href + 'uploads/' + fName.replace(/"/g, '');
+                        source.src = document.location.origin + '/uploads/' + fName.replace(/"/g, '');
                         source.type = 'video/webm; codecs="vp8, vorbis"';
 
                         mediaElement.appendChild(source);

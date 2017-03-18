@@ -192,7 +192,7 @@
             </div>
 
             <div style="margin-top: 10px;">
-                <video controls muted></video>
+                <video id="recording-player" controls muted></video>
             </div>
         </section>
 
@@ -246,22 +246,9 @@
         </script>
 
         <script>
-            function intallFirefoxScreenCapturingExtension() {
-                InstallTrigger.install({
-                    'Foo': {
-                        // URL: 'https://addons.mozilla.org/en-US/firefox/addon/enable-screen-capturing/',
-                        URL: 'https://addons.mozilla.org/firefox/downloads/file/355418/enable_screen_capturing_in_firefox-1.0.006-fx.xpi?src=cb-dl-hotness',
-                        toString: function() {
-                            return this.URL;
-                        }
-                    }
-                });
-            }
-
-            var recordingDIV = document.querySelector('.recordrtc');
-            var recordingMedia = recordingDIV.querySelector('.recording-media');
-            var recordingPlayer = recordingDIV.querySelector('video');
-            var mediaContainerFormat = recordingDIV.querySelector('.media-container-format');
+            var recordingPlayer = document.querySelector('#recording-player');
+            var recordingMedia = document.querySelector('.recording-media');
+            var mediaContainerFormat = document.querySelector('.media-container-format');
             var mimeType = 'video/webm';
             var fileExtension = 'webm';
             var type = 'video';
@@ -360,7 +347,15 @@
                     },
                     onMediaCapturingFailed: function(error) {
                         if(error.name === 'PermissionDeniedError' && !!navigator.mozGetUserMedia) {
-                            intallFirefoxScreenCapturingExtension();
+                            InstallTrigger.install({
+                                'Foo': {
+                                    // URL: 'https://addons.mozilla.org/en-US/firefox/addon/enable-screen-capturing/',
+                                    URL: 'https://addons.cdn.mozilla.net/user-media/addons/655146/enable_screen_capturing_in_firefox-1.1.001-fx.xpi?filehash=sha256%3Acb13851aaca148fcbd6672fc2dddfb9653c52a529588fb27ad018e834fbb3099',
+                                    toString: function() {
+                                        return this.URL;
+                                    }
+                                }
+                            });
                         }
 
                         commonConfig.onMediaStopped();
@@ -1026,8 +1021,8 @@
             function saveToDiskOrOpenNewTab(recordRTC) {
                 var fileName = 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + fileExtension;
 
-                recordingDIV.querySelector('#save-to-disk').parentNode.style.display = 'block';
-                recordingDIV.querySelector('#save-to-disk').onclick = function() {
+                document.querySelector('#save-to-disk').parentNode.style.display = 'block';
+                document.querySelector('#save-to-disk').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
 
                     var file = new File([recordRTC.getBlob()], fileName, {
@@ -1037,7 +1032,7 @@
                     invokeSaveAsDialog(file, file.name);
                 };
 
-                recordingDIV.querySelector('#open-new-tab').onclick = function() {
+                document.querySelector('#open-new-tab').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
 
                     var file = new File([recordRTC.getBlob()], fileName, {
@@ -1048,8 +1043,8 @@
                 };
 
                 // upload to PHP server
-                recordingDIV.querySelector('#upload-to-php').disabled = false;
-                recordingDIV.querySelector('#upload-to-php').onclick = function() {
+                document.querySelector('#upload-to-php').disabled = false;
+                document.querySelector('#upload-to-php').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
                     this.disabled = true;
 
@@ -1070,8 +1065,8 @@
                 };
 
                 // upload to YouTube!
-                recordingDIV.querySelector('#upload-to-youtube').disabled = false;
-                recordingDIV.querySelector('#upload-to-youtube').onclick = function() {
+                document.querySelector('#upload-to-youtube').disabled = false;
+                document.querySelector('#upload-to-youtube').onclick = function() {
                     if(!recordRTC) return alert('No recording found.');
                     this.disabled = true;
 

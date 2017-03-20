@@ -41,6 +41,17 @@ function StereoAudioRecorder(mediaStream, config) {
     var jsAudioNode;
 
     var numberOfAudioChannels = 2;
+
+    /**
+     * Set sample rates such as 8K or 16K. Reference: http://stackoverflow.com/a/28977136/552182
+     * @property {number} desiredSampRate - Desired Bits per sample * 1000
+     * @memberof StereoAudioRecorder
+     * @instance
+     * @example
+     * var recorder = StereoAudioRecorder(mediaStream, {
+     *   desiredSampRate: 16 * 1000 // bits-per-sample * 1000
+     * });
+     */
     var desiredSampRate = config.desiredSampRate;
 
     // backward compatibility
@@ -128,7 +139,8 @@ function StereoAudioRecorder(mediaStream, config) {
                 sampleRate = desiredSampRate;
             }
 
-            // for changing the sampling rate, reference: http://stackoverflow.com/questions/28969304/record-audio-on-web-preset-16000hz-16bit/28977136#28977136
+            // for changing the sampling rate, reference:
+            // http://stackoverflow.com/a/28977136/552182
             function interpolateArray(data, newSampleRate, oldSampleRate) {
                 var fitCount = Math.round(data.length * (newSampleRate / oldSampleRate));
                 //var newData = new Array();
@@ -362,7 +374,7 @@ function StereoAudioRecorder(mediaStream, config) {
              */
             self.view = view;
 
-            self.sampleRate = sampleRate;
+            self.sampleRate = desiredSampRate || sampleRate;
             self.bufferSize = bufferSize;
 
             // recorded audio length
@@ -456,6 +468,10 @@ function StereoAudioRecorder(mediaStream, config) {
     if (!config.disableLogs) {
         console.log('sample-rate', sampleRate);
         console.log('buffer-size', bufferSize);
+
+        if (config.desiredSampRate) {
+            console.log('Desired sample-rate', config.desiredSampRate);
+        }
     }
 
     var isPaused = false;

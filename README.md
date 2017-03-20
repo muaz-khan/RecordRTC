@@ -671,6 +671,8 @@ Here is how to customize Buffer-Size for audio recording?
 // Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384).
 
 var options = {
+   type: 'audio',
+   recorderType: StereoAudioRecorder,
    bufferSize: 16384
 };
 var recordRTC = RecordRTC(audioStream, options);
@@ -701,6 +703,8 @@ Here is jow to customize Sample-Rate for audio recording?
 // the range 22050 to 96000.
 
 var options = {
+   type: 'audio',
+   recorderType: StereoAudioRecorder,
    sampleRate: 96000
 };
 var recordRTC = RecordRTC(audioStream, options);
@@ -711,6 +715,20 @@ Values for sample-rate must be greater than or equal to 22050 and less than or e
 If you passed invalid value then you'll get blank audio.
 
 You can pass custom sample-rate values only on Mac (or additionally maybe on Windows 10).
+
+## `desiredSampRate`
+
+Set sample rates such as 8K or 16K. Reference: http://stackoverflow.com/a/28977136/552182
+
+```javascript
+// record 16khz audio
+var options = {
+   type: 'audio',
+   recorderType: StereoAudioRecorder,
+   desiredSampRate: 16 * 1000 // bits-per-sample * 1000
+};
+var recordRTC = RecordRTC(audioStream, options);
+```
 
 ## `mimeType`
 

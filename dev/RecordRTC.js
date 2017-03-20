@@ -17,7 +17,7 @@
  * @see For further information:
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - Single media-stream object, array of media-streams, html-canvas-element, etc.
- * @param {object} config - {type:"video", recorderType: MediaStreamRecorder, disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
+ * @param {object} config - {type:"video", recorderType: MediaStreamRecorder, disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, desiredSampRate: 16000, video: HTMLVideoElement, etc.}
  */
 
 function RecordRTC(mediaStream, config) {
@@ -117,13 +117,13 @@ function RecordRTC(mediaStream, config) {
         setState('stopped');
 
         function _callback(__blob) {
-            for (var item in mediaRecorder) {
-                if (self) {
-                    self[item] = mediaRecorder[item];
+            Object.keys(mediaRecorder).forEach(function(key) {
+                if (typeof mediaRecorder[key] === 'function') {
+                    return;
                 }
 
-                self[item] = mediaRecorder[item];
-            }
+                self[key] = mediaRecorder[key];
+            });
 
             var blob = mediaRecorder.blob;
 
@@ -567,6 +567,7 @@ function RecordRTC(mediaStream, config) {
          * @property {Blob} blob - Recorded Blob can be accessed using this property.
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
          * recorder.stopRecording(function() {
          *     var blob = this.blob;
@@ -578,70 +579,44 @@ function RecordRTC(mediaStream, config) {
         blob: null,
 
         /**
-         * This works only with {recorderType:StereoAudioRecorder}. Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384)
-         * @property {number} bufferSize - Either audio device's default buffer-size, or your custom value.
+         * This works only with {recorderType:StereoAudioRecorder}. Use this property on "stopRecording" to verify the encoder's sample-rates.
+         * @property {number} bufferSize - Buffer-size used to encode the WAV container
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
-         * recorder = RecordRTC(audioStream, {
-         *     type: 'audio',
-         *     bufferSize:  16384
+         * recorder.stopRecording(function() {
+         *     alert('Recorder used this buffer-size: ' + this.bufferSize);
          * });
          */
         bufferSize: 0,
 
         /**
-         * This works only with {recorderType:StereoAudioRecorder}. Legal range is: 22050 to 96000
-         * @property {number} sampleRate - Audio device's default sample rates.
+         * This works only with {recorderType:StereoAudioRecorder}. Use this property on "stopRecording" to verify the encoder's sample-rates.
+         * @property {number} sampleRate - Sample-rates used to encode the WAV container
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
-         * recorder = RecordRTC(audioStream, {
-         *     type: 'audio',
-         *     sampleRate: 96000
+         * recorder.stopRecording(function() {
+         *     alert('Recorder used these sample-rates: ' + this.sampleRate);
          * });
          */
         sampleRate: 0,
-
-        /**
-         * This is used to set any sample rate such as 8K or 16K. Reference: http://stackoverflow.com/questions/28969304/record-audio-on-web-preset-16000hz-16bit/28977136#28977136
-         * @property {number} desiredSampRate - Desired Smple rate
-         * @memberof RecordRTC
-         * @instance
-         * @example
-         * var recorder = RecordRTC(mediaStream, {
-         *   recorderType: StereoAudioRecorder,
-         *   type: 'audio',
-         *   mimeType: 'audio/wav',
-         *   numberOfAudioChannels: 1,
-         *   desiredSampRate: 16000
-         * });
-         */
-        desiredSampRate: 0,
 
         /**
          * {recorderType:StereoAudioRecorder} returns ArrayBuffer object.
          * @property {ArrayBuffer} buffer - Audio ArrayBuffer, supported only in Chrome.
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
          * recorder.stopRecording(function() {
          *     var arrayBuffer = this.buffer;
+         *     alert(arrayBuffer.byteLength);
          * });
          */
         buffer: null,
-
-        /**
-         * {recorderType:StereoAudioRecorder} returns DataView object.
-         * @property {DataView} view - Audio DataView, supported only in Chrome.
-         * @memberof RecordRTC
-         * @instance
-         * @example
-         * recorder.stopRecording(function() {
-         *     var dataView = this.view;
-         * });
-         */
-        view: null,
 
         /**
          * This method resets the recorder. So that you can reuse single recorder instance many times.
@@ -683,8 +658,15 @@ function RecordRTC(mediaStream, config) {
          * @property {String} state - A recorder's state can be: recording, paused, stopped or inactive.
          * @memberof RecordRTC
          * @static
+         * @readonly
          * @example
-         * alert(recorder.state);
+         * // this looper function will keep you updated about the recorder's states.
+         * (function looper() {
+         *     document.querySelector('h1').innerHTML = 'Recorder's state is: ' + recorder.state;
+         *     if(recorder.state === 'stopped') return; // ignore+stop
+         *     setTimeout(looper, 1000); // update after every 3-seconds
+         * })();
+         * recorder.startRecording();
          */
         state: 'inactive'
     };

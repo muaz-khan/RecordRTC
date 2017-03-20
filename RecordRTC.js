@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-03-17 4:24:07 AM UTC
+// Last time updated: 2017-03-20 11:50:41 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -31,7 +31,7 @@
  * @see For further information:
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - Single media-stream object, array of media-streams, html-canvas-element, etc.
- * @param {object} config - {type:"video", recorderType: MediaStreamRecorder, disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
+ * @param {object} config - {type:"video", recorderType: MediaStreamRecorder, disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, desiredSampRate: 16000, video: HTMLVideoElement, etc.}
  */
 
 function RecordRTC(mediaStream, config) {
@@ -131,13 +131,13 @@ function RecordRTC(mediaStream, config) {
         setState('stopped');
 
         function _callback(__blob) {
-            for (var item in mediaRecorder) {
-                if (self) {
-                    self[item] = mediaRecorder[item];
+            Object.keys(mediaRecorder).forEach(function(key) {
+                if (typeof mediaRecorder[key] === 'function') {
+                    return;
                 }
 
-                self[item] = mediaRecorder[item];
-            }
+                self[key] = mediaRecorder[key];
+            });
 
             var blob = mediaRecorder.blob;
 
@@ -581,6 +581,7 @@ function RecordRTC(mediaStream, config) {
          * @property {Blob} blob - Recorded Blob can be accessed using this property.
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
          * recorder.stopRecording(function() {
          *     var blob = this.blob;
@@ -592,27 +593,27 @@ function RecordRTC(mediaStream, config) {
         blob: null,
 
         /**
-         * This works only with {recorderType:StereoAudioRecorder}. Legal values are (256, 512, 1024, 2048, 4096, 8192, 16384)
-         * @property {number} bufferSize - Either audio device's default buffer-size, or your custom value.
+         * This works only with {recorderType:StereoAudioRecorder}. Use this property on "stopRecording" to verify the encoder's sample-rates.
+         * @property {number} bufferSize - Buffer-size used to encode the WAV container
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
-         * recorder = RecordRTC(audioStream, {
-         *     type: 'audio',
-         *     bufferSize:  16384
+         * recorder.stopRecording(function() {
+         *     alert('Recorder used this buffer-size: ' + this.bufferSize);
          * });
          */
         bufferSize: 0,
 
         /**
-         * This works only with {recorderType:StereoAudioRecorder}. Legal range is: 22050 to 96000
-         * @property {number} sampleRate - Audio device's default sample rates.
+         * This works only with {recorderType:StereoAudioRecorder}. Use this property on "stopRecording" to verify the encoder's sample-rates.
+         * @property {number} sampleRate - Sample-rates used to encode the WAV container
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
-         * recorder = RecordRTC(audioStream, {
-         *     type: 'audio',
-         *     sampleRate: 96000
+         * recorder.stopRecording(function() {
+         *     alert('Recorder used these sample-rates: ' + this.sampleRate);
          * });
          */
         sampleRate: 0,
@@ -622,24 +623,14 @@ function RecordRTC(mediaStream, config) {
          * @property {ArrayBuffer} buffer - Audio ArrayBuffer, supported only in Chrome.
          * @memberof RecordRTC
          * @instance
+         * @readonly
          * @example
          * recorder.stopRecording(function() {
          *     var arrayBuffer = this.buffer;
+         *     alert(arrayBuffer.byteLength);
          * });
          */
         buffer: null,
-
-        /**
-         * {recorderType:StereoAudioRecorder} returns DataView object.
-         * @property {DataView} view - Audio DataView, supported only in Chrome.
-         * @memberof RecordRTC
-         * @instance
-         * @example
-         * recorder.stopRecording(function() {
-         *     var dataView = this.view;
-         * });
-         */
-        view: null,
 
         /**
          * This method resets the recorder. So that you can reuse single recorder instance many times.
@@ -681,8 +672,15 @@ function RecordRTC(mediaStream, config) {
          * @property {String} state - A recorder's state can be: recording, paused, stopped or inactive.
          * @memberof RecordRTC
          * @static
+         * @readonly
          * @example
-         * alert(recorder.state);
+         * // this looper function will keep you updated about the recorder's states.
+         * (function looper() {
+         *     document.querySelector('h1').innerHTML = 'Recorder's state is: ' + recorder.state;
+         *     if(recorder.state === 'stopped') return; // ignore+stop
+         *     setTimeout(looper, 1000); // update after every 3-seconds
+         * })();
+         * recorder.startRecording();
          */
         state: 'inactive'
     };
@@ -2201,6 +2199,18 @@ function StereoAudioRecorder(mediaStream, config) {
 
     var numberOfAudioChannels = 2;
 
+    /**
+     * Set sample rates such as 8K or 16K. Reference: http://stackoverflow.com/a/28977136/552182
+     * @property {number} desiredSampRate - Desired Bits per sample * 1000
+     * @memberof StereoAudioRecorder
+     * @instance
+     * @example
+     * var recorder = StereoAudioRecorder(mediaStream, {
+     *   desiredSampRate: 16 * 1000 // bits-per-sample * 1000
+     * });
+     */
+    var desiredSampRate = config.desiredSampRate;
+
     // backward compatibility
     if (config.leftChannel === true) {
         numberOfAudioChannels = 1;
@@ -2263,14 +2273,53 @@ function StereoAudioRecorder(mediaStream, config) {
             var rightBuffers = config.rightBuffers.slice(0);
             var sampleRate = config.sampleRate;
             var internalInterleavedLength = config.internalInterleavedLength;
+            var desiredSampRate = config.desiredSampRate;
 
             if (numberOfAudioChannels === 2) {
                 leftBuffers = mergeBuffers(leftBuffers, internalInterleavedLength);
                 rightBuffers = mergeBuffers(rightBuffers, internalInterleavedLength);
+                if (desiredSampRate) {
+                    leftBuffers = interpolateArray(leftBuffers, desiredSampRate, sampleRate);
+                    rightBuffers = interpolateArray(rightBuffers, desiredSampRate, sampleRate);
+                }
             }
 
             if (numberOfAudioChannels === 1) {
                 leftBuffers = mergeBuffers(leftBuffers, internalInterleavedLength);
+                if (desiredSampRate) {
+                    leftBuffers = interpolateArray(leftBuffers, desiredSampRate, sampleRate);
+                }
+            }
+
+            // set sample rate as desired sample rate
+            if (desiredSampRate) {
+                sampleRate = desiredSampRate;
+            }
+
+            // for changing the sampling rate, reference:
+            // http://stackoverflow.com/a/28977136/552182
+            function interpolateArray(data, newSampleRate, oldSampleRate) {
+                var fitCount = Math.round(data.length * (newSampleRate / oldSampleRate));
+                //var newData = new Array();
+                var newData = [];
+                //var springFactor = new Number((data.length - 1) / (fitCount - 1));
+                var springFactor = Number((data.length - 1) / (fitCount - 1));
+                newData[0] = data[0]; // for new allocation
+                for (var i = 1; i < fitCount - 1; i++) {
+                    var tmp = i * springFactor;
+                    //var before = new Number(Math.floor(tmp)).toFixed();
+                    //var after = new Number(Math.ceil(tmp)).toFixed();
+                    var before = Number(Math.floor(tmp)).toFixed();
+                    var after = Number(Math.ceil(tmp)).toFixed();
+                    var atPoint = tmp - before;
+                    newData[i] = linearInterpolate(data[before], data[after], atPoint);
+                }
+                newData[fitCount - 1] = data[data.length - 1]; // for new allocation
+                return newData;
+            }
+
+            function linearInterpolate(before, after, atPoint) {
+                return before + (after - before) * atPoint;
             }
 
             function mergeBuffers(channelBuffer, rLength) {
@@ -2443,6 +2492,7 @@ function StereoAudioRecorder(mediaStream, config) {
         // audioInput.disconnect();
 
         mergeLeftRightBuffers({
+            desiredSampRate: desiredSampRate,
             sampleRate: sampleRate,
             numberOfAudioChannels: numberOfAudioChannels,
             internalInterleavedLength: recordingLength,
@@ -2481,7 +2531,7 @@ function StereoAudioRecorder(mediaStream, config) {
              */
             self.view = view;
 
-            self.sampleRate = sampleRate;
+            self.sampleRate = desiredSampRate || sampleRate;
             self.bufferSize = bufferSize;
 
             // recorded audio length
@@ -2575,6 +2625,10 @@ function StereoAudioRecorder(mediaStream, config) {
     if (!config.disableLogs) {
         console.log('sample-rate', sampleRate);
         console.log('buffer-size', bufferSize);
+
+        if (config.desiredSampRate) {
+            console.log('Desired sample-rate', config.desiredSampRate);
+        }
     }
 
     var isPaused = false;

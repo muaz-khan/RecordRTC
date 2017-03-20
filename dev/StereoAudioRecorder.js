@@ -41,6 +41,7 @@ function StereoAudioRecorder(mediaStream, config) {
     var jsAudioNode;
 
     var numberOfAudioChannels = 2;
+    var desiredSampRate = config.desiredSampRate;
 
     // backward compatibility
     if (config.leftChannel === true) {
@@ -104,14 +105,52 @@ function StereoAudioRecorder(mediaStream, config) {
             var rightBuffers = config.rightBuffers.slice(0);
             var sampleRate = config.sampleRate;
             var internalInterleavedLength = config.internalInterleavedLength;
+            var desiredSampRate = config.desiredSampRate;
 
             if (numberOfAudioChannels === 2) {
                 leftBuffers = mergeBuffers(leftBuffers, internalInterleavedLength);
                 rightBuffers = mergeBuffers(rightBuffers, internalInterleavedLength);
+                if (desiredSampRate) {
+                    leftBuffers = interpolateArray(leftBuffers, desiredSampRate, sampleRate);
+                    rightBuffers = interpolateArray(rightBuffers, desiredSampRate, sampleRate);
+                }
             }
 
             if (numberOfAudioChannels === 1) {
                 leftBuffers = mergeBuffers(leftBuffers, internalInterleavedLength);
+                if (desiredSampRate) {
+                    leftBuffers = interpolateArray(leftBuffers, desiredSampRate, sampleRate);
+                }
+            }
+
+            // set sample rate as desired sample rate
+            if (desiredSampRate) {
+                sampleRate = desiredSampRate;
+            }
+
+            // for changing the sampling rate, reference: http://stackoverflow.com/questions/28969304/record-audio-on-web-preset-16000hz-16bit/28977136#28977136
+            function interpolateArray(data, newSampleRate, oldSampleRate) {
+                var fitCount = Math.round(data.length * (newSampleRate / oldSampleRate));
+                //var newData = new Array();
+                var newData = [];
+                //var springFactor = new Number((data.length - 1) / (fitCount - 1));
+                var springFactor = Number((data.length - 1) / (fitCount - 1));
+                newData[0] = data[0]; // for new allocation
+                for (var i = 1; i < fitCount - 1; i++) {
+                    var tmp = i * springFactor;
+                    //var before = new Number(Math.floor(tmp)).toFixed();
+                    //var after = new Number(Math.ceil(tmp)).toFixed();
+                    var before = Number(Math.floor(tmp)).toFixed();
+                    var after = Number(Math.ceil(tmp)).toFixed();
+                    var atPoint = tmp - before;
+                    newData[i] = linearInterpolate(data[before], data[after], atPoint);
+                }
+                newData[fitCount - 1] = data[data.length - 1]; // for new allocation
+                return newData;
+            }
+
+            function linearInterpolate(before, after, atPoint) {
+                return before + (after - before) * atPoint;
             }
 
             function mergeBuffers(channelBuffer, rLength) {
@@ -284,6 +323,7 @@ function StereoAudioRecorder(mediaStream, config) {
         // audioInput.disconnect();
 
         mergeLeftRightBuffers({
+            desiredSampRate: desiredSampRate,
             sampleRate: sampleRate,
             numberOfAudioChannels: numberOfAudioChannels,
             internalInterleavedLength: recordingLength,

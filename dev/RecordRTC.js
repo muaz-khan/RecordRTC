@@ -604,6 +604,22 @@ function RecordRTC(mediaStream, config) {
         sampleRate: 0,
 
         /**
+         * This is used to set any sample rate such as 8K or 16K. Reference: http://stackoverflow.com/questions/28969304/record-audio-on-web-preset-16000hz-16bit/28977136#28977136
+         * @property {number} desiredSampRate - Desired Smple rate
+         * @memberof RecordRTC
+         * @instance
+         * @example
+         * var recorder = RecordRTC(mediaStream, {
+         *   recorderType: StereoAudioRecorder,
+         *   type: 'audio',
+         *   mimeType: 'audio/wav',
+         *   numberOfAudioChannels: 1,
+         *   desiredSampRate: 16000
+         * });
+         */
+        desiredSampRate: 0,
+
+        /**
          * {recorderType:StereoAudioRecorder} returns ArrayBuffer object.
          * @property {ArrayBuffer} buffer - Audio ArrayBuffer, supported only in Chrome.
          * @memberof RecordRTC

@@ -150,9 +150,12 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     var videos = [];
     var mediaRecorder;
 
-    function getMixedVideoStream() {
+    function resetVideoStreams(streams) {
+        videos = [];
+        streams = streams || arrayOfMediaStreams;
+
         // via: @adrian-ber
-        arrayOfMediaStreams.forEach(function(stream) {
+        streams.forEach(function(stream) {
             if (!stream.getVideoTracks().length) {
                 return;
             }
@@ -163,6 +166,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
             video.stream = stream;
             videos.push(video);
         });
+    }
+
+    function getMixedVideoStream() {
+        resetVideoStreams();
 
         var capturedStream;
 
@@ -263,7 +270,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         context.drawImage(video, x, y, width, height);
 
         if (typeof video.stream.onRender === 'function') {
-            video.stream.onRender(context, x, y, width, height, video.stream);
+            video.stream.onRender(context, x, y, width, height, idx);
         }
     }
 
@@ -348,33 +355,56 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      * Add extra media-streams to existing recordings.
      * @method
      * @memberof MultiStreamRecorder
+     * @param {MediaStreams} mediaStreams - Array of MediaStreams
      * @example
-     * recorder.addStream(MediaStream);
+     * recorder.addStreams([newAudioStream, newVideoStream]);
      */
-    this.addStream = function(stream) {
-        if (stream instanceof Array && stream.length) {
-            stream.forEach(this.addStream);
-            return;
+    this.addStreams = function(streams) {
+        if (!streams) {
+            throw 'First parameter is required.';
         }
-        arrayOfMediaStreams.push(stream);
+
+        if (!(streams instanceof Array)) {
+            streams = [streams];
+        }
+
+        arrayOfMediaStreams.concat(streams);
 
         if (!mediaRecorder) {
             return;
         }
 
-        if (stream.getVideoTracks().length) {
-            var video = getVideo(stream);
-            video.width = options.video.width;
-            video.height = options.video.height;
-            video.stream = stream;
-            videos.push(video);
+        streams.forEach(function(stream) {
+            if (stream.getVideoTracks().length) {
+                var video = getVideo(stream);
+                video.width = options.video.width;
+                video.height = options.video.height;
+                video.stream = stream;
+                videos.push(video);
+            }
+
+            if (stream.getAudioTracks().length && self.audioContext) {
+                var audioSource = self.audioContext.createMediaStreamSource(stream);
+                audioSource.connect(self.audioDestination);
+                self.audioSources.push(audioSource);
+            }
+        });
+    };
+
+    /**
+     * Reset videos during live recording. Replace old videos e.g. replace cameras with full-screen.
+     * @method
+     * @memberof MultiStreamRecorder
+     * @param {MediaStreams} mediaStreams - Array of MediaStreams
+     * @example
+     * recorder.resetVideoStreams([newVideo1, newVideo2]);
+     */
+    this.resetVideoStreams = function(streams) {
+        if (streams && !(streams instanceof Array)) {
+            streams = [streams];
         }
 
-        if (stream.getAudioTracks().length && self.audioContext) {
-            var audioSource = self.audioContext.createMediaStreamSource(stream);
-            audioSource.connect(self.audioDestination);
-            self.audioSources.push(audioSource);
-        }
+        resetVideoStreams(streams);
     };
 }
 

@@ -33,6 +33,8 @@ function captureAllCameras(callback) {
             if (!donotDuplicateDevices[device.id]) {
                 donotDuplicateDevices[device.id] = true;
 
+                // on-video-render:
+                // called as soon as this video stream is drawn (painted or recorded) on canvas2d surface
                 stream.onRender = function(context, x, y, width, height) {
                     context.font = '20px Georgia';
 

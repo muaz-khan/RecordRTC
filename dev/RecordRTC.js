@@ -476,21 +476,19 @@ function RecordRTC(mediaStream, config) {
         },
 
         /**
-         * Add extra media-streams to existing recordings.
+         * Get internal recorder object e.g. MutliStreamRecorder, MediaStreamRecorder, StereoAudioRecorder or WhammyRecorder etc.
          * @method
          * @memberof RecordRTC
          * @instance
          * @example
-         * recorder.addStream(MediaStream);
+         * var msRecorder = recorder.getInternalRecorder();
+         * if(msRecorder instanceof MultiStreamRecorder) {
+         *     msRecorder.addStreams([newAudioStream]);
+         *     msRecorder.resetVideoStreams([screenStream]);
+         * }
          */
-        addStream: function(stream) {
-            if (!mediaRecorder) {
-                return console.warn(WARNING);
-            }
-
-            if (typeof mediaRecorder.addStream === 'function') {
-                mediaRecorder.addStream(stream);
-            }
+        getInternalRecorder: function() {
+            return mediaRecorder;
         },
 
         /**

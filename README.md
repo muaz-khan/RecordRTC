@@ -253,7 +253,7 @@ Demos:
 1. [Record all your cameras](https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/multi-cameras-recording.html)
 2. [Record screen as well as your video!](https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/video-plus-screen-recording.html)
 
-You can record 4 parallel videos/streams (**WebRTC Conference**):
+You can record many videos/streams in single WebM/Mp4 file (**WebRTC Conference Recording**):
 
 ```javascript
 var arrayOfStreams = [localStream, remoteStream1, remoteStream2, remoteStream3];
@@ -275,32 +275,80 @@ recordRTC.stopRecording(function(singleWebM) {
 });
 ```
 
-> This simply means that: **You can record 4 users video conference in single WebM or Mp4 container!**
-
 Points:
 
 1. Instead of passing single `MediaStream`, you are passing array of `MediaStreams`
-2. You are keeping the `type=video`
-3. You will get single webm or mp4 according to your `mimeType`
+2. You will get single webm or mp4 according to your `mimeType`
 
-## `addStream`
+`MultiStreamRecorder.js` supports two extra methods:
 
-> This section is related to above section "Record Multiple Videos".
-
-`MultiStreamRecorder.js` now supports `addStream` method; which allows you add additional streams on the fly (during a recording):
+1. `addStreams`
+2. `resetVideoStreams`
 
 ```javascript
-recorder.startRecording();
-
-setTimeout(function() {
-	recorder.addStream(anotherStream);
-}, 5000);
+var msRecorder = recorder.getInternalRecorder();
+if (msRecorder instanceof MultiStreamRecorder) {
+    msRecorder.addStreams([newAudioStream]);
+    msRecorder.resetVideoStreams([screenStream]);
+}
 ```
 
-Points:
+Usecases:
 
-1. You can add any kind of stream: audio and/or video.
-2. You can add any number of streams; there is no limit.
+1. You can add more audio and/or video streams during live recording (using `addStreams` method)
+2. You can reset/remove/replace old videos using `resetVideoStreams`
+
+`resetVideoStreams` can be used to recorded screenStream in full-screen mode e.g.
+
+```javascript
+if (yourScreen.isScreen === true) {
+    yourScreen.fullcanvas = true;
+    yourScreen.width = window.screen.width;
+    yourScreen.height = window.screen.height;
+
+    // now it will record all audios + only_this_screen
+    internalRecorder.resetVideoStreams([yourScreen]);
+}
+```
+
+As soon as [screen is stopped](https://www.webrtc-experiment.com/webrtcpedia/#stream-ended-listener):
+
+```javascript
+addStreamStopListener(yourScreen, function() {
+    var cameraStreams = getSingleOrMultipleCameraStreams();
+
+    // now it will record all audios + all_your_cameras
+    internalRecorder.resetVideoStreams(cameraStreams);
+});
+```
+
+## `getInternalRecorder`
+
+You can get access to internal recorders e.g. MultiStreamRecorder, MediaStreamRecorder, StereoAudioRecorder, WhammyRecorder etc.
+
+> Use `getInternalRecorder` only after `startRecording`. It may return `NULL` according to RecordRTC current state.
+
+```javascript
+// if RecordRTC recording in-progress
+if (recorder.state === 'recording') {
+    // get MediaStreamRecorder
+    var msRecorder = recorder.getInternalRecorder();
+
+    // always check for NULL or verify the recorder type
+    if (msRecorder instanceof MultiStreamRecorder) {
+        // it is NOT NULL
+        // also it is MultiStreamRecorder instance
+        // now we can use these extra methods
+        msRecorder.addStreams([newAudioStream]);
+        msRecorder.resetVideoStreams([screenStream]);
+    }
+}
+```
+
+Internal recorders can add extra methods. Same as MultiStreamRecorder which is supporting two extra methods:
+
+1. `addStreams`
+2. `resetVideoStreams`
 
 ## Echo Issues
 

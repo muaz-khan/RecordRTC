@@ -246,6 +246,28 @@ recordRTC.stopRecording(function(audioURL) {
 });
 ```
 
+## `options`
+
+RecordRTC options or configurations or hints or preferences:
+
+* `type` accepts `video` or `audio` or `canvas` or `gif`
+* `mimeType` accepts [all these values](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/mimeType)
+* `recorderType` accepts `MediaStreamRecorder` or `StereoAudioRecorder` or `WhammyRecorder` or `GifRecorder` or any recorder type from [this page](https://github.com/muaz-khan/RecordRTC/tree/master/dev)
+* `timeSlice` accepts numbers in milliseconds; use this to force intervals-based blobs
+* `checkForInactiveTracks` accepts `true` or `false`; use this to disable default inactive-stream-checker functions
+* `onTimeStamp` it is a function that is called-back by the MediaStreamRecorder; `timeSlice` parameter is required for this function
+* `bitsPerSecond` accepts numbers in bits; applies both to audio and video tracks
+* `audioBitsPerSecond` accepts numbers in bits; applies only to audio tracks
+* `videoBitsPerSecond` accepts numbers in bits; applies only to video tracks
+* `disableLogs` accepts `true` or `false`; use this to disable console logs
+* `frameInterval` accepts numbers in milliseconds; use this with MultiStreamRecorder, CanvasRecorder and WhammyRecorder
+* `previewStream` it is a function that is called-back by the MultiStreamRecorder
+* `video` accepts object similar to this: `{width: 320, height: 240}`; pass this parameter for MultiStreamRecorder, CanvasRecorder and WhammyRecorder
+* `canvas` accepts object similar to this: `{width: 320, height: 240}`; pass this parameter for MultiStreamRecorder, CanvasRecorder and WhammyRecorder
+* `sampleRate` used only by the StereoAudioRecorder
+* `bufferSize` used only by the StereoAudioRecorder
+* `numberOfAudioChannels` used only by the StereoAudioRecorder
+
 ## Record Multiple Videos
 
 Demos:

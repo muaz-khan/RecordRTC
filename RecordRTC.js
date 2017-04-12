@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-04-04 4:13:54 AM UTC
+// Last time updated: 2017-04-12 12:58:51 PM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -1817,7 +1817,8 @@ function isMediaRecorderCompatible() {
  *     audioBitsPerSecond : 256 * 8 * 1024,
  *     videoBitsPerSecond : 256 * 8 * 1024,
  *     bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
- *     getNativeBlob: true // by default: it is false
+ *     checkForInactiveTracks: true,
+ *     timeSlice: 1000 // concatenate intervals based blobs
  * }
  * var recorder = new MediaStreamRecorder(MediaStream, options);
  * recorder.record();
@@ -1829,7 +1830,7 @@ function isMediaRecorderCompatible() {
  * });
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
- * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm", onAudioProcessStarted: function}
+ * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm"}
  */
 
 function MediaStreamRecorder(mediaStream, config) {
@@ -1863,6 +1864,8 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     }
 
+    var arrayOfBlobs = [];
+
     /**
      * This method records MediaStream.
      * @method
@@ -1872,6 +1875,7 @@ function MediaStreamRecorder(mediaStream, config) {
      */
     this.record = function() {
         self.blob = null;
+        self.clearRecordedData();
 
         var recorderHints = config;
 
@@ -1923,7 +1927,11 @@ function MediaStreamRecorder(mediaStream, config) {
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
-            if (self.dontFireOnDataAvailableEvent) {
+            if (typeof config.timeSlice === 'number') {
+                if (e.data && e.data.size && e.data.size > 100) {
+                    updateTimeStamp();
+                    arrayOfBlobs.push(e.data);
+                }
                 return;
             }
 
@@ -1939,14 +1947,6 @@ function MediaStreamRecorder(mediaStream, config) {
                 return;
             }
 
-            /**
-             * @property {Blob} blob - Recorded frames in video/webm blob.
-             * @memberof MediaStreamRecorder
-             * @example
-             * recorder.stop(function() {
-             *     var blob = recorder.blob;
-             * });
-             */
             self.blob = config.getNativeBlob ? e.data : new Blob([e.data], {
                 type: recorderHints.mimeType || 'video/webm'
             });
@@ -1976,6 +1976,8 @@ function MediaStreamRecorder(mediaStream, config) {
 
             (function(looper) {
                 if (!self.manuallyStopped && mediaRecorder && mediaRecorder.state === 'inactive') {
+                    delete config.timeslice;
+
                     // 10 minutes, enough?
                     mediaRecorder.start(10 * 60 * 1000);
                     return;
@@ -1995,25 +1997,50 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         };
 
-        // void start(optional long mTimeSlice)
-        // The interval of passing encoded data from EncodedBufferCache to onDataAvailable
-        // handler. "mTimeSlice < 0" means Session object does not push encoded data to
-        // onDataAvailable, instead, it passive wait the client side pull encoded data
-        // by calling requestData API.
-        mediaRecorder.start(3.6e+6); // default is 60 minutes; enough?
+        if (typeof config.timeSlice === 'number') {
+            updateTimeStamp();
+            mediaRecorder.start(config.timeSlice);
+        } else {
+            // void start(optional long mTimeSlice)
+            // The interval of passing encoded data from EncodedBufferCache to onDataAvailable
+            // handler. "mTimeSlice < 0" means Session object does not push encoded data to
+            // onDataAvailable, instead, it passive wait the client side pull encoded data
+            // by calling requestData API.
+
+            mediaRecorder.start(3.6e+6); // default is 60 minutes; enough?
+            /*
+            try {
+                // undefined value of timeslice will be understood as the largest long value
+                mediaRecorder.start();
+            } catch (e) {
+                mediaRecorder.start(3.6e+6); // default is 60 minutes; enough?
+            }
+            */
+        }
 
         // Start recording. If timeSlice has been provided, mediaRecorder will
         // raise a dataavailable event containing the Blob of collected data on every timeSlice milliseconds.
         // If timeSlice isn't provided, UA should call the RequestData to obtain the Blob data, also set the mTimeSlice to zero.
 
-        if (config.onAudioProcessStarted) {
-            config.onAudioProcessStarted();
-        }
-
         if (config.initCallback) {
             config.initCallback();
         }
     };
+
+    /**
+     * @property {Array} timestamps - Array of time stamps
+     * @memberof MediaStreamRecorder
+     * @example
+     * console.log(recorder.timestamps);
+     */
+    this.timestamps = [];
+
+    function updateTimeStamp() {
+        self.timestamps.push(new Date().getTime());
+        if (typeof config.onTimeStamp === 'function') {
+            config.onTimeStamp(self.timestamps[self.timestamps.length - 1], self.timestamps);
+        }
+    }
 
     /**
      * This method stops recording MediaStream.
@@ -2033,7 +2060,7 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         this.recordingCallback = function(blob) {
-            mediaRecorder = null;
+            self.clearRecordedData();
 
             if (callback) {
                 callback(blob);
@@ -2047,6 +2074,16 @@ function MediaStreamRecorder(mediaStream, config) {
             // "stop" method auto invokes "requestData"!
             // mediaRecorder.requestData();
             mediaRecorder.stop();
+        }
+
+        if (typeof config.timeSlice === 'number') {
+            setTimeout(function() {
+                self.blob = new Blob(arrayOfBlobs, {
+                    type: config.mimeType || 'video/webm'
+                });
+
+                self.recordingCallback(self.blob);
+            }, 100);
         }
     };
 
@@ -2075,16 +2112,6 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.resume();
      */
     this.resume = function() {
-        if (this.dontFireOnDataAvailableEvent) {
-            this.dontFireOnDataAvailableEvent = false;
-
-            var disableLogs = config.disableLogs;
-            config.disableLogs = true;
-            this.record();
-            config.disableLogs = disableLogs;
-            return;
-        }
-
         if (!mediaRecorder) {
             return;
         }
@@ -2102,20 +2129,20 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.clearRecordedData();
      */
     this.clearRecordedData = function() {
-        if (!mediaRecorder) {
-            return;
-        }
-
-        this.pause();
-
-        this.dontFireOnDataAvailableEvent = true;
-        this.stop();
+        arrayOfBlobs = [];
+        mediaRecorder = null;
+        self.timestamps = [];
     };
 
     // Reference to "MediaRecorder" object
     var mediaRecorder;
 
     function isMediaStreamActive() {
+        if (config.checkForInactiveTracks === false) {
+            // always return "true"
+            return true;
+        }
+
         if ('active' in mediaStream) {
             if (!mediaStream.active) {
                 return false;
@@ -2128,10 +2155,28 @@ function MediaStreamRecorder(mediaStream, config) {
         return true;
     }
 
+    /**
+     * @property {Blob} blob - Recorded frames in video/webm blob.
+     * @memberof MediaStreamRecorder
+     * @example
+     * recorder.stop(function() {
+     *     var blob = recorder.blob;
+     * });
+     */
+    this.blob = null;
+
+    // if any Track within the MediaStream is muted or not enabled at any time, 
+    // the browser will only record black frames 
+    // or silence since that is the content produced by the Track
+    // so we need to stopRecording as soon as any single track ends.
+    if (typeof config.checkForInactiveTracks === 'undefined') {
+        config.checkForInactiveTracks = true;
+    }
+
     var self = this;
 
     // this method checks if media stream is stopped
-    // or any track is ended.
+    // or if any track is ended.
     (function looper() {
         if (!mediaRecorder) {
             return;
@@ -2222,7 +2267,20 @@ function StereoAudioRecorder(mediaStream, config) {
         console.debug('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
     }
 
+    // if any Track within the MediaStream is muted or not enabled at any time, 
+    // the browser will only record black frames 
+    // or silence since that is the content produced by the Track
+    // so we need to stopRecording as soon as any single track ends.
+    if (typeof config.checkForInactiveTracks === 'undefined') {
+        config.checkForInactiveTracks = true;
+    }
+
     function isMediaStreamActive() {
+        if (config.checkForInactiveTracks === false) {
+            // always return "true"
+            return true;
+        }
+
         if ('active' in mediaStream) {
             if (!mediaStream.active) {
                 return false;
@@ -4474,9 +4532,16 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
             console.error('Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
         }
 
-        canvas.stream = capturedStream;
+        var videoStream = new MediaStream();
 
-        return capturedStream;
+        // via streamproc/MediaStreamRecorder#126
+        capturedStream.getVideoTracks().forEach(function(track) {
+            videoStream.addTrack(track);
+        });
+
+        canvas.stream = videoStream;
+
+        return videoStream;
     }
 
     function getVideo(stream) {

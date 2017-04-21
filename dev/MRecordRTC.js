@@ -106,7 +106,8 @@ function MRecordRTC(mediaStream) {
                 numberOfAudioChannels: this.numberOfAudioChannels || 2,
                 disableLogs: this.disableLogs,
                 recorderType: recorderType,
-                mimeType: mimeType.audio
+                mimeType: mimeType.audio,
+                audioBitsPerSecond: this.audioBitsPerSecond || 256 * 8 * 1024
             });
 
             if (!mediaType.video) {
@@ -146,6 +147,8 @@ function MRecordRTC(mediaStream) {
                 disableLogs: this.disableLogs,
                 recorderType: recorderType,
                 mimeType: mimeType.video
+                mimeType: 'video/webm',
+                videoBitsPerSecond: this.videoBitsPerSecond || 256 * 8 * 1024
             });
 
             if (!mediaType.audio) {

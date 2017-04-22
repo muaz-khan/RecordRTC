@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-04-12 12:58:51 PM UTC
+// Last time updated: 2017-04-22 11:58:56 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -1115,7 +1115,10 @@ function MRecordRTC(mediaStream) {
 
         if (!!mediaType.audio && !!mediaType.video) {
             var self = this;
-            if (isMediaRecorderCompatible()) {
+
+            // this line prevents StereoAudioRecorder
+            // todo: fix it
+            if (isMediaRecorderCompatible() /* && !this.audioRecorder */) {
                 self.audioRecorder = null;
                 self.videoRecorder.startRecording();
             } else {

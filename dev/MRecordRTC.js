@@ -146,8 +146,7 @@ function MRecordRTC(mediaStream) {
                 frameInterval: this.frameInterval || 10,
                 disableLogs: this.disableLogs,
                 recorderType: recorderType,
-                mimeType: mimeType.video
-                mimeType: 'video/webm',
+                mimeType: mimeType.video,
                 videoBitsPerSecond: this.videoBitsPerSecond || 256 * 8 * 1024
             });
 

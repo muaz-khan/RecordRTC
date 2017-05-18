@@ -782,29 +782,28 @@
                     if(webrtcDetectedBrowser == 'firefox') {
                         screenConstraints = {
                             video: {
-                                mediaSource: 'window',
+                                mediaSource: 'window'
                             },
-                            audio: true
+                            audio: false
                         }
                     }
 
                     captureUserMedia(screenConstraints, function(screenStream) {
-                        if(webrtcDetectedBrowser == 'firefox') {
-                            config.onMediaCaptured(screenStream);
-
-                            addStreamStopListener(screenStream, function() {
-                                config.onMediaStopped();
-                            });
-                            return;
-                        }
-
                         captureUserMedia({audio: true}, function(audioStream) {
-                            // merge audio tracks into the screen
-                            screenStream.addTrack(audioStream.getAudioTracks()[0]);
+                            var newStream = new MediaStream();
 
-                            config.onMediaCaptured(screenStream);
+                            // merge audio and video tracks in a single stream
+                            audioStream.getAudioTracks().forEach(function(track) {
+                                newStream.addTrack(track);
+                            });
 
-                            addStreamStopListener(screenStream, function() {
+                            screenStream.getVideoTracks().forEach(function(track) {
+                                newStream.addTrack(track);
+                            });
+
+                            config.onMediaCaptured(newStream);
+
+                            addStreamStopListener(newStream, function() {
                                 config.onMediaStopped();
                             });
                         }, function(error) {

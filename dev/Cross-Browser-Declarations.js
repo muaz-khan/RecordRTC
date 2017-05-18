@@ -127,21 +127,25 @@ if (typeof MediaStream !== 'undefined') {
         };
     }
 
-    if (!('stop' in MediaStream.prototype)) {
-        MediaStream.prototype.stop = function() {
-            this.getAudioTracks().forEach(function(track) {
-                if (!!track.stop) {
-                    track.stop();
-                }
-            });
+    // override "stop" method for all browsers
+    MediaStream.prototype.__stop = MediaStream.prototype.stop;
+    MediaStream.prototype.stop = function() {
+        this.getAudioTracks().forEach(function(track) {
+            if (!!track.stop) {
+                track.stop();
+            }
+        });
 
-            this.getVideoTracks().forEach(function(track) {
-                if (!!track.stop) {
-                    track.stop();
-                }
-            });
-        };
-    }
+        this.getVideoTracks().forEach(function(track) {
+            if (!!track.stop) {
+                track.stop();
+            }
+        });
+
+        if (typeof this.__stop === 'function') {
+            this.__stop();
+        }
+    };
 }
 
 // below function via: http://goo.gl/B3ae8c

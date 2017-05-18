@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-04-22 11:58:56 AM UTC
+// Last time updated: 2017-05-18 7:01:13 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -1118,7 +1118,7 @@ function MRecordRTC(mediaStream) {
 
             // this line prevents StereoAudioRecorder
             // todo: fix it
-            if (isMediaRecorderCompatible() /* && !this.audioRecorder */) {
+            if (isMediaRecorderCompatible() /* && !this.audioRecorder */ ) {
                 self.audioRecorder = null;
                 self.videoRecorder.startRecording();
             } else {
@@ -1635,21 +1635,25 @@ if (typeof MediaStream !== 'undefined') {
         };
     }
 
-    if (!('stop' in MediaStream.prototype)) {
-        MediaStream.prototype.stop = function() {
-            this.getAudioTracks().forEach(function(track) {
-                if (!!track.stop) {
-                    track.stop();
-                }
-            });
+    // override "stop" method for all browsers
+    MediaStream.prototype.__stop = MediaStream.prototype.stop;
+    MediaStream.prototype.stop = function() {
+        this.getAudioTracks().forEach(function(track) {
+            if (!!track.stop) {
+                track.stop();
+            }
+        });
 
-            this.getVideoTracks().forEach(function(track) {
-                if (!!track.stop) {
-                    track.stop();
-                }
-            });
-        };
-    }
+        this.getVideoTracks().forEach(function(track) {
+            if (!!track.stop) {
+                track.stop();
+            }
+        });
+
+        if (typeof this.__stop === 'function') {
+            this.__stop();
+        }
+    };
 }
 
 // below function via: http://goo.gl/B3ae8c

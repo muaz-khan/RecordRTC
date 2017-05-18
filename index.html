@@ -133,6 +133,7 @@
                     <option>pcm</option>
                     <option>gif</option>
                     <option>whammy</option>
+                    <option>default</option>
                 </select>
 
                 <input type="checkbox" id="chk-MultiStreamRecorder" style="margin:0;width:auto;">
@@ -416,6 +417,13 @@
                     fileExtension = 'gif';
                     recorderType = GifRecorder;
                     type = 'gif';
+                }
+
+                if(mediaContainerFormat.value === 'default') {
+                    mimeType = 'video/webm';
+                    fileExtension = 'webm';
+                    recorderType = null;
+                    type = 'video';
                 }
 
                 if(recordingMedia.value === 'record-audio') {
@@ -1003,7 +1011,7 @@
                     setMediaContainerFormat(['opus', 'pcm']);
                     return;
                 }
-                setMediaContainerFormat(['vp8', 'vp9', 'h264', 'gif', 'whammy']);
+                setMediaContainerFormat(['vp8', 'vp9', 'h264', 'gif', 'whammy', 'default']);
             };
             recordingMedia.onchange();
 
@@ -1631,7 +1639,7 @@
             [mediaContainerFormat, chkMultiStreamRecorder, recordingMedia].forEach(function(element) {
                 element.addEventListener('change', function() {
                     if(chkMultiStreamRecorder.checked === true) {
-                        if(mediaContainerFormat.value.toString().search(/vp8|vp9|h264/g) === -1) {
+                        if(mediaContainerFormat.value.toString().search(/vp8|vp9|h264|default/g) === -1) {
                             mediaContainerFormat.value = 'vp8';
                         }
 

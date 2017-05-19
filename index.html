@@ -1009,12 +1009,22 @@
                     return;
                 }
 
+                var isChrome = !!window.chrome && !(!!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0);
+
+                var options = ['vp8', 'vp9'];
+
                 if(isMimeTypeSupported('video/webm\;codecs=h264')) {
-                    setMediaContainerFormat(['vp8', 'vp9', 'h264', 'gif', 'whammy', 'default']);
+                    options.push('h264');
                 }
-                else {
-                    setMediaContainerFormat(['vp8', 'vp9', 'gif', 'whammy', 'default']);
+
+                options.push('gif');
+
+                if(isChrome) {
+                    options.push('whammy');
                 }
+
+                options.push('default');
+                setMediaContainerFormat(options);
             };
             recordingMedia.onchange();
 

@@ -19,31 +19,26 @@
     <link rel="stylesheet" href="https://cdn.webrtc-experiment.com/style.css">
 
     <style>
-    p,.inner {
-        padding: 1em;
-    }
-    li {
-        border-bottom: 1px solid rgb(189, 189, 189);
-        border-left: 1px solid rgb(189, 189, 189);
-        padding: .5em;
-    }
-    label {
-        display: inline-block;
-        width: 8em;
-    }
+        li {
+            border-bottom: 1px solid rgb(189, 189, 189);
+            border-left: 1px solid rgb(189, 189, 189);
+            padding: .5em;
+        }
+        label {
+            display: inline-block;
+            width: 8em;
+        }
 
-    h1 span {
-        background: yellow;
-        border: 2px solid #8e1515;
-        padding: 2px 8px;
-        margin: 2px 5px;
-        border-radius: 7px;
-        color: #8e1515;
-        display: inline-block;
-    }
-    </style>
+        h1 span {
+            background: yellow;
+            border: 2px solid #8e1515;
+            padding: 2px 8px;
+            margin: 2px 5px;
+            border-radius: 7px;
+            color: #8e1515;
+            display: inline-block;
+        }
 
-    <style>
         .recordrtc button {
             font-size: inherit;
         }
@@ -367,13 +362,8 @@
                     mimeType = 'video/webm\;codecs=h264';
                     fileExtension = 'mp4';
 
-                    if(typeof MediaRecorder.isTypeSupported === 'function') {
-                        if(MediaRecorder.isTypeSupported('video/mpeg')) {
-                            mimeType = 'video/mpeg';
-                        }
-                        else {
-                            mimeType = 'video/webm\;codecs=h264';
-                        }
+                    if(isMimeTypeSupported('video/mpeg')) {
+                        mimeType = 'video/mpeg';
                     }
                 }
 
@@ -1004,13 +994,27 @@
                 });
             }
 
+            function isMimeTypeSupported(mimeType) {
+                if(typeof MediaRecorder.isTypeSupported !== 'function') {
+                    return true;
+                }
+
+                return MediaRecorder.isTypeSupported(mimeType);
+            }
+
             recordingMedia.onchange = function() {
                 var options = [];
                 if(recordingMedia.value === 'record-audio') {
                     setMediaContainerFormat(['opus', 'pcm']);
                     return;
                 }
-                setMediaContainerFormat(['vp8', 'vp9', 'h264', 'gif', 'whammy', 'default']);
+
+                if(isMimeTypeSupported('video/webm\;codecs=h264')) {
+                    setMediaContainerFormat(['vp8', 'vp9', 'h264', 'gif', 'whammy', 'default']);
+                }
+                else {
+                    setMediaContainerFormat(['vp8', 'vp9', 'gif', 'whammy', 'default']);
+                }
             };
             recordingMedia.onchange();
 
@@ -1844,8 +1848,8 @@
             <small style="margin-left: 1em;">Enter your email too; if you want "direct" reply!</small>
         </section>
 
-        <section class="experiment">
-            <h2 class="header">Using RecordRTC...</h2>
+        <section class="experiment" id="browser-support">
+            <h2 class="header"><a href="#browser-support">Using RecordRTC...</a></h2>
 
             <ol>
                 <li>

@@ -124,7 +124,9 @@
                     <option>vp8</option>
                     <option>vp9</option>
                     <option>h264</option>
+                    <option>mkv</option>
                     <option>opus</option>
+                    <option>ogg</option>
                     <option>pcm</option>
                     <option>gif</option>
                     <option>whammy</option>
@@ -367,14 +369,19 @@
                     }
                 }
 
-                if(mediaContainerFormat.value === 'vp8') {
+                if(mediaContainerFormat.value === 'mkv' && isMimeTypeSupported('video/x-matroska;codecs=avc1')) {
+                    mimeType = 'video/x-matroska;codecs=avc1';
+                    fileExtension = 'mkv';
+                }
+
+                if(mediaContainerFormat.value === 'vp8' && isMimeTypeSupported('video/webm\;codecs=vp8')) {
                     mimeType = 'video/webm\;codecs=vp8';
                     fileExtension = 'webm';
                     recorderType = null;
                     type = 'video';
                 }
 
-                if(mediaContainerFormat.value === 'vp9') {
+                if(mediaContainerFormat.value === 'vp9' && isMimeTypeSupported('video/webm\;codecs=vp9')) {
                     mimeType = 'video/webm\;codecs=vp9';
                     fileExtension = 'webm';
                     recorderType = null;
@@ -388,9 +395,17 @@
                     type = 'audio';
                 }
 
-                if(mediaContainerFormat.value === 'opus') {
-                    mimeType = 'audio/webm';
-                    fileExtension = 'webm'; // ogg or webm?
+                if(mediaContainerFormat.value === 'opus' || mediaContainerFormat.value === 'ogg') {
+                    if(isMimeTypeSupported('audio/webm')) {
+                        mimeType = 'audio/webm';
+                        fileExtension = 'webm'; // webm
+                    }
+
+                    if(isMimeTypeSupported('audio/ogg')) {
+                        mimeType = 'audio/ogg';
+                        fileExtension = 'ogg'; // ogg
+                    }
+
                     recorderType = null;
                     type = 'audio';
                 }
@@ -995,6 +1010,10 @@
             }
 
             function isMimeTypeSupported(mimeType) {
+                if(webrtcDetectedBrowser === 'edge') {
+                    return false;
+                }
+
                 if(typeof MediaRecorder.isTypeSupported !== 'function') {
                     return true;
                 }
@@ -1003,28 +1022,48 @@
             }
 
             recordingMedia.onchange = function() {
-                var options = [];
                 if(recordingMedia.value === 'record-audio') {
-                    setMediaContainerFormat(['opus', 'pcm']);
+                    var recordingOptions = [];
+                    
+                    if(isMimeTypeSupported('audio/webm')) {
+                        recordingOptions.push('opus');
+                    }
+
+                    if(isMimeTypeSupported('audio/ogg')) {
+                        recordingOptions.push('ogg');
+                    }
+
+                    recordingOptions.push('pcm');
+
+                    setMediaContainerFormat(recordingOptions);
                     return;
                 }
 
                 var isChrome = !!window.chrome && !(!!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0);
 
-                var options = ['vp8', 'vp9'];
+                var recordingOptions = ['vp8']; // MediaStreamRecorder with vp8
+
+                if(isMimeTypeSupported('video/webm\;codecs=vp9')) {
+                    recordingOptions.push('vp9'); // MediaStreamRecorder with vp9
+                }
 
                 if(isMimeTypeSupported('video/webm\;codecs=h264')) {
-                    options.push('h264');
+                    recordingOptions.push('h264'); // MediaStreamRecorder with h264
                 }
 
-                options.push('gif');
+                if(isMimeTypeSupported('video/x-matroska;codecs=avc1')) {
+                    recordingOptions.push('mkv'); // MediaStreamRecorder with mkv/matroska
+                }
+
+                recordingOptions.push('gif'); // GifRecorder
 
                 if(isChrome) {
-                    options.push('whammy');
+                    recordingOptions.push('whammy'); // WhammyRecorder
                 }
 
-                options.push('default');
-                setMediaContainerFormat(options);
+                recordingOptions.push('default'); // Default mimeType for MediaStreamRecorder
+
+                setMediaContainerFormat(recordingOptions);
             };
             recordingMedia.onchange();
 

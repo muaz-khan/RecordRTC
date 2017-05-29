@@ -86,7 +86,6 @@ function RecordRTC(mediaStream, config) {
         }
 
         if (self.state === 'paused') {
-            setState('recording');
 
             self.resumeRecording();
 

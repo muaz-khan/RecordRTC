@@ -665,7 +665,17 @@ function RecordRTC(mediaStream, config) {
          * })();
          * recorder.startRecording();
          */
-        state: 'inactive'
+        state: 'inactive',
+
+        /**
+         *
+         * State getter
+         *
+         * @returns {*}
+         */
+        getState: function() {
+            return self.state;
+        }
     };
 
     if (!this) {

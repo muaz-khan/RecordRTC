@@ -86,7 +86,6 @@ function RecordRTC(mediaStream, config) {
         }
 
         if (self.state === 'paused') {
-            setState('recording');
 
             self.resumeRecording();
 
@@ -666,7 +665,17 @@ function RecordRTC(mediaStream, config) {
          * })();
          * recorder.startRecording();
          */
-        state: 'inactive'
+        state: 'inactive',
+
+        /**
+         *
+         * State getter
+         *
+         * @returns {*}
+         */
+        getState: function() {
+            return self.state;
+        }
     };
 
     if (!this) {

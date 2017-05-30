@@ -373,6 +373,21 @@ function MediaStreamRecorder(mediaStream, config) {
      */
     this.blob = null;
 
+    /**
+     * Get MediaRecorder readonly state.
+     * @method
+     * @memberof MediaStreamRecorder
+     * @example
+     * var state = recorder.getState();
+     */
+    this.getState = function() {
+        if (!mediaRecorder) {
+            return 'inactive';
+        }
+
+        return mediaRecorder.state || 'inactive';
+    };
+
     // if any Track within the MediaStream is muted or not enabled at any time, 
     // the browser will only record black frames 
     // or silence since that is the content produced by the Track

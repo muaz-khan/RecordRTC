@@ -64,7 +64,7 @@ function StereoAudioRecorder(mediaStream, config) {
     }
 
     if (!config.disableLogs) {
-        console.debug('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
+        console.log('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
     }
 
     // if any Track within the MediaStream is muted or not enabled at any time, 
@@ -513,7 +513,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (!recording) {
             if (!config.disableLogs) {
-                console.info('Seems recording has been restarted.');
+                console.log('Seems recording has been restarted.');
             }
             this.record();
             return;

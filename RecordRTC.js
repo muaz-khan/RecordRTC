@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-05-20 1:41:40 PM UTC
+// Last time updated: 2017-05-30 12:03:02 PM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -50,7 +50,7 @@ function RecordRTC(mediaStream, config) {
 
     function startRecording() {
         if (!config.disableLogs) {
-            console.debug('started recording ' + config.type + ' stream.');
+            console.log('started recording ' + config.type + ' stream.');
         }
 
         if (mediaRecorder) {
@@ -90,7 +90,7 @@ function RecordRTC(mediaStream, config) {
         setState('recording');
 
         if (!config.disableLogs) {
-            console.debug('Initialized recorderType:', mediaRecorder.constructor.name, 'for output-type:', config.type);
+            console.log('Initialized recorderType:', mediaRecorder.constructor.name, 'for output-type:', config.type);
         }
     }
 
@@ -100,8 +100,6 @@ function RecordRTC(mediaStream, config) {
         }
 
         if (self.state === 'paused') {
-            setState('recording');
-
             self.resumeRecording();
 
             setTimeout(function() {
@@ -160,7 +158,7 @@ function RecordRTC(mediaStream, config) {
             }
 
             if (blob && !config.disableLogs) {
-                console.debug(blob.type, '->', bytesToSize(blob.size));
+                console.log(blob.type, '->', bytesToSize(blob.size));
             }
 
             if (!config.autoWriteToDisk) {
@@ -192,7 +190,7 @@ function RecordRTC(mediaStream, config) {
         mediaRecorder.pause();
 
         if (!config.disableLogs) {
-            console.debug('Paused recording.');
+            console.log('Paused recording.');
         }
     }
 
@@ -214,7 +212,7 @@ function RecordRTC(mediaStream, config) {
         mediaRecorder.resume();
 
         if (!config.disableLogs) {
-            console.debug('Resumed recording.');
+            console.log('Resumed recording.');
         }
     }
 
@@ -426,7 +424,7 @@ function RecordRTC(mediaStream, config) {
             mediaRecorder.clearRecordedData();
 
             if (!config.disableLogs) {
-                console.debug('Cleared old recorded data.');
+                console.log('Cleared old recorded data.');
             }
         },
 
@@ -661,7 +659,7 @@ function RecordRTC(mediaStream, config) {
          */
         onStateChanged: function(state) {
             if (!config.disableLogs) {
-                console.info('Recorder state changed:', state);
+                console.log('Recorder state changed:', state);
             }
         },
 
@@ -680,7 +678,17 @@ function RecordRTC(mediaStream, config) {
          * })();
          * recorder.startRecording();
          */
-        state: 'inactive'
+        state: 'inactive',
+
+        /**
+         *
+         * State getter
+         *
+         * @returns {*}
+         */
+        getState: function() {
+            return self.state;
+        }
     };
 
     if (!this) {
@@ -952,7 +960,7 @@ function GetRecorderType(mediaStream, config) {
     }
 
     if (!config.disableLogs && !!recorder && !!recorder.name) {
-        console.debug('Using recorderType:', recorder.name || recorder.constructor.name);
+        console.log('Using recorderType:', recorder.name || recorder.constructor.name);
     }
 
     return recorder;
@@ -1445,8 +1453,8 @@ var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko
         global.console = {};
     }
 
-    if (typeof global.console.debug === 'undefined') {
-        global.console.debug = global.console.info = global.console.error = global.console.log = global.console.log || function() {
+    if (typeof global.console.log === 'undefined' || typeof global.console.error === 'undefined') {
+        global.console.error = global.console.log = global.console.log || function() {
             console.log(arguments);
         };
     }
@@ -2172,6 +2180,21 @@ function MediaStreamRecorder(mediaStream, config) {
      */
     this.blob = null;
 
+    /**
+     * Get MediaRecorder readonly state.
+     * @method
+     * @memberof MediaStreamRecorder
+     * @example
+     * var state = recorder.getState();
+     */
+    this.getState = function() {
+        if (!mediaRecorder) {
+            return 'inactive';
+        }
+
+        return mediaRecorder.state || 'inactive';
+    };
+
     // if any Track within the MediaStream is muted or not enabled at any time, 
     // the browser will only record black frames 
     // or silence since that is the content produced by the Track
@@ -2271,7 +2294,7 @@ function StereoAudioRecorder(mediaStream, config) {
     }
 
     if (!config.disableLogs) {
-        console.debug('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
+        console.log('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
     }
 
     // if any Track within the MediaStream is muted or not enabled at any time, 
@@ -2720,7 +2743,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (!recording) {
             if (!config.disableLogs) {
-                console.info('Seems recording has been restarted.');
+                console.log('Seems recording has been restarted.');
             }
             this.record();
             return;
@@ -2859,7 +2882,7 @@ function CanvasRecorder(htmlElement, config) {
 
     if (isCanvasSupportsStreamCapturing) {
         if (!config.disableLogs) {
-            console.debug('Your browser supports both MediRecorder API and canvas.captureStream!');
+            console.log('Your browser supports both MediRecorder API and canvas.captureStream!');
         }
 
         if (htmlElement instanceof HTMLCanvasElement) {
@@ -2935,7 +2958,7 @@ function CanvasRecorder(htmlElement, config) {
         whammy.frames.forEach(function(frame, idx) {
             var framesRemaining = framesLength - idx;
             if (!config.disableLogs) {
-                console.debug(framesRemaining + '/' + framesLength + ' frames remaining');
+                console.log(framesRemaining + '/' + framesLength + ' frames remaining');
             }
 
             if (config.onEncodingCallback) {
@@ -2947,7 +2970,7 @@ function CanvasRecorder(htmlElement, config) {
         });
 
         if (!config.disableLogs) {
-            console.debug('Generating WebM');
+            console.log('Generating WebM');
         }
 
         callback();
@@ -2984,7 +3007,7 @@ function CanvasRecorder(htmlElement, config) {
              */
             whammy.compile(function(blob) {
                 if (!config.disableLogs) {
-                    console.debug('Recording finished!');
+                    console.log('Recording finished!');
                 }
 
                 that.blob = blob;

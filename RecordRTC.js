@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-05-30 12:03:02 PM UTC
+// Last time updated: 2017-06-01 1:22:09 PM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -1718,27 +1718,23 @@ function invokeSaveAsDialog(file, fileName) {
 
     var hyperlink = document.createElement('a');
     hyperlink.href = URL.createObjectURL(file);
-    hyperlink.target = '_blank';
     hyperlink.download = fileFullName;
 
-    if (!!navigator.mozGetUserMedia) {
-        hyperlink.onclick = function() {
-            (document.body || document.documentElement).removeChild(hyperlink);
-        };
-        (document.body || document.documentElement).appendChild(hyperlink);
+    hyperlink.style = 'display:none;opacity:0;color:transparent;';
+    (document.body || document.documentElement).appendChild(hyperlink);
+
+    if (typeof hyperlink.click === 'function') {
+        hyperlink.click();
+    } else {
+        hyperlink.target = '_blank';
+        hyperlink.dispatchEvent(new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+        }));
     }
 
-    var evt = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-    });
-
-    hyperlink.dispatchEvent(evt);
-
-    if (!navigator.mozGetUserMedia) {
-        URL.revokeObjectURL(hyperlink.href);
-    }
+    URL.revokeObjectURL(hyperlink.href);
 }
 
 // __________ (used to handle stuff like http://goo.gl/xmE5eg) issue #129

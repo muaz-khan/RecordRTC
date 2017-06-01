@@ -4,7 +4,7 @@
 
 [RecordRTC Documentation](http://RecordRTC.org/) / [RecordRTC Wiki Pages](https://github.com/muaz-khan/RecordRTC/wiki) / [RecordRTC Demo](https://www.webrtc-experiment.com/RecordRTC/) / [WebRTC Experiments](https://www.webrtc-experiment.com/)
 
-[![npm](https://img.shields.io/npm/v/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![downloads](https://img.shields.io/npm/dm/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![Build Status: Linux](https://travis-ci.org/muaz-khan/RecordRTC.png?branch=master)](https://travis-ci.org/muaz-khan/RecordRTC)
+[![npm](https://img.shields.io/npm/v/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![downloads](https://img.shields.io/npm/dm/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![Build Status: Linux](https://travis-ci.org/muaz-khan/RecordRTC.png?branch=master)](https://travis-ci.org/muaz-khan/RecordRTC) <a href="https://www.browserstack.com"><img src="https://webrtcweb.com/browserstack.svg" height="20px" /></a>
 
 > [RecordRTC](https://www.webrtc-experiment.com/RecordRTC/) is a JavaScript-based media-recording library for modern web-browsers (supporting WebRTC getUserMedia API). It is optimized for different devices and browsers to bring all client-side (pluginfree) recording solutions in single place.
 
@@ -32,19 +32,30 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | ------------- |-------------|-------------|
 | Firefox | [Stable](http://www.mozilla.org/en-US/firefox/new/) / [Aurora](http://www.mozilla.org/en-US/firefox/aurora/) / [Nightly](http://nightly.mozilla.org/) | Audio+Video (Both local/remote) |
 | Google Chrome | [Stable](https://www.google.com/intl/en_uk/chrome/browser/) / [Canary](https://www.google.com/intl/en/chrome/browser/canary.html) / [Beta](https://www.google.com/intl/en/chrome/browser/beta.html) / [Dev](https://www.google.com/intl/en/chrome/browser/index.html?extra=devchannel#eula) | Audio+Video (Both local/remote) |
-| Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  | Audio/Video Separately |
-| Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio/Video Separately |
-| Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | Only Audio |
+| Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  | Audio+Video (Both local/remote) |
+| Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio+Video (Both local/remote) |
+| Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | **Only Audio** - No Video - No Canvas - No Screen |
 
 ## Frameworks
 
 1. Angular2 - [check article](https://medium.com/@SumanthShankar/integrate-recordrtc-with-angular-2-typescript-942c9c4ca93f#.7x5yf2nr5) and [demo github repository](https://github.com/ShankarSumanth/Angular2-RecordRTC) - via [#186](https://github.com/muaz-khan/RecordRTC/issues/186)
 2. React.js - [check this article](http://suzannewang.com/recordrtc/) and [demo github repository](https://github.com/szwang/recordrtc-react)
 3. Video.js - [check this github repository](https://github.com/collab-project/videojs-record)
+4. meteor - [check an old github repository](https://github.com/launchbricklabs/recordrtc-meteor-demo)
 
 > Want to add more? Please make a pull-request to update [`README.md`](https://github.com/muaz-khan/RecordRTC/blob/master/README.md)
 
+## Tests?
+
+* https://travis-ci.org/muaz-khan/RecordRTC
+
+## Free?
+
+It is <a href="https://www.webrtc-experiment.com/licence/">MIT Licenced</a>, which means that you can use it in any commercial/non-commercial product, free of cost.
+
 ## RecordRTC Containers Format
+
+> RecordRTC supports vp9, vp8, h264, mkv, opus/vorbis, and pcm (mono/stereo).
 
 #### vp9
 
@@ -987,6 +998,12 @@ The domain www.RecordRTC.org is open-sourced here:
 * Github: https://github.com/muaz-khan/RecordRTC/issues
 * Disqus: https://www.webrtc-experiment.com/RecordRTC/#ask
 * Email: muazkh@gmail.com
+
+# Tests powered by
+
+<a href="https://www.browserstack.com"><img src="https://webrtcweb.com/browserstack.svg" height="32px" /></a>
+
+**Check tests here:** https://travis-ci.org/muaz-khan/RecordRTC
 
 ## License
 

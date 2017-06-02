@@ -59,21 +59,61 @@ It is <a href="https://www.webrtc-experiment.com/licence/">MIT Licenced</a>, whi
 
 #### vp9
 
+```javascript
+var options = {
+    recorderType: MediaStreamRecorder,
+    mimeType: 'video/webm\;codecs=vp9'
+};
+var recordRTC = RecordRTC(stream, options);
+```
+
 <a href="https://www.webrtc-experiment.com/images/RecordRTC-vp9.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-vp9.png" alt="RecordRTC vp9" /></a>
 
 #### vp8
+
+```javascript
+var options = {
+    recorderType: MediaStreamRecorder,
+    mimeType: 'video/webm\;codecs=vp8'
+};
+var recordRTC = RecordRTC(stream, options);
+```
 
 <a href="https://www.webrtc-experiment.com/images/RecordRTC-vp8.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-vp8.png" alt="RecordRTC vp8" /></a>
 
 #### h264
 
+```javascript
+var options = {
+    recorderType: MediaStreamRecorder,
+    mimeType: 'video/webm\;codecs=h264'
+};
+var recordRTC = RecordRTC(stream, options);
+```
+
 <a href="https://www.webrtc-experiment.com/images/RecordRTC-h264.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-h264.png" alt="RecordRTC h264" /></a>
 
 #### pcm
 
+```javascript
+var options = {
+    recorderType: StereoAudioRecorder,
+    mimeType: 'audio/wav'
+};
+var recordRTC = RecordRTC(stream, options);
+```
+
 <a href="https://www.webrtc-experiment.com/images/RecordRTC-pcm.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-pcm.png" alt="RecordRTC pcm" /></a>
 
 #### opus
+
+```javascript
+var options = {
+    recorderType: MediaStreamRecorder,
+    mimeType: 'audio/webm' // Firefox also supports: "audio/ogg"
+};
+var recordRTC = RecordRTC(stream, options);
+```
 
 <a href="https://www.webrtc-experiment.com/images/RecordRTC-opus.png"><img src="https://www.webrtc-experiment.com/images/RecordRTC-opus.png" alt="RecordRTC opus" /></a>
 
@@ -247,7 +287,7 @@ btnStopRecording.onclick = function () {
 ## Record only Audio
 
 ```javascript
-var recordRTC = RecordRTC(audioStream);
+var recordRTC = RecordRTC(audioStream, { type: 'audio' });
 recordRTC.startRecording();
 recordRTC.stopRecording(function(audioURL) {
     audio.src = audioURL;
@@ -259,7 +299,15 @@ recordRTC.stopRecording(function(audioURL) {
 
 ## `options`
 
-RecordRTC options or configurations or hints or preferences:
+RecordRTC requires a second parameter named as `options` or `configuration` or `hints` or `preferences`:
+
+```javascript
+var options = {
+    recorderType: MediaStreamRecorder,
+    mimeType: 'video/webm\;codecs=vp9'
+};
+var recordRTC = RecordRTC(stream, options);
+```
 
 * `type` accepts `video` or `audio` or `canvas` or `gif`
 * `mimeType` accepts [all these values](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/mimeType)
@@ -827,6 +875,90 @@ Note: For chrome, it will simply auto-set `type:audio or video` parameters to ke
 
 That is, you can skip passing `type:audio` parameter when you're using `mimeType` parameter.
 
+## `isMimeTypeSupported`
+
+```javascript
+function isMimeTypeSupported(mimeType) {
+    // if (webrtcDetectedBrowser === 'edge') return false;
+
+    if (typeof MediaRecorder.isTypeSupported !== 'function') {
+        return true;
+    }
+
+    return MediaRecorder.isTypeSupported(mimeType);
+}
+```
+
+**Detect Audio Formats:**
+
+```javascript
+var mimeType = 'audio/mpeg';
+var recorderType = MediaStreamRecorder;
+
+if (isMimeTypeSupported(mimeType) === false) {
+    console.log(mimeType, 'is not supported.');
+    mimeType = 'audio/ogg';
+
+    if (isMimeTypeSupported(mimeType) === false) {
+        console.log(mimeType, 'is not supported.');
+        mimeType = 'audio/webm';
+
+        if (isMimeTypeSupported(mimeType) === false) {
+            console.log(mimeType, 'is not supported.');
+
+            // fallback to WebAudio solution
+            mimeType = 'audio/wav';
+            recorderType = StereoAudioRecorder;
+        }
+    }
+}
+
+var recorder = RecordRTC(mediaStream, {
+    mimeType: mimeType,
+    recorderType: recorderType
+});
+```
+
+**Detect Video Formats:**
+
+```javascript
+var mimeType = 'video/x-matroska;codecs=avc1'; // MKV
+var recorderType = MediaStreamRecorder;
+
+if (isMimeTypeSupported(mimeType) === false) {
+    console.log(mimeType, 'is not supported.');
+    mimeType = 'video/webm\;codecs=h264'; // H264
+
+    if (isMimeTypeSupported(mimeType) === false) {
+        console.log(mimeType, 'is not supported.');
+        mimeType = 'video/webm\;codecs=vp9'; // VP9
+
+        if (isMimeTypeSupported(mimeType) === false) {
+            console.log(mimeType, 'is not supported.');
+            mimeType = 'video/webm\;codecs=vp8'; // VP8
+
+            if (isMimeTypeSupported(mimeType) === false) {
+                console.log(mimeType, 'is not supported.');
+                mimeType = 'video/webm'; // do NOT pass any codecs (vp8 by default)
+
+                if (isMimeTypeSupported(mimeType) === false) {
+                    console.log(mimeType, 'is not supported.');
+
+                    // fallback to Whammy (WebP+WebM) solution
+                    mimeType = 'video/webm';
+                    recorderType = WhammyRecorder;
+                }
+            }
+        }
+    }
+}
+
+var recorder = RecordRTC(mediaStream, {
+    mimeType: mimeType,
+    recorderType: recorderType
+});
+```
+
 ## `bitsPerSecond`
 
 The chosen bitrate for the audio and video components of the media. If this is specified along with one or the other of the above properties, this will be used for the one that isn't specified.
@@ -999,7 +1131,7 @@ The domain www.RecordRTC.org is open-sourced here:
 * Disqus: https://www.webrtc-experiment.com/RecordRTC/#ask
 * Email: muazkh@gmail.com
 
-# Tests powered by
+# Tests Sponsored By
 
 <a href="https://www.browserstack.com"><img src="https://webrtcweb.com/browserstack.svg" height="32px" /></a>
 

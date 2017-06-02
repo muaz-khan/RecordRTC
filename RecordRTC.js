@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-06-01 1:22:09 PM UTC
+// Last time updated: 2017-06-02 6:55:15 AM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -2811,12 +2811,22 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         recordingLength += bufferSize;
+
+        // export raw PCM
+        self.recordingLength = recordingLength;
     }
 
     jsAudioNode.onaudioprocess = onAudioProcessDataAvailable;
 
     // to prevent self audio to be connected with speakers
     jsAudioNode.connect(context.destination);
+
+    // export raw PCM
+    this.leftchannel = leftchannel;
+    this.rightchannel = rightchannel;
+    this.numberOfAudioChannels = numberOfAudioChannels;
+    this.desiredSampRate = desiredSampRate;
+    this.sampleRate = sampleRate;
 }
 
 if (typeof RecordRTC !== 'undefined') {

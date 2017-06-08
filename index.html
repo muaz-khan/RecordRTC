@@ -344,6 +344,10 @@
                         }
                     },
                     onMediaCapturingFailed: function(error) {
+                        console.warn('onMediaCapturingFailed', error);
+
+                        if(DetectRTC.browser.name === 'Safari') return;
+                        
                         if(error.name === 'PermissionDeniedError' && webrtcDetectedBrowser === 'firefox') {
                             InstallTrigger.install({
                                 'Foo': {
@@ -1059,7 +1063,7 @@
             }
 
             function isMimeTypeSupported(mimeType) {
-                if(webrtcDetectedBrowser === 'edge') {
+                if(webrtcDetectedBrowser === 'edge' || DetectRTC.browser.name === 'Safari' || typeof MediaRecorder === 'undefined') {
                     return false;
                 }
 
@@ -1116,12 +1120,12 @@
             };
             recordingMedia.onchange();
 
-            if(webrtcDetectedBrowser === 'edge') {
+            if(webrtcDetectedBrowser === 'edge' || DetectRTC.browser.name === 'Safari') {
                 // webp isn't supported in Microsoft Edge
                 // neither MediaRecorder API
                 // so lets disable both video/screen recording options
 
-                console.warn('Neither MediaRecorder API nor webp is supported in Microsoft Edge. You cam merely record audio.');
+                console.warn('Neither MediaRecorder API nor webp is supported in ' + DetectRTC.browser.name + '. You cam merely record audio.');
 
                 recordingMedia.innerHTML = '<option value="record-audio">Audio</option>';
                 setMediaContainerFormat(['pcm']);

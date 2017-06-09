@@ -394,7 +394,7 @@ function StereoAudioRecorder(mediaStream, config) {
             self.length = recordingLength;
 
             if (callback) {
-                callback();
+                callback(self.blob);
             }
 
             isAudioProcessStarted = false;

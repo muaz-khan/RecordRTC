@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-06-02 6:55:15 AM UTC
+// Last time updated: 2017-06-14 6:18:49 PM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -1804,34 +1804,24 @@ function isMediaRecorderCompatible() {
 // ______________________
 // MediaStreamRecorder.js
 
-/*
- * Implementation of https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
- * The MediaRecorder accepts a mediaStream as input source passed from UA. When recorder starts,
- * a MediaEncoder will be created and accept the mediaStream as input source.
- * Encoder will get the raw data by track data changes, encode it by selected MIME Type, then store the encoded in EncodedBufferCache object.
- * The encoded data will be extracted on every timeslice passed from Start function call or by RequestData function.
- * Thread model:
- * When the recorder starts, it creates a "Media Encoder" thread to read data from MediaEncoder object and store buffer in EncodedBufferCache object.
- * Also extract the encoded data and create blobs on every timeslice passed from start function or RequestData function called by UA.
- */
-
 /**
- * MediaStreamRecorder is an abstraction layer for "MediaRecorder API". It is used by {@link RecordRTC} to record MediaStream(s) in Firefox.
- * @summary Runs top over MediaRecorder API.
+ * MediaStreamRecorder is an abstraction layer for {@link https://w3c.github.io/mediacapture-record/MediaRecorder.html|MediaRecorder API}. It is used by {@link RecordRTC} to record MediaStream(s) in both Chrome and Firefox.
+ * @summary Runs top over {@link https://w3c.github.io/mediacapture-record/MediaRecorder.html|MediaRecorder API}.
  * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @author {@link https://github.com/muaz-khan|Muaz Khan}
  * @typedef MediaStreamRecorder
  * @class
  * @example
- * var options = {
- *     mimeType: 'video/webm',
+ * var config = {
+ *     mimeType: 'video/webm', // vp8, vp9, h264, mkv, opus/vorbis
  *     audioBitsPerSecond : 256 * 8 * 1024,
  *     videoBitsPerSecond : 256 * 8 * 1024,
  *     bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
  *     checkForInactiveTracks: true,
- *     timeSlice: 1000 // concatenate intervals based blobs
+ *     timeSlice: 1000, // concatenate intervals based blobs
+ *     ignoreMutedMedia: true
  * }
- * var recorder = new MediaStreamRecorder(MediaStream, options);
+ * var recorder = new MediaStreamRecorder(mediaStream, config);
  * recorder.record();
  * recorder.stop(function(blob) {
  *     video.src = URL.createObjectURL(blob);
@@ -1841,11 +1831,15 @@ function isMediaRecorderCompatible() {
  * });
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
- * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm"}
+ * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm", timeSlice: 1000}
  */
 
 function MediaStreamRecorder(mediaStream, config) {
     var self = this;
+
+    if (typeof MediaRecorder === 'undefined') {
+        throw 'Your browser does not supports Media Recorder API. Please try other modules e.g. WhammyRecorder or StereoAudioRecorder.';
+    }
 
     config = config || {
         // bitsPerSecond: 256 * 8 * 1024,
@@ -1876,6 +1870,17 @@ function MediaStreamRecorder(mediaStream, config) {
     }
 
     var arrayOfBlobs = [];
+
+    /**
+     * This method returns array of blobs. Use only with "timeSlice". Its useful to preview recording anytime, without using the "stop" method.
+     * @method
+     * @memberof MediaStreamRecorder
+     * @example
+     * var arrayOfBlobs = recorder.getArrayOfBlobs();
+     */
+    this.getArrayOfBlobs = function() {
+        return arrayOfBlobs;
+    };
 
     /**
      * This method records MediaStream.
@@ -1914,26 +1919,22 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         }
 
-        // http://dxr.mozilla.org/mozilla-central/source/content/media/MediaRecorder.cpp
-        // https://wiki.mozilla.org/Gecko:MediaRecorder
-        // https://dvcs.w3.org/hg/dap/raw-file/default/media-stream-capture/MediaRecorder.html
-
-        // starting a recording session; which will initiate "Reading Thread"
-        // "Reading Thread" are used to prevent main-thread blocking scenarios
+        // using MediaRecorder API here
         try {
             mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
         } catch (e) {
+            // chrome-based fallback
             mediaRecorder = new MediaRecorder(mediaStream);
         }
 
+        // old hack?
         if (!MediaRecorder.isTypeSupported && 'canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
             if (!config.disableLogs) {
                 console.warn('MediaRecorder API seems unable to record mimeType:', config.mimeType);
             }
         }
 
-        // i.e. stop recording when <video> is paused by the user; and auto restart recording 
-        // when video is resumed. E.g. yourStream.getVideoTracks()[0].muted = true; // it will auto-stop recording.
+        // ignore muted/disabled/inactive tracks
         mediaRecorder.ignoreMutedMedia = config.ignoreMutedMedia || false;
 
         // Dispatching OnDataAvailable Handler
@@ -1970,14 +1971,22 @@ function MediaStreamRecorder(mediaStream, config) {
 
         mediaRecorder.onerror = function(error) {
             if (!config.disableLogs) {
-                if (error.name === 'InvalidState') {
-                    console.error('The MediaRecorder is not in a state in which the proposed operation is allowed to be executed.');
-                } else if (error.name === 'OutOfMemory') {
-                    console.error('The UA has exhaused the available memory. User agents SHOULD provide as much additional information as possible in the message attribute.');
+                // via: https://w3c.github.io/mediacapture-record/MediaRecorder.html#exception-summary
+                if (error.name.toString().toLowerCase().indexOf('invalidstate') !== -1) {
+                    console.error('The MediaRecorder is not in a state in which the proposed operation is allowed to be executed.', error);
+                } else if (error.name.toString().toLowerCase().indexOf('notsupported') !== -1) {
+                    console.error('MIME type (', config.mimeType, ') is not supported.', error);
+                } else if (error.name.toString().toLowerCase().indexOf('security') !== -1) {
+                    console.error('MediaRecorder security error', error);
+                }
+
+                // older code below
+                else if (error.name === 'OutOfMemory') {
+                    console.error('The UA has exhaused the available memory. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
                 } else if (error.name === 'IllegalStreamModification') {
-                    console.error('A modification to the stream has occurred that makes it impossible to continue recording. An example would be the addition of a Track while recording is occurring. User agents SHOULD provide as much additional information as possible in the message attribute.');
+                    console.error('A modification to the stream has occurred that makes it impossible to continue recording. An example would be the addition of a Track while recording is occurring. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
                 } else if (error.name === 'OtherRecordingError') {
-                    console.error('Used for an fatal error other than those listed above. User agents SHOULD provide as much additional information as possible in the message attribute.');
+                    console.error('Used for an fatal error other than those listed above. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
                 } else if (error.name === 'GenericError') {
                     console.error('The UA cannot provide the codec or recording option that has been requested.', error);
                 } else {
@@ -1997,12 +2006,6 @@ function MediaStreamRecorder(mediaStream, config) {
                 setTimeout(looper, 1000);
             })();
 
-            // When the stream is "ended" set recording to 'inactive' 
-            // and stop gathering data. Callers should not rely on 
-            // exactness of the timeSlice value, especially 
-            // if the timeSlice value is small. Callers should 
-            // consider timeSlice as a minimum value
-
             if (mediaRecorder.state !== 'inactive' && mediaRecorder.state !== 'stopped') {
                 mediaRecorder.stop();
             }
@@ -2012,29 +2015,14 @@ function MediaStreamRecorder(mediaStream, config) {
             updateTimeStamp();
             mediaRecorder.start(config.timeSlice);
         } else {
-            // void start(optional long mTimeSlice)
-            // The interval of passing encoded data from EncodedBufferCache to onDataAvailable
-            // handler. "mTimeSlice < 0" means Session object does not push encoded data to
-            // onDataAvailable, instead, it passive wait the client side pull encoded data
-            // by calling requestData API.
+            // default is 60 minutes; enough?
+            // use config => {timeSlice: 1000} otherwise
 
-            mediaRecorder.start(3.6e+6); // default is 60 minutes; enough?
-            /*
-            try {
-                // undefined value of timeslice will be understood as the largest long value
-                mediaRecorder.start();
-            } catch (e) {
-                mediaRecorder.start(3.6e+6); // default is 60 minutes; enough?
-            }
-            */
+            mediaRecorder.start(3.6e+6);
         }
 
-        // Start recording. If timeSlice has been provided, mediaRecorder will
-        // raise a dataavailable event containing the Blob of collected data on every timeSlice milliseconds.
-        // If timeSlice isn't provided, UA should call the RequestData to obtain the Blob data, also set the mTimeSlice to zero.
-
         if (config.initCallback) {
-            config.initCallback();
+            config.initCallback(); // old code
         }
     };
 
@@ -2044,10 +2032,11 @@ function MediaStreamRecorder(mediaStream, config) {
      * @example
      * console.log(recorder.timestamps);
      */
-    this.timestamps = [];
+    this.timestamps = []; // redundant?
 
     function updateTimeStamp() {
         self.timestamps.push(new Date().getTime());
+
         if (typeof config.onTimeStamp === 'function') {
             config.onTimeStamp(self.timestamps[self.timestamps.length - 1], self.timestamps);
         }
@@ -2078,12 +2067,7 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         };
 
-        // mediaRecorder.state === 'recording' means that media recorder is associated with "session"
-        // mediaRecorder.state === 'stopped' means that media recorder is detached from the "session" ... in this case; "session" will also be deleted.
-
         if (mediaRecorder.state === 'recording') {
-            // "stop" method auto invokes "requestData"!
-            // mediaRecorder.requestData();
             mediaRecorder.stop();
         }
 
@@ -2149,11 +2133,6 @@ function MediaStreamRecorder(mediaStream, config) {
     var mediaRecorder;
 
     function isMediaStreamActive() {
-        if (config.checkForInactiveTracks === false) {
-            // always return "true"
-            return true;
-        }
-
         if ('active' in mediaStream) {
             if (!mediaStream.active) {
                 return false;
@@ -2196,7 +2175,7 @@ function MediaStreamRecorder(mediaStream, config) {
     // or silence since that is the content produced by the Track
     // so we need to stopRecording as soon as any single track ends.
     if (typeof config.checkForInactiveTracks === 'undefined') {
-        config.checkForInactiveTracks = true;
+        config.checkForInactiveTracks = false; // disable to minimize CPU usage
     }
 
     var self = this;
@@ -2204,7 +2183,7 @@ function MediaStreamRecorder(mediaStream, config) {
     // this method checks if media stream is stopped
     // or if any track is ended.
     (function looper() {
-        if (!mediaRecorder) {
+        if (!mediaRecorder || config.checkForInactiveTracks === false) {
             return;
         }
 

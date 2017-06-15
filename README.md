@@ -49,6 +49,10 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 
 * https://travis-ci.org/muaz-khan/RecordRTC
 
+Tests source code:
+
+* https://github.com/muaz-khan/RecordRTC/tree/master/test
+
 ## Free?
 
 It is <a href="https://www.webrtc-experiment.com/licence/">MIT Licenced</a>, which means that you can use it in any commercial/non-commercial product, free of cost.
@@ -222,8 +226,8 @@ bower install recordrtc
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.4.1 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.1/RecordRTC.js"></script>
+<!-- use 5.4.2 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.2/RecordRTC.js"></script>
 ```
 
 ## How to capture stream?
@@ -1104,6 +1108,10 @@ recorder.stopRecording().then(function(url) {
 </script>
 ```
 
+Demo:
+
+* [simple-demos/RecordRTCPromisesHandler.html](https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/RecordRTCPromisesHandler.html)
+
 ## Credits
 
 1. [Recorderjs](https://github.com/mattdiamond/Recorderjs) for audio recording
@@ -1112,11 +1120,10 @@ recorder.stopRecording().then(function(url) {
 
 ## Spec & Reference
 
-1. [Web Audio API](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
-2. [MediaRecorder](https://wiki.mozilla.org/Gecko:MediaRecorder)
+1. [MediaRecorder API](https://w3c.github.io/mediacapture-record/MediaRecorder.html)
+2. [Web Audio API](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html)
 3. [Canvas2D](http://www.w3.org/html/wg/drafts/2dcontext/html5_canvas/)
-4. [MediaStream Recording](https://dvcs.w3.org/hg/dap/raw-file/tip/media-stream-capture/MediaRecorder.html)
-5. [Media Capture and Streams](http://www.w3.org/TR/mediacapture-streams/)
+4. [Media Capture and Streams](http://www.w3.org/TR/mediacapture-streams/)
 
 ## Contribute in [RecordRTC.org](http://RecordRTC.org) domain
 
@@ -1131,11 +1138,46 @@ The domain www.RecordRTC.org is open-sourced here:
 * Disqus: https://www.webrtc-experiment.com/RecordRTC/#ask
 * Email: muazkh@gmail.com
 
-# Tests Sponsored By
+# Travis Failed?
+
+Steps to fix it (for your private projects only):
+
+Modify `package.json` and search this line:
+
+```json
+{
+    "test": "./node_modules/.bin/protractor test/browserstack.config.js"
+}
+```
+
+Replace it with (i.e. ignore all "test"):
+
+```json
+{
+    "test": "node npm-test.js"
+}
+```
+
+Why? Reason is this file: `test/browserstack.config.js`
+
+```javascript
+'browserstack.user': process.env.BROWSERSTACK_USERNAME,
+'browserstack.key': process.env.BROWSERSTACK_KEY,
+```
+
+**Your travis do NOT have these environment variables. That's why your travis builds fails.**
+
+More info: https://github.com/muaz-khan/RecordRTC/pull/283#issuecomment-308757116
+
+> Caution: NEVER make pull-request for modified `package.json`. Modify this file only for your own private projects.
+
+# Tests sponsored by
 
 <a href="https://www.browserstack.com"><img src="https://webrtcweb.com/browserstack.svg" height="32px" /></a>
 
-**Check tests here:** https://travis-ci.org/muaz-khan/RecordRTC
+**Check all tests here:** https://travis-ci.org/muaz-khan/RecordRTC
+
+**Source code:** https://github.com/muaz-khan/RecordRTC/tree/master/test
 
 ## License
 

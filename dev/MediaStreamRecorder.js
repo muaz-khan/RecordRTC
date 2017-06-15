@@ -29,10 +29,15 @@
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
  * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm", timeSlice: 1000}
+ * @throws Will throw an error if first argument "MediaStream" is missing. Also throws error if "MediaRecorder API" are not supported by the browser.
  */
 
 function MediaStreamRecorder(mediaStream, config) {
     var self = this;
+
+    if (typeof mediaStream === 'undefined') {
+        throw 'First argument "MediaStream" is required.';
+    }
 
     if (typeof MediaRecorder === 'undefined') {
         throw 'Your browser does not supports Media Recorder API. Please try other modules e.g. WhammyRecorder or StereoAudioRecorder.';
@@ -74,6 +79,7 @@ function MediaStreamRecorder(mediaStream, config) {
      * @memberof MediaStreamRecorder
      * @example
      * var arrayOfBlobs = recorder.getArrayOfBlobs();
+     * @returns {Array} Returns array of recorded blobs.
      */
     this.getArrayOfBlobs = function() {
         return arrayOfBlobs;
@@ -343,7 +349,7 @@ function MediaStreamRecorder(mediaStream, config) {
     }
 
     /**
-     * @property {Blob} blob - Recorded frames in video/webm blob.
+     * @property {Blob} blob - Recorded data as "Blob" object.
      * @memberof MediaStreamRecorder
      * @example
      * recorder.stop(function() {
@@ -358,6 +364,7 @@ function MediaStreamRecorder(mediaStream, config) {
      * @memberof MediaStreamRecorder
      * @example
      * var state = recorder.getState();
+     * @returns {String} Returns recording state.
      */
     this.getState = function() {
         if (!mediaRecorder) {

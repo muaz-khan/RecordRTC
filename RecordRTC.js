@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-06-14 6:18:49 PM UTC
+// Last time updated: 2017-06-15 3:23:18 PM UTC
 
 // ________________
 // RecordRTC v5.4.1
@@ -445,6 +445,7 @@ function RecordRTC(mediaStream, config) {
          *     formData.append('file', file); // upload "File" object rather than a "Blob"
          *     uploadToServer(formData);
          * });
+         * @returns {Blob} Returns recorded data as "Blob" object.
          */
         getBlob: function() {
             if (!mediaRecorder) {
@@ -478,6 +479,7 @@ function RecordRTC(mediaStream, config) {
          * recorder.stopRecording(function() {
          *     video.src = this.toURL();
          * });
+         * @returns {String} Returns a virtual/temporary URL for the recorded "Blob".
          */
         toURL: function() {
             if (!mediaRecorder) {
@@ -488,7 +490,7 @@ function RecordRTC(mediaStream, config) {
         },
 
         /**
-         * Get internal recorder object e.g. MutliStreamRecorder, MediaStreamRecorder, StereoAudioRecorder or WhammyRecorder etc.
+         * Get internal recording object (i.e. internal module) e.g. MutliStreamRecorder, MediaStreamRecorder, StereoAudioRecorder or WhammyRecorder etc.
          * @method
          * @memberof RecordRTC
          * @instance
@@ -498,6 +500,7 @@ function RecordRTC(mediaStream, config) {
          *     msRecorder.addStreams([newAudioStream]);
          *     msRecorder.resetVideoStreams([screenStream]);
          * }
+         * @returns {Object} Returns internal recording object.
          */
         getInternalRecorder: function() {
             return mediaRecorder;
@@ -681,10 +684,12 @@ function RecordRTC(mediaStream, config) {
         state: 'inactive',
 
         /**
-         *
-         * State getter
-         *
-         * @returns {*}
+         * Get recorder's readonly state.
+         * @method
+         * @memberof RecordRTC
+         * @example
+         * var state = recorder.getState();
+         * @returns {String} Returns recording state.
          */
         getState: function() {
             return self.state;
@@ -1074,7 +1079,9 @@ function MRecordRTC(mediaStream) {
                 numberOfAudioChannels: this.numberOfAudioChannels || 2,
                 disableLogs: this.disableLogs,
                 recorderType: recorderType,
-                mimeType: mimeType.audio
+                mimeType: mimeType.audio,
+                timeSlice: this.timeSlice,
+                onTimeStamp: this.onTimeStamp
             });
 
             if (!mediaType.video) {
@@ -1113,7 +1120,9 @@ function MRecordRTC(mediaStream) {
                 frameInterval: this.frameInterval || 10,
                 disableLogs: this.disableLogs,
                 recorderType: recorderType,
-                mimeType: mimeType.video
+                mimeType: mimeType.video,
+                timeSlice: this.timeSlice,
+                onTimeStamp: this.onTimeStamp
             });
 
             if (!mediaType.audio) {
@@ -1832,10 +1841,15 @@ function isMediaRecorderCompatible() {
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
  * @param {object} config - {disableLogs:true, initCallback: function, mimeType: "video/webm", timeSlice: 1000}
+ * @throws Will throw an error if first argument "MediaStream" is missing. Also throws error if "MediaRecorder API" are not supported by the browser.
  */
 
 function MediaStreamRecorder(mediaStream, config) {
     var self = this;
+
+    if (typeof mediaStream === 'undefined') {
+        throw 'First argument "MediaStream" is required.';
+    }
 
     if (typeof MediaRecorder === 'undefined') {
         throw 'Your browser does not supports Media Recorder API. Please try other modules e.g. WhammyRecorder or StereoAudioRecorder.';
@@ -1877,6 +1891,7 @@ function MediaStreamRecorder(mediaStream, config) {
      * @memberof MediaStreamRecorder
      * @example
      * var arrayOfBlobs = recorder.getArrayOfBlobs();
+     * @returns {Array} Returns array of recorded blobs.
      */
     this.getArrayOfBlobs = function() {
         return arrayOfBlobs;
@@ -2146,7 +2161,7 @@ function MediaStreamRecorder(mediaStream, config) {
     }
 
     /**
-     * @property {Blob} blob - Recorded frames in video/webm blob.
+     * @property {Blob} blob - Recorded data as "Blob" object.
      * @memberof MediaStreamRecorder
      * @example
      * recorder.stop(function() {
@@ -2161,6 +2176,7 @@ function MediaStreamRecorder(mediaStream, config) {
      * @memberof MediaStreamRecorder
      * @example
      * var state = recorder.getState();
+     * @returns {String} Returns recording state.
      */
     this.getState = function() {
         if (!mediaRecorder) {
@@ -4789,18 +4805,22 @@ if (typeof RecordRTC !== 'undefined') {
 // RecordRTC.promises.js
 
 /**
- * RecordRTCPromisesHandler adds promises support in RecordRTC
- * @summary Promises for RecordRTC
+ * RecordRTCPromisesHandler adds promises support in {@link RecordRTC}. Try a {@link https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/RecordRTCPromisesHandler.html|demo here}
+ * @summary Promises for {@link RecordRTC}
  * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
  * @author {@link http://www.MuazKhan.com|Muaz Khan}
  * @typedef RecordRTCPromisesHandler
  * @class
  * @example
  * var recorder = new RecordRTCPromisesHandler(mediaStream, options);
- * recorder.startRecording().then(successCB).catch(errorCB);
+ * recorder.startRecording()
+ *         .then(successCB)
+ *         .catch(errorCB);
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - Single media-stream object, array of media-streams, html-canvas-element, etc.
  * @param {object} config - {type:"video", recorderType: MediaStreamRecorder, disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
+ * @throws Will throw an error if "new" keyword is not used to initiate "RecordRTCPromisesHandler". Also throws error if first argument "MediaStream" is missing.
+ * @requires module:RecordRTC
  */
 
 function RecordRTCPromisesHandler(mediaStream, options) {
@@ -4808,10 +4828,30 @@ function RecordRTCPromisesHandler(mediaStream, options) {
         throw 'Use "new RecordRTCPromisesHandler()"';
     }
 
+    if (typeof mediaStream === 'undefined') {
+        throw 'First argument "MediaStream" is required.';
+    }
+
     var self = this;
 
+    /**
+     * @property {Blob} blob - Access/reach the native {@link RecordRTC} object.
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * var internal = recorder.recordRTC.getInternalRecorder();
+     * alert(internal instanceof MediaStreamRecorder);
+     */
     self.recordRTC = new RecordRTC(mediaStream, options);
 
+    /**
+     * This method records MediaStream.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.startRecording()
+     *         .then(successCB)
+     *         .catch(errorCB);
+     */
     this.startRecording = function() {
         return new Promise(function(resolve, reject) {
             try {
@@ -4823,6 +4863,15 @@ function RecordRTCPromisesHandler(mediaStream, options) {
         });
     };
 
+    /**
+     * This method stops the recording.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.stopRecording().then(function() {
+     *     var blob = recorder.getBlob();
+     * }).catch(errorCB);
+     */
     this.stopRecording = function() {
         return new Promise(function(resolve, reject) {
             try {
@@ -4836,6 +4885,17 @@ function RecordRTCPromisesHandler(mediaStream, options) {
         });
     };
 
+    /**
+     * This method returns data-url for the recorded blob.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.stopRecording().then(function() {
+     *     recorder.getDataURL().then(function(dataURL) {
+     *         window.open(dataURL);
+     *     }).catch(errorCB);;
+     * }).catch(errorCB);
+     */
     this.getDataURL = function(callback) {
         return new Promise(function(resolve, reject) {
             try {
@@ -4848,10 +4908,27 @@ function RecordRTCPromisesHandler(mediaStream, options) {
         });
     };
 
+    /**
+     * This method returns the recorded blob.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.stopRecording().then(function() {
+     *     var blob = recorder.getBlob();
+     * }).catch(errorCB);
+     */
     this.getBlob = function() {
         return self.recordRTC.getBlob();
     };
 
+    /**
+     * @property {Blob} blob - Recorded data as "Blob" object.
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.stopRecording().then(function() {
+     *     var blob = recorder.getBlob();
+     * }).catch(errorCB);
+     */
     this.blob = null;
 }
 

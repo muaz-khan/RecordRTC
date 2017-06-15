@@ -106,7 +106,9 @@ function MRecordRTC(mediaStream) {
                 numberOfAudioChannels: this.numberOfAudioChannels || 2,
                 disableLogs: this.disableLogs,
                 recorderType: recorderType,
-                mimeType: mimeType.audio
+                mimeType: mimeType.audio,
+                timeSlice: this.timeSlice,
+                onTimeStamp: this.onTimeStamp
             });
 
             if (!mediaType.video) {
@@ -145,7 +147,9 @@ function MRecordRTC(mediaStream) {
                 frameInterval: this.frameInterval || 10,
                 disableLogs: this.disableLogs,
                 recorderType: recorderType,
-                mimeType: mimeType.video
+                mimeType: mimeType.video,
+                timeSlice: this.timeSlice,
+                onTimeStamp: this.onTimeStamp
             });
 
             if (!mediaType.audio) {

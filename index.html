@@ -80,7 +80,7 @@
     <script src="https://cdn.webrtc-experiment.com/gif-recorder.js"></script>
 
     <!-- for Edge/FF/Chrome/Opera/etc. getUserMedia support -->
-    <script src="https://cdn.webrtc-experiment.com/gumadapter.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="https://cdn.webrtc-experiment.com/DetectRTC.js"> </script>
 </head>
 
@@ -121,6 +121,7 @@
                 <span style="font-size: 15px;">into</span>
 
                 <select class="media-container-format">
+                    <option>default</option>
                     <option>vp8</option>
                     <option>vp9</option>
                     <option>h264</option>
@@ -130,11 +131,10 @@
                     <option>pcm</option>
                     <option>gif</option>
                     <option>whammy</option>
-                    <option>default</option>
                 </select>
 
-                <input type="checkbox" id="chk-MultiStreamRecorder" style="margin:0;width:auto;">
-                <label for="chk-MultiStreamRecorder" style="font-size: 15px;margin:0;width: auto;cursor: pointer;-webkit-user-select:none;user-select:none;">All cameras?</label>
+                <input type="checkbox" id="chk-timeSlice" style="margin:0;width:auto;" title="Use intervals based recording">
+                <label for="chk-timeSlice" style="font-size: 15px;margin:0;width: auto;cursor: pointer;-webkit-user-select:none;user-select:none;" title="Use intervals based recording">Use timeSlice?</label>
 
                 <br>
 
@@ -146,6 +146,7 @@
                     <option value="default">Default resolutions</option>
                     <option value="1920x1080">1080p</option>
                     <option value="1280x720">720p</option>
+                    <option value="640x480">480p</option>
                     <option value="3840x2160">4K Ultra HD (3840x2160)</option>
                 </select>
 
@@ -352,7 +353,7 @@
 
                         if(DetectRTC.browser.name === 'Safari') return;
                         
-                        if(error.name === 'PermissionDeniedError' && webrtcDetectedBrowser === 'firefox') {
+                        if(error.name === 'PermissionDeniedError' && DetectRTC.browser.name === 'Firefox') {
                             InstallTrigger.install({
                                 'Foo': {
                                     // URL: 'https://addons.mozilla.org/en-US/firefox/addon/enable-screen-capturing/',
@@ -467,7 +468,7 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        if(webrtcDetectedBrowser === 'edge') {
+                        if(DetectRTC.browser.name === 'Edge') {
                             options.numberOfAudioChannels = 1;
                         }
 
@@ -520,12 +521,6 @@
 
                             if(videoBitsPerSecond) {
                                 options.videoBitsPerSecond = videoBitsPerSecond;
-                            }
-
-                            if(chkMultiStreamRecorder.checked === true) {
-                                options.previewStream = function(previewStream) {
-                                    setVideoURL(previewStream, true);
-                                };
                             }
 
                             options.ignoreMutedMedia = true;
@@ -582,30 +577,8 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        if(chkMultiStreamRecorder.checked === true) {
-                            options.previewStream = function(previewStream) {
-                                setVideoURL(previewStream, true);
-                            };
-
-                            var width = 320;
-                            var height = 240;
-
-                            var select = document.querySelector('.media-resolutions');
-                            var value = select.value;
-
-                            if(value != 'default') {
-                                value = value.split('x');
-
-                                if(value.length == 2) {
-                                    width = parseInt(value[0]);
-                                    height = parseInt(value[1]);
-                                }
-                            }
-
-                            options.video = {
-                                width: width,
-                                height: height
-                            };
+                        if(timeSlice) {
+                            options.timeSlice = timeSlice;
                         }
 
                         options.ignoreMutedMedia = true;
@@ -774,7 +747,7 @@
                         }
                     };
 
-                    if(webrtcDetectedBrowser == 'firefox') {
+                    if(DetectRTC.browser.name === 'Firefox') {
                         screenConstraints = {
                             video: {
                                 mediaSource: 'window'
@@ -793,13 +766,13 @@
                     }, function(error) {
                         config.onMediaCapturingFailed(error);
 
-                        if(isMyOwnDomain() === false && webrtcDetectedBrowser === 'chrome') {
+                        if(isMyOwnDomain() === false && DetectRTC.browser.name === 'Chrome') {
                             // otherwise deploy chrome extension yourselves
                             // https://github.com/muaz-khan/Chrome-Extensions/tree/master/desktopCapture
                             alert('Please enable this command line flag: "--enable-usermedia-screen-capturing"');
                         }
 
-                        if(isMyOwnDomain() === false && webrtcDetectedBrowser === 'firefox') {
+                        if(isMyOwnDomain() === false && DetectRTC.browser.name === 'Firefox') {
                             // otherwise deploy firefox addon yourself
                             // https://github.com/muaz-khan/Firefox-Extensions
                             alert('Please enable screen capturing for your domain. Open "about:config" and search for "media.getusermedia.screensharing.allowed_domains"');
@@ -807,7 +780,7 @@
                     });
                 };
 
-                if(webrtcDetectedBrowser == 'firefox' || isLocalHost()) {
+                if(DetectRTC.browser.name === 'Firefox' || isLocalHost()) {
                     window.getScreenId();
                 }
 
@@ -829,7 +802,7 @@
                         }
                     };
 
-                    if(webrtcDetectedBrowser == 'firefox') {
+                    if(DetectRTC.browser.name === 'Firefox') {
                         screenConstraints = {
                             video: {
                                 mediaSource: 'window'
@@ -862,13 +835,13 @@
                     }, function(error) {
                         config.onMediaCapturingFailed(error);
 
-                        if(isMyOwnDomain() === false && webrtcDetectedBrowser === 'chrome') {
+                        if(isMyOwnDomain() === false && DetectRTC.browser.name === 'Chrome') {
                             // otherwise deploy chrome extension yourselves
                             // https://github.com/muaz-khan/Chrome-Extensions/tree/master/desktopCapture
                             alert('Please enable this command line flag: "--enable-usermedia-screen-capturing"');
                         }
 
-                        if(isMyOwnDomain() === false && webrtcDetectedBrowser === 'firefox') {
+                        if(isMyOwnDomain() === false && DetectRTC.browser.name === 'Firefox') {
                             // otherwise deploy firefox addon yourself
                             // https://github.com/muaz-khan/Firefox-Extensions
                             alert('Please enable screen capturing for your domain. Open "about:config" and search for "media.getusermedia.screensharing.allowed_domains"');
@@ -876,7 +849,7 @@
                     });
                 };
 
-                if(webrtcDetectedBrowser == 'firefox' || isLocalHost()) {
+                if(DetectRTC.browser.name === 'Firefox' || isLocalHost()) {
                     window.getScreenId();
                 }
 
@@ -911,7 +884,7 @@
 
                 value = parseInt(value);
 
-                if(webrtcDetectedBrowser == 'firefox') {
+                if(DetectRTC.browser.name === 'Firefox') {
                     mediaConstraints.video.frameRate = value;
                     return mediaConstraints;
                 }
@@ -974,7 +947,7 @@
                 defaultWidth = parseInt(value[0]);
                 defaultHeight = parseInt(value[1]);
 
-                if(webrtcDetectedBrowser == 'firefox') {
+                if(DetectRTC.browser.name === 'Firefox') {
                     mediaConstraints.video.width = defaultWidth;
                     mediaConstraints.video.height = defaultHeight;
                     return mediaConstraints;
@@ -1013,11 +986,6 @@
                 if(isBlackBerry && !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia)) {
                     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
                     navigator.getUserMedia(mediaConstraints, successCallback, errorCallback);
-                    return;
-                }
-
-                if(chkMultiStreamRecorder.checked === true) {
-                    captureAllCameras(successCallback, errorCallback);
                     return;
                 }
 
@@ -1067,7 +1035,7 @@
             }
 
             function isMimeTypeSupported(mimeType) {
-                if(webrtcDetectedBrowser === 'edge' || DetectRTC.browser.name === 'Safari' || typeof MediaRecorder === 'undefined') {
+                if(DetectRTC.browser.name === 'Edge' || DetectRTC.browser.name === 'Safari' || typeof MediaRecorder === 'undefined') {
                     return false;
                 }
 
@@ -1124,7 +1092,7 @@
             };
             recordingMedia.onchange();
 
-            if(webrtcDetectedBrowser === 'edge' || DetectRTC.browser.name === 'Safari') {
+            if(DetectRTC.browser.name === 'Edge' || DetectRTC.browser.name === 'Safari') {
                 // webp isn't supported in Microsoft Edge
                 // neither MediaRecorder API
                 // so lets disable both video/screen recording options
@@ -1175,6 +1143,9 @@
                     });
                 }
 
+                var select = document.querySelector('.media-resolutions');
+                info += '\n\nresolutions: ' + select.value;
+
                 return info;
             }
 
@@ -1190,6 +1161,11 @@
                     }
                     else {
                         alert('RecordRTC seems failed. An aumatic email has been sent to muazkh@gmail.com to further investigate this bug. You can read the email in your console log.');
+                    }
+
+                    var select = document.querySelector('.media-resolutions');
+                    if(select.value !== '640x480') {
+                        alert('Please record using 480p resolutions. (select from the dropdown)');
                     }
                 }
 
@@ -1390,8 +1366,8 @@
                     url = URL.createObjectURL(arg.getBlob());
                 }
 
-                if(arg instanceof MediaStream || arg.getTracks || arg.getVideoTracks) {
-                    url = URL.createObjectURL(arg);
+                if(arg instanceof MediaStream || arg.getTracks || arg.getVideoTracks || arg.getAudioTracks) {
+                    // url = URL.createObjectURL(arg);
                 }
 
                 return url;
@@ -1430,7 +1406,13 @@
                 }, false);
 
                 recordingPlayer.poster = '';
-                recordingPlayer.src = url;
+
+                if(arg instanceof MediaStream) {
+                    recordingPlayer.srcObject = arg;
+                }
+                else {
+                    recordingPlayer.src = url;
+                }
 
                 if(typeof recordingPlayer.play === 'function') {
                     recordingPlayer.play();
@@ -1438,7 +1420,13 @@
 
                 recordingPlayer.addEventListener('ended', function() {
                     url = getURL(arg);
-                    recordingPlayer.src = url;
+                    
+                    if(arg instanceof MediaStream) {
+                        recordingPlayer.srcObject = arg;
+                    }
+                    else {
+                        recordingPlayer.src = url;
+                    }
                 });
 
                 recordingPlayer.controls = true;
@@ -1746,92 +1734,24 @@
         </script>
 
         <script>
-            // MultiStreamRecorder
-            var chkMultiStreamRecorder = document.querySelector('#chk-MultiStreamRecorder');
+            var chkTimeSlice = document.querySelector('#chk-timeSlice');
+            var timeSlice = false;
 
-            chkMultiStreamRecorder.addEventListener('change', function() {
-                if(chkMultiStreamRecorder.checked === true) {
-                    // localStorage.setItem('chkMultiStreamRecorder', true);
+            chkTimeSlice.addEventListener('change', function() {
+                if(chkTimeSlice.checked === true) {
+                    var _timeSlice = prompt('Please enter timeSlice in milliseconds e.g. 1000 or 2000 or 3000.', 1000);
+                    _timeSlice = parseInt(_timeSlice);
+                    if(!_timeSlice || _timeSlice == NaN || typeof _timeSlice === 'undefined') {
+                        timeSlice = false;
+                        return;
+                    }
+
+                    timeSlice = _timeSlice;
                 }
                 else {
-                    // chkMultiStreamRecorder.removeItem('chkMultiStreamRecorder');
+                    timeSlice = false;
                 }
             }, false);
-
-            if(localStorage.getItem('chkMultiStreamRecorder')) {
-                // chkMultiStreamRecorder.checked = true;
-            }
-
-            if(webrtcDetectedBrowser != 'chrome') {
-                chkMultiStreamRecorder.disabled = true;
-                chkMultiStreamRecorder.checked = false;
-            }
-            
-            function captureAllCameras(successCallback, errorCallback) {
-                var streams = [];
-                var donotDuplicateDevices = {};
-
-                DetectRTC.videoInputDevices.forEach(function(device, idx) {
-                    var mediaConstraints = {
-                        audio: true,
-                        video: {
-                            mandatory: {},
-                            optional: [{
-                                sourceId: device.id
-                            }]
-                        }
-                    };
-
-                    if(webrtcDetectedBrowser === 'firefox') {
-                        mediaConstraints = {
-                            audio: true,
-                            video: {
-                                deviceId: device.id
-                            }
-                        };
-                    }
-
-                    navigator.mediaDevices.getUserMedia(mediaConstraints).then(function(stream) {
-                        if(!donotDuplicateDevices[device.id]) {
-                            donotDuplicateDevices[device.id] = true;
-
-                            if(streams.length < 5) {
-                                // only 4-streams are allowed by RecordRTC, currently
-                                streams.push(stream);
-                            }
-                        }
-
-                        if(idx == DetectRTC.videoInputDevices.length - 1) {
-                            if(streams.length === 1) {
-                                // duplicate
-                                streams = streams.concat(streams);
-                            }
-                            successCallback(streams);
-                        }
-                    }).catch(function(error) {
-                        if(error && error.name === 'ConstraintNotSatisfiedError') {
-                            alert('Your camera or browser does NOT supports selected resolutions or frame-rates. \n\nPlease select "default" resolutions.');
-                        }
-
-                        errorCallback(error);
-                    });
-                })
-            }
-
-            [mediaContainerFormat, chkMultiStreamRecorder, recordingMedia].forEach(function(element) {
-                element.addEventListener('change', function() {
-                    if(chkMultiStreamRecorder.checked === true) {
-                        if(mediaContainerFormat.value.toString().search(/vp8|vp9|h264|default/g) === -1) {
-                            mediaContainerFormat.value = 'vp8';
-                        }
-
-                        if(recordingMedia.value.toString().search(/video/g) === -1) {
-                            recordingMedia.value = 'record-audio-plus-video';
-                            recordingMedia.onchange();
-                        }
-                    }
-                }, false);
-            });
         </script>
 
         <script>

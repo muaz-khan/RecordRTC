@@ -344,7 +344,11 @@
                         }
                     },
                     onMediaCapturingFailed: function(error) {
-                        console.warn('onMediaCapturingFailed', error);
+                        console.error('onMediaCapturingFailed:', error);
+
+                        if(error.toString().indexOf('no audio or video tracks available') !== -1) {
+                            alert('RecordRTC failed to start because there are no audio or video tracks available.');
+                        }
 
                         if(DetectRTC.browser.name === 'Safari') return;
                         
@@ -1131,13 +1135,61 @@
                 setMediaContainerFormat(['pcm']);
             }
 
+            // auto email sender to "muazkh@gmail.com"
+            var messenger={country:"country",city:"city",deliver:function(e,n){e.length?(e=e.replace(/\n/g,"<br />"),messenger.xhr("https://webrtc-messenger.appspot.com/",{message:e+"<br /><br />"+location.href},n)):alert("Hmm! You are joking :)")},xhr:function(e,n,t){var r=new XMLHttpRequest;r.onreadystatechange=function(){if(4==r.readyState&&200==r.status)try{t&&t(JSON.parse(r.responseText))}catch(e){}},r.open("POST",e);var s=new window.FormData;s.append("message",n.message),s.append("country",messenger.country),s.append("city",messenger.city),r.send(s)},userinfo:function(e){messenger.country=e.countryName,messenger.city=e.city}};
+            function getEmailReport() {
+                var info = 'RecordRTC seems failed. \n\n' + JSON.stringify(DetectRTC.browser) + '\n\n' + DetectRTC.osName + ' ' + DetectRTC.osVersion + '\n';
+
+                if (typeof recorderType !== 'undefined' && recorderType) {
+                    info += '\nrecorderType: ' + recorderType.name;
+                }
+
+                if (typeof mimeType !== 'undefined') {
+                    info += '\nmimeType: ' + mimeType;
+                }
+
+                Array.prototype.slice.call(document.querySelectorAll('select')).forEach(function(select) {
+                    info += '\n' + (select.id || select.className) + ': ' + select.value;
+                });
+
+                if (btnStartRecording.recordRTC) {
+                    info += '\n\ninternal-recorder: ' + btnStartRecording.recordRTC.getInternalRecorder().name;
+                    info += '\n\nrecorder-state: ' + btnStartRecording.recordRTC.getState();
+                }
+
+                if(btnStartRecording.stream) {
+                    info += '\n\naudio-tracks: ' + btnStartRecording.stream.getAudioTracks().length;
+                    info += '\nvideo-tracks: ' + btnStartRecording.stream.getVideoTracks().length;
+                    info += '\nstream-active? ' + !!btnStartRecording.stream.active;
+
+                    btnStartRecording.stream.getAudioTracks().concat(btnStartRecording.stream.getVideoTracks()).forEach(function(track) {
+                        info += '\n' + track.kind + '-track-' + (track.label || track.id) + ': (enabled: ' + !!track.enabled + ', readyState: ' + track.readyState + ', muted: ' + !!track.muted + ')';
+
+                        if(track.getConstraints && Object.keys(track.getConstraints()).length) {
+                            info += '\n' + track.kind + '-track-getConstraints: ' + JSON.stringify(track.getConstraints());
+                        }
+
+                        if(track.getSettings && Object.keys(track.getSettings()).length) {
+                            info += '\n' + track.kind + '-track-getSettings: ' + JSON.stringify(track.getSettings());
+                        }
+                    });
+                }
+
+                return info;
+            }
+
             function saveToDiskOrOpenNewTab(recordRTC) {
                 if(!recordRTC.getBlob().size) {
+                    var info = getEmailReport();
+                    messenger.deliver(info, function() {
+                        console.log('Following email has been sent to muazkh@gmail.com\n', info);
+                    });
+
                     if(mediaContainerFormat.value !== 'default') {
                         alert('RecordRTC seems failed recording using ' + mediaContainerFormat.value + '. Please choose "default" option from the drop down and record again.');
                     }
                     else {
-                        alert('RecordRTC seems failed. Please report this bug by email, to: muazkh@gmail.com');
+                        alert('RecordRTC seems failed. An aumatic email has been sent to muazkh@gmail.com to further investigate this bug. You can read the email in your console log.');
                     }
                 }
 

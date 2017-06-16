@@ -401,6 +401,12 @@ function MediaStreamRecorder(mediaStream, config) {
 
         setTimeout(looper, 1000); // check every second
     })();
+
+    // for debugging
+    this.name = 'MediaStreamRecorder';
+    this.toString = function() {
+        return this.name;
+    };
 }
 
 if (typeof RecordRTC !== 'undefined') {

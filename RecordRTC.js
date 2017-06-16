@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2017-06-15 4:20:11 PM UTC
+// Last time updated: 2017-06-16 6:10:58 AM UTC
 
 // ________________
-// RecordRTC v5.4.2
+// RecordRTC v5.4.3
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -999,6 +999,7 @@ function GetRecorderType(mediaStream, config) {
  * @see For further information:
  * @see {@link https://github.com/muaz-khan/RecordRTC/tree/master/MRecordRTC|MRecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
+ * @requires {@link RecordRTC}
  */
 
 function MRecordRTC(mediaStream) {
@@ -2213,6 +2214,12 @@ function MediaStreamRecorder(mediaStream, config) {
 
         setTimeout(looper, 1000); // check every second
     })();
+
+    // for debugging
+    this.name = 'MediaStreamRecorder';
+    this.toString = function() {
+        return this.name;
+    };
 }
 
 if (typeof RecordRTC !== 'undefined') {
@@ -2757,6 +2764,12 @@ function StereoAudioRecorder(mediaStream, config) {
         recordingLength = 0;
     };
 
+    // for debugging
+    this.name = 'StereoAudioRecorder';
+    this.toString = function() {
+        return this.name;
+    };
+
     var isAudioProcessStarted = false;
 
     function onAudioProcessDataAvailable(e) {
@@ -3076,6 +3089,12 @@ function CanvasRecorder(htmlElement, config) {
     this.clearRecordedData = function() {
         this.pause();
         whammy.frames = [];
+    };
+
+    // for debugging
+    this.name = 'CanvasRecorder';
+    this.toString = function() {
+        return this.name;
     };
 
     function cloneCanvas() {
@@ -3500,6 +3519,12 @@ function WhammyRecorder(mediaStream, config) {
     this.clearRecordedData = function() {
         this.pause();
         whammy.frames = [];
+    };
+
+    // for debugging
+    this.name = 'WhammyRecorder';
+    this.toString = function() {
+        return this.name;
     };
 
     var canvas = document.createElement('canvas');
@@ -4343,6 +4368,12 @@ function GifRecorder(mediaStream, config) {
         gifEncoder.stream().bin = [];
     };
 
+    // for debugging
+    this.name = 'GifRecorder';
+    this.toString = function() {
+        return this.name;
+    };
+
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
 
@@ -4795,6 +4826,12 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         resetVideoStreams(streams);
     };
+
+    // for debugging
+    this.name = 'MultiStreamRecorder';
+    this.toString = function() {
+        return this.name;
+    };
 }
 
 if (typeof RecordRTC !== 'undefined') {
@@ -4820,7 +4857,7 @@ if (typeof RecordRTC !== 'undefined') {
  * @param {MediaStream} mediaStream - Single media-stream object, array of media-streams, html-canvas-element, etc.
  * @param {object} config - {type:"video", recorderType: MediaStreamRecorder, disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
  * @throws Will throw an error if "new" keyword is not used to initiate "RecordRTCPromisesHandler". Also throws error if first argument "MediaStream" is missing.
- * @requires module:RecordRTC
+ * @requires {@link RecordRTC}
  */
 
 function RecordRTCPromisesHandler(mediaStream, options) {

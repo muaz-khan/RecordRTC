@@ -1127,7 +1127,7 @@ Demo:
 
 ## Contribute in [RecordRTC.org](http://RecordRTC.org) domain
 
-The domain www.RecordRTC.org is open-sourced here:
+The domain http://RecordRTC.org is open-sourced here:
 
 * https://github.com/muaz-khan/RecordRTC/tree/gh-pages
 

@@ -413,6 +413,12 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         resetVideoStreams(streams);
     };
+
+    // for debugging
+    this.name = 'MultiStreamRecorder';
+    this.toString = function() {
+        return this.name;
+    };
 }
 
 if (typeof RecordRTC !== 'undefined') {

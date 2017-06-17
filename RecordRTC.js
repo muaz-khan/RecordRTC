@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-06-16 6:10:58 AM UTC
+// Last time updated: 2017-06-17 7:48:22 AM UTC
 
 // ________________
 // RecordRTC v5.4.3
@@ -1957,8 +1957,8 @@ function MediaStreamRecorder(mediaStream, config) {
         mediaRecorder.ondataavailable = function(e) {
             if (typeof config.timeSlice === 'number') {
                 if (e.data && e.data.size && e.data.size > 100) {
-                    updateTimeStamp();
                     arrayOfBlobs.push(e.data);
+                    updateTimeStamp();
                 }
                 return;
             }

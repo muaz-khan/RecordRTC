@@ -4,7 +4,7 @@
 
 [RecordRTC Documentation](http://RecordRTC.org/) / [RecordRTC Wiki Pages](https://github.com/muaz-khan/RecordRTC/wiki) / [RecordRTC Demo](https://www.webrtc-experiment.com/RecordRTC/) / [WebRTC Experiments](https://www.webrtc-experiment.com/)
 
-[![npm](https://img.shields.io/npm/v/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![downloads](https://img.shields.io/npm/dm/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![Build Status: Linux](https://travis-ci.org/muaz-khan/RecordRTC.png?branch=master)](https://travis-ci.org/muaz-khan/RecordRTC) <a href="https://www.browserstack.com"><img src="https://webrtcweb.com/browserstack.svg" height="20px" /></a>
+[![npm](https://img.shields.io/npm/v/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![downloads](https://img.shields.io/npm/dm/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![Build Status: Linux](https://travis-ci.org/muaz-khan/RecordRTC.png?branch=master)](https://travis-ci.org/muaz-khan/RecordRTC)
 
 > [RecordRTC](https://www.webrtc-experiment.com/RecordRTC/) is a JavaScript-based media-recording library for modern web-browsers (supporting WebRTC getUserMedia API). It is optimized for different devices and browsers to bring all client-side (pluginfree) recording solutions in single place.
 
@@ -17,14 +17,16 @@
 Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) directory for development files.
 
 1. [RecordRTC API Reference](http://RecordRTC.org/RecordRTC.html)
-2. [MRecordRTC API Reference](http://RecordRTC.org/MRecordRTC.html)
-3. [MediaStreamRecorder API Reference](http://RecordRTC.org/MediaStreamRecorder.html)
-5. [StereoAudioRecorder API Reference](http://RecordRTC.org/StereoAudioRecorder.html)
-6. [WhammyRecorder API Reference](http://RecordRTC.org/WhammyRecorder.html)
-7. [Whammy API Reference](http://RecordRTC.org/Whammy.html)
-8. [CanvasRecorder API Reference](http://RecordRTC.org/CanvasRecorder.html)
-9. [GifRecorder API Reference](http://RecordRTC.org/GifRecorder.html)
-10. [Global API Reference](http://RecordRTC.org/global.html)
+2. [MediaStreamRecorder API Reference](http://RecordRTC.org/MediaStreamRecorder.html)
+3. [StereoAudioRecorder API Reference](http://RecordRTC.org/StereoAudioRecorder.html)
+4. [WhammyRecorder API Reference](http://RecordRTC.org/WhammyRecorder.html)
+5. [Whammy API Reference](http://RecordRTC.org/Whammy.html)
+6. [CanvasRecorder API Reference](http://RecordRTC.org/CanvasRecorder.html)
+7. [MultiStreamRecorder API Reference](http://recordrtc.org/MultiStreamRecorder.html)
+8. [MRecordRTC API Reference](http://RecordRTC.org/MRecordRTC.html)
+9. [RecordRTCPromisesHandler API Reference](http://recordrtc.org/RecordRTCPromisesHandler.html)
+10. [GifRecorder API Reference](http://RecordRTC.org/GifRecorder.html)
+11. [Global API Reference](http://RecordRTC.org/global.html)
 
 ## Browsers Support:
 
@@ -35,6 +37,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  | Audio+Video (Both local/remote) |
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio+Video (Both local/remote) |
 | Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | **Only Audio** - No Video - No Canvas - No Screen |
+| Safari 11 | preview | **Only Audio** - No Video - No Canvas - No Screen |
 
 ## Frameworks
 

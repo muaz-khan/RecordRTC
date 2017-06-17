@@ -313,9 +313,8 @@
                         else {
                             button.recordRTC.stopRecording(function(url) {
                                 button.recordingEndedCallback(url);
-                                stopStream();
-
                                 saveToDiskOrOpenNewTab(button.recordRTC);
+                                stopStream();
                             });
                         }
                     }
@@ -1143,8 +1142,21 @@
                     });
                 }
 
-                var select = document.querySelector('.media-resolutions');
-                info += '\n\nresolutions: ' + select.value;
+                if(timeSlice && btnStartRecording.recordRTC) {
+                    info += '\ntimeSlice: ' + timeSlice;
+
+                    if(btnStartRecording.recordRTC.getInternalRecorder().getArrayOfBlobs) {
+                        var blobSizes = [];
+                        btnStartRecording.recordRTC.getInternalRecorder().getArrayOfBlobs().forEach(function(blob) {
+                            blobSizes.push(blob.size);
+                        });
+                        info += '\nblobSizes: ' + blobSizes;
+                    }
+                }
+
+                else if(btnStartRecording.recordRTC && btnStartRecording.recordRTC.getBlob()) {
+                    info += '\n\nblobSize: ' + bytesToSize(btnStartRecording.recordRTC.getBlob().size);
+                }
 
                 return info;
             }

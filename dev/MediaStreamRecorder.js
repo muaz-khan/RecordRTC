@@ -144,8 +144,8 @@ function MediaStreamRecorder(mediaStream, config) {
         mediaRecorder.ondataavailable = function(e) {
             if (typeof config.timeSlice === 'number') {
                 if (e.data && e.data.size && e.data.size > 100) {
-                    updateTimeStamp();
                     arrayOfBlobs.push(e.data);
+                    updateTimeStamp();
                 }
                 return;
             }

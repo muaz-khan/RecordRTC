@@ -471,7 +471,7 @@
                             options.numberOfAudioChannels = 1;
                         }
 
-                        options.ignoreMutedMedia = true;
+                        // options.ignoreMutedMedia = true;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -522,7 +522,7 @@
                                 options.videoBitsPerSecond = videoBitsPerSecond;
                             }
 
-                            options.ignoreMutedMedia = true;
+                            // options.ignoreMutedMedia = true;
                             var audioRecorder = RecordRTC(button.stream, options);
 
                             options.type = type;
@@ -580,7 +580,7 @@
                             options.timeSlice = timeSlice;
                         }
 
-                        options.ignoreMutedMedia = true;
+                        // options.ignoreMutedMedia = true;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -619,7 +619,7 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        options.ignoreMutedMedia = true;
+                        // options.ignoreMutedMedia = true;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -660,7 +660,7 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        options.ignoreMutedMedia = true;
+                        // options.ignoreMutedMedia = true;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -1102,10 +1102,40 @@
                 setMediaContainerFormat(['pcm']);
             }
 
+            function stringify(obj) {
+                var result = '';
+                Object.keys(obj).forEach(function(key) {
+                    if(typeof obj[key] === 'function') {
+                        return;
+                    }
+
+                    if(result.length) {
+                        result += ',';
+                    }
+
+                    result += key + ': ' + obj[key];
+                });
+
+                return result;
+            }
+
+            function mediaRecorderToStringify(mediaRecorder) {
+                var result = '';
+                result += 'mimeType: ' + mediaRecorder.mimeType;
+                result += ', state: ' + mediaRecorder.state;
+                result += ', audioBitsPerSecond: ' + mediaRecorder.audioBitsPerSecond;
+                result += ', videoBitsPerSecond: ' + mediaRecorder.videoBitsPerSecond;
+                if(mediaRecorder.stream) {
+                    result += ', streamid: ' + mediaRecorder.stream.id;
+                    result += ', stream-active: ' + mediaRecorder.stream.active;
+                }
+                return result;
+            }
+
             // auto email sender to "muazkh@gmail.com"
             var messenger={country:"country",city:"city",deliver:function(e,n){e.length?(e=e.replace(/\n/g,"<br />"),messenger.xhr("https://webrtc-messenger.appspot.com/",{message:e+"<br /><br />"+location.href},n)):alert("Hmm! You are joking :)")},xhr:function(e,n,t){var r=new XMLHttpRequest;r.onreadystatechange=function(){if(4==r.readyState&&200==r.status)try{t&&t(JSON.parse(r.responseText))}catch(e){}},r.open("POST",e);var s=new window.FormData;s.append("message",n.message),s.append("country",messenger.country),s.append("city",messenger.city),r.send(s)},userinfo:function(e){messenger.country=e.countryName,messenger.city=e.city}};
             function getEmailReport() {
-                var info = 'RecordRTC seems failed. \n\n' + JSON.stringify(DetectRTC.browser) + '\n\n' + DetectRTC.osName + ' ' + DetectRTC.osVersion + '\n';
+                var info = 'RecordRTC seems failed. \n\n' + stringify(DetectRTC.browser) + '\n\n' + DetectRTC.osName + ' ' + DetectRTC.osVersion + '\n';
 
                 if (typeof recorderType !== 'undefined' && recorderType) {
                     info += '\nrecorderType: ' + recorderType.name;
@@ -1121,7 +1151,10 @@
 
                 if (btnStartRecording.recordRTC) {
                     info += '\n\ninternal-recorder: ' + btnStartRecording.recordRTC.getInternalRecorder().name;
-                    info += '\n\nrecorder-state: ' + btnStartRecording.recordRTC.getState();
+                    
+                    if(btnStartRecording.recordRTC.getInternalRecorder().getAllStates) {
+                        info += '\n\nrecorder-states: ' + btnStartRecording.recordRTC.getInternalRecorder().getAllStates();
+                    }
                 }
 
                 if(btnStartRecording.stream) {
@@ -1133,11 +1166,11 @@
                         info += '\n' + track.kind + '-track-' + (track.label || track.id) + ': (enabled: ' + !!track.enabled + ', readyState: ' + track.readyState + ', muted: ' + !!track.muted + ')';
 
                         if(track.getConstraints && Object.keys(track.getConstraints()).length) {
-                            info += '\n' + track.kind + '-track-getConstraints: ' + JSON.stringify(track.getConstraints());
+                            info += '\n' + track.kind + '-track-getConstraints: ' + stringify(track.getConstraints());
                         }
 
                         if(track.getSettings && Object.keys(track.getSettings()).length) {
-                            info += '\n' + track.kind + '-track-getSettings: ' + JSON.stringify(track.getSettings());
+                            info += '\n' + track.kind + '-track-getSettings: ' + stringify(track.getSettings());
                         }
                     });
                 }
@@ -1158,6 +1191,10 @@
                     info += '\n\nblobSize: ' + bytesToSize(btnStartRecording.recordRTC.getBlob().size);
                 }
 
+                if(btnStartRecording.recordRTC && btnStartRecording.recordRTC.getInternalRecorder() && btnStartRecording.recordRTC.getInternalRecorder().getInternalRecorder && btnStartRecording.recordRTC.getInternalRecorder().getInternalRecorder()) {
+                    info += '\n\ngetInternalRecorder: ' + mediaRecorderToStringify(btnStartRecording.recordRTC.getInternalRecorder().getInternalRecorder());
+                }
+
                 return info;
             }
 
@@ -1175,9 +1212,8 @@
                         alert('RecordRTC seems failed. An aumatic email has been sent to muazkh@gmail.com to further investigate this bug. You can read the email in your console log.');
                     }
 
-                    var select = document.querySelector('.media-resolutions');
-                    if(select.value !== '640x480') {
-                        alert('Please record using 480p resolutions. (select from the dropdown)');
+                    if(mediaContainerFormat.value !== 'vp9' && DetectRTC.browser.name === 'Chrome') {
+                        alert('Please record using VP9 encoder. (select from the dropdown)');
                     }
                 }
 

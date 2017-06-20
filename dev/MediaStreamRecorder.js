@@ -93,8 +93,12 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.record();
      */
     this.record = function() {
+        // set defaults
         self.blob = null;
         self.clearRecordedData();
+        self.timestamps = [];
+        allStates = [];
+        arrayOfBlobs = [];
 
         var recorderHints = config;
 
@@ -125,23 +129,32 @@ function MediaStreamRecorder(mediaStream, config) {
         // using MediaRecorder API here
         try {
             mediaRecorder = new MediaRecorder(mediaStream, recorderHints);
+
+            // reset
+            config.mimeType = recorderHints.mimeType;
         } catch (e) {
             // chrome-based fallback
             mediaRecorder = new MediaRecorder(mediaStream);
         }
 
         // old hack?
-        if (!MediaRecorder.isTypeSupported && 'canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(config.mimeType) === false) {
+        if (recorderHints.mimeType && !MediaRecorder.isTypeSupported && 'canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(recorderHints.mimeType) === false) {
             if (!config.disableLogs) {
-                console.warn('MediaRecorder API seems unable to record mimeType:', config.mimeType);
+                console.warn('MediaRecorder API seems unable to record mimeType:', recorderHints.mimeType);
             }
         }
 
         // ignore muted/disabled/inactive tracks
-        mediaRecorder.ignoreMutedMedia = config.ignoreMutedMedia || false;
+        if (config.ignoreMutedMedia === true) {
+            mediaRecorder.ignoreMutedMedia = true;
+        }
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
+            if (e.data) {
+                allStates.push('ondataavailable: ' + bytesToSize(e.data.size));
+            }
+
             if (typeof config.timeSlice === 'number') {
                 if (e.data && e.data.size && e.data.size > 100) {
                     arrayOfBlobs.push(e.data);
@@ -155,7 +168,7 @@ function MediaStreamRecorder(mediaStream, config) {
                 // even if there is invalid data
                 if (self.recordingCallback) {
                     self.recordingCallback(new Blob([], {
-                        type: recorderHints.mimeType || 'video/webm'
+                        type: mediaRecorder.mimeType || recorderHints.mimeType || 'video/webm'
                     }));
                     self.recordingCallback = null;
                 }
@@ -163,7 +176,7 @@ function MediaStreamRecorder(mediaStream, config) {
             }
 
             self.blob = config.getNativeBlob ? e.data : new Blob([e.data], {
-                type: recorderHints.mimeType || 'video/webm'
+                type: mediaRecorder.mimeType || recorderHints.mimeType || 'video/webm'
             });
 
             if (self.recordingCallback) {
@@ -172,13 +185,31 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         };
 
+        mediaRecorder.onstart = function() {
+            allStates.push('started');
+        };
+
+        mediaRecorder.onpause = function() {
+            allStates.push('paused');
+        };
+
+        mediaRecorder.onresume = function() {
+            allStates.push('resumed');
+        };
+
+        mediaRecorder.onstop = function() {
+            allStates.push('stopped');
+        };
+
         mediaRecorder.onerror = function(error) {
+            allStates.push('error: ' + error);
+
             if (!config.disableLogs) {
                 // via: https://w3c.github.io/mediacapture-record/MediaRecorder.html#exception-summary
                 if (error.name.toString().toLowerCase().indexOf('invalidstate') !== -1) {
                     console.error('The MediaRecorder is not in a state in which the proposed operation is allowed to be executed.', error);
                 } else if (error.name.toString().toLowerCase().indexOf('notsupported') !== -1) {
-                    console.error('MIME type (', config.mimeType, ') is not supported.', error);
+                    console.error('MIME type (', recorderHints.mimeType, ') is not supported.', error);
                 } else if (error.name.toString().toLowerCase().indexOf('security') !== -1) {
                     console.error('MediaRecorder security error', error);
                 }
@@ -235,7 +266,7 @@ function MediaStreamRecorder(mediaStream, config) {
      * @example
      * console.log(recorder.timestamps);
      */
-    this.timestamps = []; // redundant?
+    this.timestamps = [];
 
     function updateTimeStamp() {
         self.timestamps.push(new Date().getTime());
@@ -263,8 +294,6 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         this.recordingCallback = function(blob) {
-            self.clearRecordedData();
-
             if (callback) {
                 callback(blob);
             }
@@ -277,7 +306,7 @@ function MediaStreamRecorder(mediaStream, config) {
         if (typeof config.timeSlice === 'number') {
             setTimeout(function() {
                 self.blob = new Blob(arrayOfBlobs, {
-                    type: config.mimeType || 'video/webm'
+                    type: mediaRecorder.mimeType || config.mimeType || 'video/webm'
                 });
 
                 self.recordingCallback(self.blob);
@@ -335,6 +364,23 @@ function MediaStreamRecorder(mediaStream, config) {
     // Reference to "MediaRecorder" object
     var mediaRecorder;
 
+    /**
+     * Access to native MediaRecorder API
+     * @method
+     * @memberof MediaStreamRecorder
+     * @instance
+     * @example
+     * var internal = recorder.getInternalRecorder();
+     * if(internal instanceof MultiStreamRecorder) {
+     *     internal.addStreams([newAudioStream]);
+     *     internal.resetVideoStreams([screenStream]);
+     * }
+     * @returns {Object} Returns internal recording object.
+     */
+    this.getInternalRecorder = function() {
+        return mediaRecorder;
+    };
+
     function isMediaStreamActive() {
         if ('active' in mediaStream) {
             if (!mediaStream.active) {
@@ -358,6 +404,7 @@ function MediaStreamRecorder(mediaStream, config) {
      */
     this.blob = null;
 
+
     /**
      * Get MediaRecorder readonly state.
      * @method
@@ -372,6 +419,21 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         return mediaRecorder.state || 'inactive';
+    };
+
+    // list of all recording states
+    var allStates = [];
+
+    /**
+     * Get MediaRecorder all recording states.
+     * @method
+     * @memberof MediaStreamRecorder
+     * @example
+     * var state = recorder.getAllStates();
+     * @returns {Array} Returns all recording states
+     */
+    this.getAllStates = function() {
+        return allStates;
     };
 
     // if any Track within the MediaStream is muted or not enabled at any time, 

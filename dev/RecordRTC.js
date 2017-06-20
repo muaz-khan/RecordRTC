@@ -481,10 +481,10 @@ function RecordRTC(mediaStream, config) {
          * @memberof RecordRTC
          * @instance
          * @example
-         * var msRecorder = recorder.getInternalRecorder();
-         * if(msRecorder instanceof MultiStreamRecorder) {
-         *     msRecorder.addStreams([newAudioStream]);
-         *     msRecorder.resetVideoStreams([screenStream]);
+         * var internal = recorder.getInternalRecorder();
+         * if(internal instanceof MultiStreamRecorder) {
+         *     internal.addStreams([newAudioStream]);
+         *     internal.resetVideoStreams([screenStream]);
          * }
          * @returns {Object} Returns internal recording object.
          */

@@ -471,7 +471,7 @@
                             options.numberOfAudioChannels = 1;
                         }
 
-                        // options.ignoreMutedMedia = true;
+                        options.ignoreMutedMedia = false;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -522,7 +522,7 @@
                                 options.videoBitsPerSecond = videoBitsPerSecond;
                             }
 
-                            // options.ignoreMutedMedia = true;
+                            options.ignoreMutedMedia = false;
                             var audioRecorder = RecordRTC(button.stream, options);
 
                             options.type = type;
@@ -580,7 +580,7 @@
                             options.timeSlice = timeSlice;
                         }
 
-                        // options.ignoreMutedMedia = true;
+                        options.ignoreMutedMedia = false;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -619,7 +619,7 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        // options.ignoreMutedMedia = true;
+                        options.ignoreMutedMedia = false;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {
@@ -660,7 +660,7 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        // options.ignoreMutedMedia = true;
+                        options.ignoreMutedMedia = false;
                         button.recordRTC = RecordRTC(button.stream, options);
 
                         button.recordingEndedCallback = function(url) {

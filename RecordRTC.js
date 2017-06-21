@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-06-20 4:53:06 AM UTC
+// Last time updated: 2017-06-21 8:49:23 AM UTC
 
 // ________________
 // RecordRTC v5.4.3
@@ -1958,9 +1958,7 @@ function MediaStreamRecorder(mediaStream, config) {
         }
 
         // ignore muted/disabled/inactive tracks
-        if (config.ignoreMutedMedia === true) {
-            mediaRecorder.ignoreMutedMedia = true;
-        }
+        mediaRecorder.ignoreMutedMedia = config.ignoreMutedMedia === true;
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
@@ -2184,10 +2182,8 @@ function MediaStreamRecorder(mediaStream, config) {
      * @instance
      * @example
      * var internal = recorder.getInternalRecorder();
-     * if(internal instanceof MultiStreamRecorder) {
-     *     internal.addStreams([newAudioStream]);
-     *     internal.resetVideoStreams([screenStream]);
-     * }
+     * internal.ondataavailable = function() {}; // override
+     * internal.stream, internal.onpause, internal.onstop, etc.
      * @returns {Object} Returns internal recording object.
      */
     this.getInternalRecorder = function() {

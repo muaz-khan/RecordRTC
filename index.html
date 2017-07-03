@@ -1201,15 +1201,22 @@
             function saveToDiskOrOpenNewTab(recordRTC) {
                 if(!recordRTC.getBlob().size) {
                     var info = getEmailReport();
-                    messenger.deliver(info, function() {
+                    !localStorage.getItem('already-reported') && messenger.deliver(info, function() {
                         console.log('Following email has been sent to muazkh@gmail.com\n', info);
+                        localStorage.setItem('already-reported', true);
                     });
 
                     if(mediaContainerFormat.value !== 'default') {
                         alert('RecordRTC seems failed recording using ' + mediaContainerFormat.value + '. Please choose "default" option from the drop down and record again.');
                     }
                     else {
-                        alert('RecordRTC seems failed. An aumatic email has been sent to muazkh@gmail.com to further investigate this bug. You can read the email in your console log.');
+                        if(!localStorage.getItem('already-reported-2')) {
+                            localStorage.setItem('already-reported-2', true);
+                            alert('RecordRTC seems failed. An aumatic email has been sent to muazkh@gmail.com to further investigate this bug. You can read the email in your console log.');
+                        }
+                        else {
+                            alert('RecordRTC seems failed. Unexpected issue. Please report using disqus chat below.');
+                        }
                     }
 
                     if(mediaContainerFormat.value !== 'vp9' && DetectRTC.browser.name === 'Chrome') {
@@ -1991,14 +1998,7 @@
             <div id="github-issues"></div>
         </section>
 
-        <section id="ask" class="experiment">
-            <h2 class="header" id="feedback">Feedback</h2>
-            <div>
-                <textarea id="message" style="border: 1px solid rgb(189, 189, 189); height: 8em; margin: .2em; outline: none; resize: vertical; width: 98%;" placeholder="Have any message? Suggestions or something went wrong?"></textarea>
-            </div>
-            <button id="send-message" style="font-size: 1em;">Send Message</button>
-            <small style="margin-left: 1em;">Enter your email too; if you want "direct" reply!</small>
-        </section>
+        <section class="experiment"><small id="send-message"></small></section>
 
         <section class="experiment">
             <p style="margin-top: 6px; text-align: center;">

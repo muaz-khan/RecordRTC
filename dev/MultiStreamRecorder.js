@@ -103,6 +103,8 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         mediaRecorder.stop(function(blob) {
+            self.blob = blob;
+
             callback(blob);
 
             self.clearRecordedData();

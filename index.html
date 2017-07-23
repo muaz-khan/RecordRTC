@@ -88,7 +88,9 @@
     <article>
         <header style="text-align: center;">
             <h1>
-                RecordRTC | WebRTC Audio+Video+Screen Recording
+                RecordRTC
+                <img src="https://webrtcweb.com/RecordRTC/icon.png" style="width: 30px;vertical-align: middle;margin-right: 1px;">
+                Audio+Video+Screen Recording
             </h1>
             <p style="margin:0;margin-bottom:-30px;">
                 <a href="https://www.webrtc-experiment.com/">HOME</a>
@@ -180,7 +182,7 @@
                       <span
                         class="g-signin"
                         data-callback="signinCallback"
-                        data-clientid="41556190767-7amutgh7ug0dfkkeb9fkrpt8j86rv5o3.apps.googleusercontent.com"
+                        data-clientid="41556190767-115ifahd55lk4ln5pop4jus55cr4l7oh.apps.googleusercontent.com"
                         data-cookiepolicy="single_host_origin"
                         data-scope="https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube">
                       </span>
@@ -275,7 +277,7 @@
                         button.disableStateWaiting = false;
                     }, 2000);
 
-                    button.innerHTML = 'Star Recording';
+                    button.innerHTML = 'Start Recording';
 
                     function stopStream() {
                         if(button.stream && button.stream.stop) {
@@ -1132,9 +1134,7 @@
                 return result;
             }
 
-            // auto email sender to "muazkh@gmail.com"
-            var messenger={country:"country",city:"city",deliver:function(e,n){e.length?(e=e.replace(/\n/g,"<br />"),messenger.xhr("https://webrtc-messenger.appspot.com/",{message:e+"<br /><br />"+location.href},n)):alert("Hmm! You are joking :)")},xhr:function(e,n,t){var r=new XMLHttpRequest;r.onreadystatechange=function(){if(4==r.readyState&&200==r.status)try{t&&t(JSON.parse(r.responseText))}catch(e){}},r.open("POST",e);var s=new window.FormData;s.append("message",n.message),s.append("country",messenger.country),s.append("city",messenger.city),r.send(s)},userinfo:function(e){messenger.country=e.countryName,messenger.city=e.city}};
-            function getEmailReport() {
+            function getFailureReport() {
                 var info = 'RecordRTC seems failed. \n\n' + stringify(DetectRTC.browser) + '\n\n' + DetectRTC.osName + ' ' + DetectRTC.osVersion + '\n';
 
                 if (typeof recorderType !== 'undefined' && recorderType) {
@@ -1200,23 +1200,16 @@
 
             function saveToDiskOrOpenNewTab(recordRTC) {
                 if(!recordRTC.getBlob().size) {
-                    var info = getEmailReport();
-                    !localStorage.getItem('already-reported') && messenger.deliver(info, function() {
-                        console.log('Following email has been sent to muazkh@gmail.com\n', info);
-                        localStorage.setItem('already-reported', true);
-                    });
+                    var info = getFailureReport();
+                    console.log('blob', recordRTC.getBlob());
+                    console.log('recordrtc instance', recordRTC);
+                    console.log('report', info);
 
                     if(mediaContainerFormat.value !== 'default') {
                         alert('RecordRTC seems failed recording using ' + mediaContainerFormat.value + '. Please choose "default" option from the drop down and record again.');
                     }
                     else {
-                        if(!localStorage.getItem('already-reported-2')) {
-                            localStorage.setItem('already-reported-2', true);
-                            alert('RecordRTC seems failed. An aumatic email has been sent to muazkh@gmail.com to further investigate this bug. You can read the email in your console log.');
-                        }
-                        else {
-                            alert('RecordRTC seems failed. Unexpected issue. Please report using disqus chat below.');
-                        }
+                        alert('RecordRTC seems failed. Unexpected issue. You can read the email in your console log. \n\nPlease report using disqus chat below.');
                     }
 
                     if(mediaContainerFormat.value !== 'vp9' && DetectRTC.browser.name === 'Chrome') {
@@ -1224,7 +1217,7 @@
                     }
                 }
 
-                var fileName = 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + fileExtension;
+                var fileName = getFileName(fileExtension);
 
                 document.querySelector('#save-to-disk').parentNode.style.display = 'block';
                 document.querySelector('#save-to-disk').onclick = function() {
@@ -1328,7 +1321,7 @@
             function uploadToPHPServer(fileName, recordRTC, callback) {
                 var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.getBlob();
                 
-                blob = new File([blob], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + fileExtension, {
+                blob = new File([blob], getFileName(fileExtension), {
                     type: mimeType
                 });
 
@@ -1385,6 +1378,27 @@
 
                 request.open('POST', url);
                 request.send(data);
+            }
+
+            function getRandomString() {
+                if (window.crypto && window.crypto.getRandomValues && navigator.userAgent.indexOf('Safari') === -1) {
+                    var a = window.crypto.getRandomValues(new Uint32Array(3)),
+                        token = '';
+                    for (var i = 0, l = a.length; i < l; i++) {
+                        token += a[i].toString(36);
+                    }
+                    return token;
+                } else {
+                    return (Math.random() * new Date().getTime()).toString(36).replace(/\./g, '');
+                }
+            }
+
+            function getFileName(fileExtension) {
+                var d = new Date();
+                var year = d.getUTCFullYear();
+                var month = d.getUTCMonth();
+                var date = d.getUTCDate();
+                return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
             }
 
             function SaveFileURLToDisk(fileUrl, fileName) {
@@ -1495,11 +1509,14 @@
             function uploadToYouTube(fileName, recordRTC, callback) {
                 var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.getBlob();
                 
-                blob = new File([blob], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + fileExtension, {
+                blob = new File([blob], getFileName(fileExtension), {
                     type: mimeType
                 });
 
-                if(!uploadVideo) return;
+                if(!uploadVideo) {
+                    alert('YouTube API are not available.');
+                    return;
+                }
 
                 uploadVideo.callback = callback;
                 uploadVideo.uploadFile(fileName, blob);
@@ -1513,6 +1530,10 @@
                 uploadVideo.ready(result.access_token);
 
                 document.querySelector('#signinButton').style.display = 'none';
+              }
+              else {
+                // console.error('YouTube error', result);
+                // document.querySelector('#upload-to-youtube').style.display = 'none';
               }
             };
 
@@ -1847,7 +1868,14 @@
         </script>
 
         <section class="experiment" style="padding: 10px 20px; text-align: center;">
-            You can try <a href="https://chrome.google.com/webstore/detail/recordrtc/ndcljioonkecdnaaihodjgiliohngojp">a <strong>chrome extension</strong> for screen recording</a> as well!
+            <a href="https://chrome.google.com/webstore/detail/recordrtc/ndcljioonkecdnaaihodjgiliohngojp" target="_blank">
+                <img src="https://webrtcweb.com/RecordRTC/icon.png" style="width: 20px;vertical-align: middle;margin-right: 3px;">
+                RecordRTC
+                Google Chrome
+                Extension
+            </a>
+            <br>
+            Record screen activity, camera, tab, speakers in 4K HD video format!
         </section>
 
         <section class="experiment" id="other-demos">

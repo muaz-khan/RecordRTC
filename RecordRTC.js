@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-06-21 8:49:23 AM UTC
+// Last time updated: 2017-07-23 5:31:53 AM UTC
 
 // ________________
 // RecordRTC v5.4.3
@@ -4574,6 +4574,8 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         mediaRecorder.stop(function(blob) {
+            self.blob = blob;
+            
             callback(blob);
 
             self.clearRecordedData();

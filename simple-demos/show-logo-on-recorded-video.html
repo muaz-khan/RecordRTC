@@ -34,7 +34,15 @@ navigator.getUserMedia({video: true, audio: true}, function(camera) {
 
     var canvasStream = canvas.captureStream(15);
 
-    var recorder = RecordRTC(canvasStream, {
+    var audioPlusCanvasStream = new MediaStream();
+    canvasStream.getVideoTracks().forEach(function(videoTrack) {
+        audioPlusCanvasStream.addTrack(videoTrack);
+    });
+    camera.getAudioTracks().forEach(function(audioTrack) {
+        audioPlusCanvasStream.addTrack(audioTrack);
+    });
+
+    var recorder = RecordRTC(audioPlusCanvasStream, {
         type: 'video'
     });
 

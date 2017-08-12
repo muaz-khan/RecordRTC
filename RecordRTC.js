@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-07-23 5:31:53 AM UTC
+// Last time updated: 2017-08-12 5:10:02 AM UTC
 
 // ________________
 // RecordRTC v5.4.3
@@ -1630,7 +1630,7 @@ if (typeof MediaStream !== 'undefined') {
             }
 
             var tracks = [];
-            this.getTracks.forEach(function(track) {
+            this.getTracks().forEach(function(track) {
                 if (track.kind.toString().indexOf('video') !== -1) {
                     tracks.push(track);
                 }
@@ -1644,7 +1644,7 @@ if (typeof MediaStream !== 'undefined') {
             }
 
             var tracks = [];
-            this.getTracks.forEach(function(track) {
+            this.getTracks().forEach(function(track) {
                 if (track.kind.toString().indexOf('audio') !== -1) {
                     tracks.push(track);
                 }
@@ -4575,7 +4575,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         mediaRecorder.stop(function(blob) {
             self.blob = blob;
-            
+
             callback(blob);
 
             self.clearRecordedData();

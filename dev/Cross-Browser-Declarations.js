@@ -104,7 +104,7 @@ if (typeof MediaStream !== 'undefined') {
             }
 
             var tracks = [];
-            this.getTracks.forEach(function(track) {
+            this.getTracks().forEach(function(track) {
                 if (track.kind.toString().indexOf('video') !== -1) {
                     tracks.push(track);
                 }
@@ -118,7 +118,7 @@ if (typeof MediaStream !== 'undefined') {
             }
 
             var tracks = [];
-            this.getTracks.forEach(function(track) {
+            this.getTracks().forEach(function(track) {
                 if (track.kind.toString().indexOf('audio') !== -1) {
                     tracks.push(track);
                 }

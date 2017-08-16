@@ -25,7 +25,7 @@ navigator.getUserMedia({video: true, audio: true}, function(camera) {
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
 
-    canvas.style = 'position: absolute; top: 0; left: 0; opacity: 0;';
+    canvas.style = 'position: absolute; top: 0; left: 0; opacity: 0; margin-top: -9999999999; margin-left: -9999999999; top: -9999999999; left: -9999999999; z-index: -1;';
     document.body.appendChild(canvas);
 
     var video = document.createElement('video');

@@ -27,6 +27,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 9. [RecordRTCPromisesHandler API Reference](http://recordrtc.org/RecordRTCPromisesHandler.html)
 10. [GifRecorder API Reference](http://RecordRTC.org/GifRecorder.html)
 11. [Global API Reference](http://RecordRTC.org/global.html)
+12 [RecordRTC and Upload to PHP Server](http://www.muazkhan.com/2017/08/recordrtc-and-upload-to-php-server.html)
 
 ## Browsers Support:
 

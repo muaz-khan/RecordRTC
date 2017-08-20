@@ -825,7 +825,7 @@ If you passed invalid value then you'll get blank audio.
 
 ## `sampleRate`
 
-Here is jow to customize Sample-Rate for audio recording?
+Here is how to customize Sample-Rate for audio recording?
 
 ```javascript
 // The sample rate (in sample-frames per second) at which the

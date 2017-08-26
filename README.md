@@ -873,7 +873,7 @@ This option allows you set MediaRecorder output format:
 
 ```javascript
 var options = {
-  mimeType 'video/webm', // or video/webm\;codecs=h264 or video/webm\;codecs=vp9
+  mimeType: 'video/webm', // or video/webm\;codecs=h264 or video/webm\;codecs=vp9
   bitsPerSecond: 128000
 };
 var recorder = RecordRTC(mediaStream, options);

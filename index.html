@@ -1,3 +1,5 @@
+<!-- Demo version: 2017.08.27 -->
+
 <!--
 > Muaz Khan     - www.MuazKhan.com
 > MIT License   - www.WebRTC-Experiment.com/licence
@@ -82,6 +84,10 @@
     <!-- for Edge/FF/Chrome/Opera/etc. getUserMedia support -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="https://cdn.webrtc-experiment.com/DetectRTC.js"> </script>
+
+    <!-- video element -->
+    <link href="https://cdn.webrtc-experiment.com/getHTMLMediaElement.css" rel="stylesheet">
+    <script src="https://cdn.webrtc-experiment.com/getHTMLMediaElement.js"></script>
 </head>
 
 <body>
@@ -192,9 +198,7 @@
                 </div>
             </div>
 
-            <div style="margin-top: 10px;">
-                <video id="recording-player" controls muted></video>
-            </div>
+            <div style="margin-top: 10px;" id="recording-player"></div>
         </section>
 
         <script>
@@ -247,7 +251,31 @@
         </script>
 
         <script>
-            var recordingPlayer = document.querySelector('#recording-player');
+            var video = document.createElement('video');
+            video.controls = false;
+            var mediaElement = getHTMLMediaElement(video, {
+                title: 'Recording status: inactive',
+                buttons: ['full-screen'/*, 'take-snapshot'*/],
+                showOnMouseEnter: false,
+                width: 360,
+                onTakeSnapshot: function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = mediaElement.clientWidth;
+                    canvas.height = mediaElement.clientHeight;
+
+                    var context = canvas.getContext('2d');
+                    context.drawImage(recordingPlayer, 0, 0, canvas.width, canvas.height);
+
+                    window.open(canvas.toDataURL('image/png'));
+                }
+            });
+            document.getElementById('recording-player').appendChild(mediaElement);
+
+            var div = document.createElement('section');
+            mediaElement.media.parentNode.appendChild(div);
+            div.appendChild(mediaElement.media);
+            
+            var recordingPlayer = mediaElement.media;
             var recordingMedia = document.querySelector('.recording-media');
             var mediaContainerFormat = document.querySelector('.media-container-format');
             var mimeType = 'video/webm';
@@ -293,6 +321,9 @@
                         }
 
                         videoBitsPerSecond = null;
+                        var html = 'Recording status: stopped';
+                        html += '<br>Size: ' + bytesToSize(button.recordRTC.getBlob().size);
+                        recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = html;
                     }
 
                     if(button.recordRTC) {
@@ -591,6 +622,7 @@
 
                         button.recordRTC.startRecording();
                         btnPauseRecording.style.display = '';
+                        recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = '<img src="https://cdn.webrtc-experiment.com/images/progress.gif">';
                     };
                 }
 
@@ -1256,9 +1288,14 @@
                             };
 
                             setVideoURL(fileURL);
+
+                            var html = 'Uploaded to PHP.<br>Download using below link:<br>';
+                            html += '<a href="'+fileURL+'" download="'+fileName+'" style="color: yellow; display: block; margin-top: 15px;">'+fileName+'</a>';
+                            recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = html;
                             return;
                         }
                         button.innerHTML = progress;
+                        recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = progress;
                     });
                 };
 
@@ -1504,7 +1541,6 @@
                     }
                 });
 
-                recordingPlayer.controls = true;
                 parentNode.appendChild(recordingPlayer);
             }
         </script>
@@ -1849,6 +1885,7 @@
                     btnStartRecording.disabled = true;
                     btnStartRecording.style.fontSize = '15px';
                     btnStartRecording.recordRTC.pauseRecording();
+                    recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = 'Recording status: paused';
                     recordingPlayer.pause();
 
                     btnPauseRecording.style.fontSize = 'inherit';
@@ -1862,6 +1899,7 @@
                     btnStartRecording.disabled = false;
                     btnStartRecording.style.fontSize = 'inherit';
                     btnStartRecording.recordRTC.resumeRecording();
+                    recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = '<img src="https://cdn.webrtc-experiment.com/images/progress.gif">';
                     recordingPlayer.play();
 
                     btnPauseRecording.style.fontSize = '15px';

@@ -128,24 +128,13 @@ if (typeof MediaStream !== 'undefined') {
     }
 
     // override "stop" method for all browsers
-    MediaStream.prototype.__stop = MediaStream.prototype.stop;
-    MediaStream.prototype.stop = function() {
-        this.getAudioTracks().forEach(function(track) {
-            if (!!track.stop) {
+    if (typeof MediaStream.prototype.stop === 'undefined') {
+        MediaStream.prototype.stop = function() {
+            this.getTracks().forEach(function(track) {
                 track.stop();
-            }
-        });
-
-        this.getVideoTracks().forEach(function(track) {
-            if (!!track.stop) {
-                track.stop();
-            }
-        });
-
-        if (typeof this.__stop === 'function') {
-            this.__stop();
-        }
-    };
+            });
+        };
+    }
 }
 
 // below function via: http://goo.gl/B3ae8c

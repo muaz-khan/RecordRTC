@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-08-12 5:10:02 AM UTC
+// Last time updated: 2017-08-31 3:15:07 AM UTC
 
 // ________________
 // RecordRTC v5.4.3
@@ -1654,24 +1654,13 @@ if (typeof MediaStream !== 'undefined') {
     }
 
     // override "stop" method for all browsers
-    MediaStream.prototype.__stop = MediaStream.prototype.stop;
-    MediaStream.prototype.stop = function() {
-        this.getAudioTracks().forEach(function(track) {
-            if (!!track.stop) {
+    if (typeof MediaStream.prototype.stop === 'undefined') {
+        MediaStream.prototype.stop = function() {
+            this.getTracks().forEach(function(track) {
                 track.stop();
-            }
-        });
-
-        this.getVideoTracks().forEach(function(track) {
-            if (!!track.stop) {
-                track.stop();
-            }
-        });
-
-        if (typeof this.__stop === 'function') {
-            this.__stop();
-        }
-    };
+            });
+        };
+    }
 }
 
 // below function via: http://goo.gl/B3ae8c
@@ -4469,247 +4458,182 @@ if (typeof RecordRTC !== 'undefined') {
     RecordRTC.GifRecorder = GifRecorder;
 }
 
-// ______________________
-// MultiStreamRecorder.js
+// Last time updated: 2017-08-31 2:56:12 AM UTC
 
-/*
- * Video conference recording, using captureStream API along with WebAudio and Canvas2D API.
- */
+// ________________________
+// MultiStreamsMixer v1.0.2
 
-/**
- * MultiStreamRecorder can record multiple videos in single container.
- * @summary Multi-videos recorder.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
- * @typedef MultiStreamRecorder
- * @class
- * @example
- * var options = {
- *     mimeType: 'video/webm'
- * }
- * var recorder = new MultiStreamRecorder(ArrayOfMediaStreams, options);
- * recorder.record();
- * recorder.stop(function(blob) {
- *     video.src = URL.createObjectURL(blob);
- *
- *     // or
- *     var blob = recorder.blob;
- * });
- * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
- * @param {MediaStreams} mediaStreams - Array of MediaStreams.
- * @param {object} config - {disableLogs:true, frameInterval: 1, mimeType: "video/webm"}
- */
+// Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
-function MultiStreamRecorder(arrayOfMediaStreams, options) {
-    var self = this;
+// --------------------------------------------------
+// Muaz Khan     - www.MuazKhan.com
+// MIT License   - www.WebRTC-Experiment.com/licence
+// --------------------------------------------------
 
-    options = options || {
-        mimeType: 'video/webm',
-        video: {
-            width: 360,
-            height: 240
-        }
-    };
+function MultiStreamsMixer(arrayOfMediaStreams) {
 
-    if (!options.frameInterval) {
-        options.frameInterval = 10;
-    }
-
-    if (!options.video) {
-        options.video = {};
-    }
-
-    if (!options.video.width) {
-        options.video.width = 360;
-    }
-
-    if (!options.video.height) {
-        options.video.height = 240;
-    }
-
-    /**
-     * This method records all MediaStreams.
-     * @method
-     * @memberof MultiStreamRecorder
-     * @example
-     * recorder.record();
-     */
-    this.record = function() {
-        isStoppedRecording = false;
-        var mixedVideoStream = getMixedVideoStream();
-
-        var mixedAudioStream = getMixedAudioStream();
-        if (mixedAudioStream) {
-            mixedAudioStream.getAudioTracks().forEach(function(track) {
-                mixedVideoStream.addTrack(track);
-            });
-        }
-
-        if (options.previewStream && typeof options.previewStream === 'function') {
-            options.previewStream(mixedVideoStream);
-        }
-
-        mediaRecorder = new MediaStreamRecorder(mixedVideoStream, options);
-
-        drawVideosToCanvas();
-
-        mediaRecorder.record();
-    };
-
-    /**
-     * This method stops recording MediaStream.
-     * @param {function} callback - Callback function, that is used to pass recorded blob back to the callee.
-     * @method
-     * @memberof MultiStreamRecorder
-     * @example
-     * recorder.stop(function(blob) {
-     *     video.src = URL.createObjectURL(blob);
-     * });
-     */
-    this.stop = function(callback) {
-        isStoppedRecording = true;
-
-        if (!mediaRecorder) {
-            return;
-        }
-
-        mediaRecorder.stop(function(blob) {
-            self.blob = blob;
-
-            callback(blob);
-
-            self.clearRecordedData();
-        });
-    };
-
-    function getMixedAudioStream() {
-        // via: @pehrsons
-        if (!Storage.AudioContextConstructor) {
-            Storage.AudioContextConstructor = new Storage.AudioContext();
-        }
-
-        self.audioContext = Storage.AudioContextConstructor;
-
-        self.audioSources = [];
-
-        self.gainNode = self.audioContext.createGain();
-        self.gainNode.connect(self.audioContext.destination);
-        self.gainNode.gain.value = 0; // don't hear self
-
-        var audioTracksLength = 0;
-        arrayOfMediaStreams.forEach(function(stream) {
-            if (!stream.getAudioTracks().length) {
-                return;
-            }
-
-            audioTracksLength++;
-
-            var audioSource = self.audioContext.createMediaStreamSource(stream);
-            audioSource.connect(self.gainNode);
-            self.audioSources.push(audioSource);
-        });
-
-        if (!audioTracksLength) {
-            return;
-        }
-
-        self.audioDestination = self.audioContext.createMediaStreamDestination();
-        self.audioSources.forEach(function(audioSource) {
-            audioSource.connect(self.audioDestination);
-        });
-        return self.audioDestination.stream;
-    }
+    // requires: chrome://flags/#enable-experimental-web-platform-features
 
     var videos = [];
-    var mediaRecorder;
+    var isStopDrawingFrames = false;
 
-    function resetVideoStreams(streams) {
-        videos = [];
-        streams = streams || arrayOfMediaStreams;
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    canvas.style = 'opacity:0;position:absolute;z-index:-1;top: -100000000;left:-1000000000; margin-top:-1000000000;margin-left:-1000000000;';
+    (document.body || document.documentElement).appendChild(canvas);
 
-        // via: @adrian-ber
-        streams.forEach(function(stream) {
-            if (!stream.getVideoTracks().length) {
-                return;
-            }
+    this.disableLogs = false;
+    this.frameInterval = 10;
 
-            var video = getVideo(stream);
-            video.width = options.video.width;
-            video.height = options.video.height;
-            video.stream = stream;
-            videos.push(video);
-        });
-    }
+    this.width = 360;
+    this.height = 240;
 
-    function getMixedVideoStream() {
-        resetVideoStreams();
+    // use gain node to prevent echo
+    this.useGainNode = true;
 
-        var capturedStream;
+    var self = this;
 
-        if ('captureStream' in canvas) {
-            capturedStream = canvas.captureStream();
-        } else if ('mozCaptureStream' in canvas) {
-            capturedStream = canvas.mozCaptureStream();
-        } else if (!options.disableLogs) {
-            console.error('Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
+    // _____________________________
+    // Cross-Browser-Declarations.js
+
+    // WebAudio API representer
+    var AudioContext = window.AudioContext;
+
+    if (typeof AudioContext === 'undefined') {
+        if (typeof webkitAudioContext !== 'undefined') {
+            /*global AudioContext:true */
+            AudioContext = webkitAudioContext;
         }
 
-        var videoStream = new MediaStream();
-
-        // via streamproc/MediaStreamRecorder#126
-        capturedStream.getVideoTracks().forEach(function(track) {
-            videoStream.addTrack(track);
-        });
-
-        canvas.stream = videoStream;
-
-        return videoStream;
+        if (typeof mozAudioContext !== 'undefined') {
+            /*global AudioContext:true */
+            AudioContext = mozAudioContext;
+        }
     }
 
-    function getVideo(stream) {
-        var video = document.createElement('video');
-        video.src = URL.createObjectURL(stream);
-        video.muted = true;
-        video.volume = 0;
-        video.play();
-        return video;
+    /*jshint -W079 */
+    var URL = window.URL;
+
+    if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
+        /*global URL:true */
+        URL = webkitURL;
     }
 
-    var isStoppedRecording = false;
+    if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undefined') { // maybe window.navigator?
+        if (typeof navigator.webkitGetUserMedia !== 'undefined') {
+            navigator.getUserMedia = navigator.webkitGetUserMedia;
+        }
+
+        if (typeof navigator.mozGetUserMedia !== 'undefined') {
+            navigator.getUserMedia = navigator.mozGetUserMedia;
+        }
+    }
+
+    var MediaStream = window.MediaStream;
+
+    if (typeof MediaStream === 'undefined' && typeof webkitMediaStream !== 'undefined') {
+        MediaStream = webkitMediaStream;
+    }
+
+    /*global MediaStream:true */
+    if (typeof MediaStream !== 'undefined') {
+        if (!('getVideoTracks' in MediaStream.prototype)) {
+            MediaStream.prototype.getVideoTracks = function() {
+                if (!this.getTracks) {
+                    return [];
+                }
+
+                var tracks = [];
+                this.getTracks.forEach(function(track) {
+                    if (track.kind.toString().indexOf('video') !== -1) {
+                        tracks.push(track);
+                    }
+                });
+                return tracks;
+            };
+
+            MediaStream.prototype.getAudioTracks = function() {
+                if (!this.getTracks) {
+                    return [];
+                }
+
+                var tracks = [];
+                this.getTracks.forEach(function(track) {
+                    if (track.kind.toString().indexOf('audio') !== -1) {
+                        tracks.push(track);
+                    }
+                });
+                return tracks;
+            };
+        }
+
+        // override "stop" method for all browsers
+        if (typeof MediaStream.prototype.stop === 'undefined') {
+            MediaStream.prototype.stop = function() {
+                this.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+            };
+        }
+    }
+
+    var Storage = {};
+
+    if (typeof AudioContext !== 'undefined') {
+        Storage.AudioContext = AudioContext;
+    } else if (typeof webkitAudioContext !== 'undefined') {
+        Storage.AudioContext = webkitAudioContext;
+    }
+
+    this.startDrawingFrames = function() {
+        drawVideosToCanvas();
+    };
 
     function drawVideosToCanvas() {
-        if (isStoppedRecording) {
+        if (isStopDrawingFrames) {
             return;
         }
 
         var videosLength = videos.length;
 
         var fullcanvas = false;
+        var remaining = [];
         videos.forEach(function(video) {
             if (!video.stream) {
                 video.stream = {};
             }
 
             if (video.stream.fullcanvas) {
-                fullcanvas = video.stream;
+                fullcanvas = video;
+            } else {
+                remaining.push(video);
             }
         });
 
         if (fullcanvas) {
-            canvas.width = fullcanvas.width;
-            canvas.height = fullcanvas.height;
+            canvas.width = fullcanvas.stream.width;
+            canvas.height = fullcanvas.stream.height;
+        } else if (remaining.length) {
+            canvas.width = videosLength > 1 ? remaining[0].width * 2 : remaining[0].width;
+            canvas.height = videosLength > 2 ? remaining[0].height * 2 : remaining[0].height;
         } else {
-            canvas.width = videosLength > 1 ? videos[0].width * 2 : videos[0].width;
-            canvas.height = videosLength > 2 ? videos[0].height * 2 : videos[0].height;
+            canvas.width = self.width || 360;
+            canvas.height = self.height || 240;
         }
 
-        videos.forEach(drawImage);
+        if (fullcanvas && fullcanvas instanceof HTMLVideoElement) {
+            drawImage(fullcanvas);
+        }
 
-        setTimeout(drawVideosToCanvas, options.frameInterval);
+        remaining.forEach(function(video, idx) {
+            drawImage(video, idx);
+        });
+
+        setTimeout(drawVideosToCanvas, self.frameInterval);
     }
 
     function drawImage(video, idx) {
-        if (isStoppedRecording) {
+        if (isStopDrawingFrames) {
             return;
         }
 
@@ -4754,12 +4678,328 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
     }
 
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
+    function getMixedStream() {
+        isStopDrawingFrames = false;
+        var mixedVideoStream = getMixedVideoStream();
 
-    canvas.style = 'opacity:0;position:absolute;z-index:-1;top: -100000000;left:-1000000000;';
+        var mixedAudioStream = getMixedAudioStream();
+        if (mixedAudioStream) {
+            mixedAudioStream.getAudioTracks().forEach(function(track) {
+                mixedVideoStream.addTrack(track);
+            });
+        }
 
-    (document.body || document.documentElement).appendChild(canvas);
+        var fullcanvas;
+        arrayOfMediaStreams.forEach(function(stream) {
+            if (stream.fullcanvas) {
+                fullcanvas = true;
+            }
+        });
+
+        return mixedVideoStream;
+    }
+
+    function getMixedVideoStream() {
+        resetVideoStreams();
+
+        var capturedStream;
+
+        if ('captureStream' in canvas) {
+            capturedStream = canvas.captureStream();
+        } else if ('mozCaptureStream' in canvas) {
+            capturedStream = canvas.mozCaptureStream();
+        } else if (!self.disableLogs) {
+            console.error('Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
+        }
+
+        var videoStream = new MediaStream();
+
+        capturedStream.getVideoTracks().forEach(function(track) {
+            videoStream.addTrack(track);
+        });
+
+        canvas.stream = videoStream;
+
+        return videoStream;
+    }
+
+    function getMixedAudioStream() {
+        // via: @pehrsons
+        if (!Storage.AudioContextConstructor) {
+            Storage.AudioContextConstructor = new Storage.AudioContext();
+        }
+
+        self.audioContext = Storage.AudioContextConstructor;
+
+        self.audioSources = [];
+
+        if (self.useGainNode === true) {
+            self.gainNode = self.audioContext.createGain();
+            self.gainNode.connect(self.audioContext.destination);
+            self.gainNode.gain.value = 0; // don't hear self
+        }
+
+        var audioTracksLength = 0;
+        arrayOfMediaStreams.forEach(function(stream) {
+            if (!stream.getAudioTracks().length) {
+                return;
+            }
+
+            audioTracksLength++;
+
+            var audioSource = self.audioContext.createMediaStreamSource(stream);
+
+            if (self.useGainNode === true) {
+                audioSource.connect(self.gainNode);
+            }
+
+            self.audioSources.push(audioSource);
+        });
+
+        if (!audioTracksLength) {
+            return;
+        }
+
+        self.audioDestination = self.audioContext.createMediaStreamDestination();
+        self.audioSources.forEach(function(audioSource) {
+            audioSource.connect(self.audioDestination);
+        });
+        return self.audioDestination.stream;
+    }
+
+    function getVideo(stream) {
+        var video = document.createElement('video');
+
+        if ('srcObject' in video) {
+            video.srcObject = stream;
+        } else {
+            video.src = URL.createObjectURL(stream);
+        }
+
+        video.muted = true;
+        video.volume = 0;
+
+        video.width = stream.width || self.width || 360;
+        video.height = stream.height || self.height || 240;
+
+        video.play();
+
+        return video;
+    }
+
+    this.appendStreams = function(streams) {
+        if (!streams) {
+            throw 'First parameter is required.';
+        }
+
+        if (!(streams instanceof Array)) {
+            streams = [streams];
+        }
+
+        arrayOfMediaStreams.concat(streams);
+
+        streams.forEach(function(stream) {
+            if (stream.getVideoTracks().length) {
+                var video = getVideo(stream);
+                video.stream = stream;
+                videos.push(video);
+            }
+
+            if (stream.getAudioTracks().length && self.audioContext) {
+                var audioSource = self.audioContext.createMediaStreamSource(stream);
+                audioSource.connect(self.audioDestination);
+                self.audioSources.push(audioSource);
+            }
+        });
+    };
+
+    this.releaseStreams = function() {
+        videos = [];
+        isStopDrawingFrames = true;
+
+        if (self.gainNode) {
+            self.gainNode.disconnect();
+            self.gainNode = null;
+        }
+
+        if (self.audioSources.length) {
+            self.audioSources.forEach(function(source) {
+                source.disconnect();
+            });
+            self.audioSources = [];
+        }
+
+        if (self.audioDestination) {
+            self.audioDestination.disconnect();
+            self.audioDestination = null;
+        }
+
+        self.audioContext = null;
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (canvas.stream) {
+            canvas.stream.stop();
+            canvas.stream = null;
+        }
+    };
+
+    this.resetVideoStreams = function(streams) {
+        if (streams && !(streams instanceof Array)) {
+            streams = [streams];
+        }
+
+        resetVideoStreams(streams);
+    };
+
+    function resetVideoStreams(streams) {
+        videos = [];
+        streams = streams || arrayOfMediaStreams;
+
+        // via: @adrian-ber
+        streams.forEach(function(stream) {
+            if (!stream.getVideoTracks().length) {
+                return;
+            }
+
+            var video = getVideo(stream);
+            video.stream = stream;
+            videos.push(video);
+        });
+    }
+
+    // for debugging
+    this.name = 'MultiStreamsMixer';
+    this.toString = function() {
+        return this.name;
+    };
+
+    this.getMixedStream = getMixedStream;
+
+}
+
+// ______________________
+// MultiStreamRecorder.js
+
+/*
+ * Video conference recording, using captureStream API along with WebAudio and Canvas2D API.
+ */
+
+/**
+ * MultiStreamRecorder can record multiple videos in single container.
+ * @summary Multi-videos recorder.
+ * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
+ * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @typedef MultiStreamRecorder
+ * @class
+ * @example
+ * var options = {
+ *     mimeType: 'video/webm'
+ * }
+ * var recorder = new MultiStreamRecorder(ArrayOfMediaStreams, options);
+ * recorder.record();
+ * recorder.stop(function(blob) {
+ *     video.src = URL.createObjectURL(blob);
+ *
+ *     // or
+ *     var blob = recorder.blob;
+ * });
+ * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
+ * @param {MediaStreams} mediaStreams - Array of MediaStreams.
+ * @param {object} config - {disableLogs:true, frameInterval: 1, mimeType: "video/webm"}
+ */
+
+function MultiStreamRecorder(arrayOfMediaStreams, options) {
+    arrayOfMediaStreams = arrayOfMediaStreams || [];
+    var self = this;
+
+    var mixer;
+    var mediaRecorder;
+
+    options = options || {
+        mimeType: 'video/webm',
+        video: {
+            width: 360,
+            height: 240
+        }
+    };
+
+    if (!options.frameInterval) {
+        options.frameInterval = 10;
+    }
+
+    if (!options.video) {
+        options.video = {};
+    }
+
+    if (!options.video.width) {
+        options.video.width = 360;
+    }
+
+    if (!options.video.height) {
+        options.video.height = 240;
+    }
+
+    /**
+     * This method records all MediaStreams.
+     * @method
+     * @memberof MultiStreamRecorder
+     * @example
+     * recorder.record();
+     */
+    this.record = function() {
+        // github/muaz-khan/MultiStreamsMixer
+        mixer = new MultiStreamsMixer(arrayOfMediaStreams);
+
+        if (getVideoTracks().length) {
+            mixer.frameInterval = options.frameInterval || 10;
+            mixer.width = options.video.width || 360;
+            mixer.height = options.video.height || 240;
+            mixer.startDrawingFrames();
+        }
+
+        if (options.previewStream && typeof options.previewStream === 'function') {
+            options.previewStream(mixer.getMixedStream());
+        }
+
+        // record using MediaRecorder API
+        mediaRecorder = new MediaStreamRecorder(mixer.getMixedStream(), options);
+        mediaRecorder.record();
+    };
+
+    function getVideoTracks() {
+        var tracks = [];
+        arrayOfMediaStreams.forEach(function(stream) {
+            stream.getVideoTracks().forEach(function(track) {
+                tracks.push(track);
+            });
+        });
+        return tracks;
+    }
+
+    /**
+     * This method stops recording MediaStream.
+     * @param {function} callback - Callback function, that is used to pass recorded blob back to the callee.
+     * @method
+     * @memberof MultiStreamRecorder
+     * @example
+     * recorder.stop(function(blob) {
+     *     video.src = URL.createObjectURL(blob);
+     * });
+     */
+    this.stop = function(callback) {
+        if (!mediaRecorder) {
+            return;
+        }
+
+        mediaRecorder.stop(function(blob) {
+            self.blob = blob;
+
+            callback(blob);
+
+            self.clearRecordedData();
+        });
+    };
 
     /**
      * This method pauses the recording process.
@@ -4795,39 +5035,14 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      * recorder.clearRecordedData();
      */
     this.clearRecordedData = function() {
-        videos = [];
-        isStoppedRecording = true;
-
         if (mediaRecorder) {
             mediaRecorder.clearRecordedData();
+            mediaRecorder = null;
         }
 
-        mediaRecorder = null;
-
-        if (self.gainNode) {
-            self.gainNode.disconnect();
-            self.gainNode = null;
-        }
-
-        if (self.audioSources.length) {
-            self.audioSources.forEach(function(source) {
-                source.disconnect();
-            });
-            self.audioSources = [];
-        }
-
-        if (self.audioDestination) {
-            self.audioDestination.disconnect();
-            self.audioDestination = null;
-        }
-
-        self.audioContext = null;
-
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (canvas.stream) {
-            canvas.stream.stop();
-            canvas.stream = null;
+        if (mixer) {
+            mixer.releaseStreams();
+            mixer = null;
         }
     };
 
@@ -4850,25 +5065,11 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
 
         arrayOfMediaStreams.concat(streams);
 
-        if (!mediaRecorder) {
+        if (!mediaRecorder || !mixer) {
             return;
         }
 
-        streams.forEach(function(stream) {
-            if (stream.getVideoTracks().length) {
-                var video = getVideo(stream);
-                video.width = options.video.width;
-                video.height = options.video.height;
-                video.stream = stream;
-                videos.push(video);
-            }
-
-            if (stream.getAudioTracks().length && self.audioContext) {
-                var audioSource = self.audioContext.createMediaStreamSource(stream);
-                audioSource.connect(self.audioDestination);
-                self.audioSources.push(audioSource);
-            }
-        });
+        mixer.appendStreams(streams);
     };
 
     /**
@@ -4880,11 +5081,15 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      * recorder.resetVideoStreams([newVideo1, newVideo2]);
      */
     this.resetVideoStreams = function(streams) {
+        if (!mixer) {
+            return;
+        }
+
         if (streams && !(streams instanceof Array)) {
             streams = [streams];
         }
 
-        resetVideoStreams(streams);
+        mixer.resetVideoStreams(streams);
     };
 
     // for debugging

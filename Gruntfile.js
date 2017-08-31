@@ -49,6 +49,7 @@ module.exports = function(grunt) {
                     'dev/Whammy.js',
                     'dev/DiskStorage.js',
                     'dev/GifRecorder.js',
+                    'dev/MultiStreamsMixer.js', // github/muaz-khan/MultiStreamsMixer
                     'dev/MultiStreamRecorder.js',
                     'dev/RecordRTC.promises.js'
                 ],

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-08-31 3:15:07 AM UTC
+// Last time updated: 2017-09-20 11:15:42 AM UTC
 
 // ________________
 // RecordRTC v5.4.3
@@ -1613,7 +1613,7 @@ if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undef
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
 var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
-var isChrome = !isOpera && !isEdge && !!navigator.webkitGetUserMedia;
+var isChrome = (!isOpera && !isEdge && !!navigator.webkitGetUserMedia) || isElectron();
 
 var MediaStream = window.MediaStream;
 
@@ -1736,6 +1736,28 @@ function invokeSaveAsDialog(file, fileName) {
     URL.revokeObjectURL(hyperlink.href);
 }
 
+/**
+ * from: https://github.com/cheton/is-electron/blob/master/index.js
+ **/
+function isElectron() {
+    // Renderer process
+    if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') {
+        return true;
+    }
+
+    // Main process
+    if (typeof process !== 'undefined' && typeof process.versions === 'object' && !!process.versions.electron) {
+        return true;
+    }
+
+    // Detect the user agent when the `nodeIntegration` option is set to true
+    if (typeof navigator === 'object' && typeof navigator.userAgent === 'string' && navigator.userAgent.indexOf('Electron') >= 0) {
+        return true;
+    }
+
+    return false;
+}
+
 // __________ (used to handle stuff like http://goo.gl/xmE5eg) issue #129
 // Storage.js
 
@@ -1763,7 +1785,7 @@ if (typeof RecordRTC !== 'undefined') {
 
 function isMediaRecorderCompatible() {
     var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-    var isChrome = !!window.chrome && !isOpera;
+    var isChrome = (!!window.chrome && !isOpera) || isElectron();
     var isFirefox = typeof window.InstallTrigger !== 'undefined';
 
     if (isFirefox) {

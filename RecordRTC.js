@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-08-31 3:15:07 AM UTC
+// Last time updated: 2017-09-20 11:19:15 AM UTC
 
 // ________________
 // RecordRTC v5.4.3
@@ -1613,7 +1613,7 @@ if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undef
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
 var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
-var isChrome = !isOpera && !isEdge && !!navigator.webkitGetUserMedia;
+var isChrome = (!isOpera && !isEdge && !!navigator.webkitGetUserMedia) || isElectron();
 
 var MediaStream = window.MediaStream;
 
@@ -1736,6 +1736,28 @@ function invokeSaveAsDialog(file, fileName) {
     URL.revokeObjectURL(hyperlink.href);
 }
 
+/**
+ * from: https://github.com/cheton/is-electron/blob/master/index.js
+ **/
+function isElectron() {
+    // Renderer process
+    if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') {
+        return true;
+    }
+
+    // Main process
+    if (typeof process !== 'undefined' && typeof process.versions === 'object' && !!process.versions.electron) {
+        return true;
+    }
+
+    // Detect the user agent when the `nodeIntegration` option is set to true
+    if (typeof navigator === 'object' && typeof navigator.userAgent === 'string' && navigator.userAgent.indexOf('Electron') >= 0) {
+        return true;
+    }
+
+    return false;
+}
+
 // __________ (used to handle stuff like http://goo.gl/xmE5eg) issue #129
 // Storage.js
 
@@ -1763,7 +1785,7 @@ if (typeof RecordRTC !== 'undefined') {
 
 function isMediaRecorderCompatible() {
     var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-    var isChrome = !!window.chrome && !isOpera;
+    var isChrome = (!!window.chrome && !isOpera) || isElectron();
     var isFirefox = typeof window.InstallTrigger !== 'undefined';
 
     if (isFirefox) {
@@ -4458,10 +4480,10 @@ if (typeof RecordRTC !== 'undefined') {
     RecordRTC.GifRecorder = GifRecorder;
 }
 
-// Last time updated: 2017-08-31 2:56:12 AM UTC
+// Last time updated: 2017-09-20 11:19:01 AM UTC
 
 // ________________________
-// MultiStreamsMixer v1.0.2
+// MultiStreamsMixer v1.0.3
 
 // Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
@@ -4615,7 +4637,21 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
             canvas.height = fullcanvas.stream.height;
         } else if (remaining.length) {
             canvas.width = videosLength > 1 ? remaining[0].width * 2 : remaining[0].width;
-            canvas.height = videosLength > 2 ? remaining[0].height * 2 : remaining[0].height;
+
+            var height = 1;
+            if (videosLength === 3 || videosLength === 4) {
+                height = 2;
+            }
+            if (videosLength === 5 || videosLength === 6) {
+                height = 3;
+            }
+            if (videosLength === 7 || videosLength === 8) {
+                height = 4;
+            }
+            if (videosLength === 9 || videosLength === 10) {
+                height = 5;
+            }
+            canvas.height = remaining[0].height * height;
         } else {
             canvas.width = self.width || 360;
             canvas.height = self.height || 240;
@@ -4653,6 +4689,24 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
         if (idx === 3) {
             x = video.width;
             y = video.height;
+        }
+
+        if (idx === 4) {
+            y = video.height * 2;
+        }
+
+        if (idx === 5) {
+            x = video.width;
+            y = video.height * 2;
+        }
+
+        if (idx === 6) {
+            y = video.height * 3;
+        }
+
+        if (idx === 7) {
+            x = video.width;
+            y = video.height * 3;
         }
 
         if (typeof video.stream.left !== 'undefined') {

@@ -16,7 +16,7 @@
 // RecordRTC.js
 
 /**
- * {@link https://github.com/muaz-khan/RecordRTC|RecordRTC} is a WebRTC JavaScript library for audio/video as well as screen activity recording. It supports Chrome, Firefox, Opera, Android, and Microsoft Edge. Platforms: Linux, Mac and Windows. 
+ * {@link https://github.com/muaz-khan/RecordRTC|RecordRTC} is a WebRTC JavaScript library for audio/video as well as screen activity recording. It supports Chrome, Firefox, Opera, Android, and Microsoft Edge. Platforms: Linux, Mac and Windows.
  * @summary Record audio, video or screen inside the browser.
  * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
  * @author {@link http://www.MuazKhan.com|Muaz Khan}
@@ -381,7 +381,7 @@ function RecordRTC(mediaStream, config) {
          *    var blob = this.getBlob();
          *    video.src = this.toURL();
          * });
-         * 
+         *
          * // or otherwise
          * recorder.setRecordingDuration(fiveMinutes).onRecordingStopped(function() {
          *    var blob = this.getBlob();
@@ -2234,8 +2234,8 @@ function MediaStreamRecorder(mediaStream, config) {
         return allStates;
     };
 
-    // if any Track within the MediaStream is muted or not enabled at any time, 
-    // the browser will only record black frames 
+    // if any Track within the MediaStream is muted or not enabled at any time,
+    // the browser will only record black frames
     // or silence since that is the content produced by the Track
     // so we need to stopRecording as soon as any single track ends.
     if (typeof config.checkForInactiveTracks === 'undefined') {
@@ -2342,8 +2342,8 @@ function StereoAudioRecorder(mediaStream, config) {
         console.log('StereoAudioRecorder is set to record number of channels: ', numberOfAudioChannels);
     }
 
-    // if any Track within the MediaStream is muted or not enabled at any time, 
-    // the browser will only record black frames 
+    // if any Track within the MediaStream is muted or not enabled at any time,
+    // the browser will only record black frames
     // or silence since that is the content produced by the Track
     // so we need to stopRecording as soon as any single track ends.
     if (typeof config.checkForInactiveTracks === 'undefined') {
@@ -2509,20 +2509,20 @@ function StereoAudioRecorder(mediaStream, config) {
 
             var view = new DataView(buffer);
 
-            // RIFF chunk descriptor/identifier 
+            // RIFF chunk descriptor/identifier
             writeUTFBytes(view, 0, 'RIFF');
 
             // RIFF chunk length
             view.setUint32(4, 44 + interleavedLength * 2, true);
 
-            // RIFF type 
+            // RIFF type
             writeUTFBytes(view, 8, 'WAVE');
 
-            // format chunk identifier 
+            // format chunk identifier
             // FMT sub-chunk
             writeUTFBytes(view, 12, 'fmt ');
 
-            // format chunk length 
+            // format chunk length
             view.setUint32(16, 16, true);
 
             // sample format (raw)
@@ -2531,23 +2531,23 @@ function StereoAudioRecorder(mediaStream, config) {
             // stereo (2 channels)
             view.setUint16(22, numberOfAudioChannels, true);
 
-            // sample rate 
+            // sample rate
             view.setUint32(24, sampleRate, true);
 
             // byte rate (sample rate * block align)
             view.setUint32(28, sampleRate * 2, true);
 
-            // block align (channel count * bytes per sample) 
+            // block align (channel count * bytes per sample)
             view.setUint16(32, numberOfAudioChannels * 2, true);
 
-            // bits per sample 
+            // bits per sample
             view.setUint16(34, 16, true);
 
             // data sub-chunk
-            // data chunk identifier 
+            // data chunk identifier
             writeUTFBytes(view, 36, 'data');
 
-            // data chunk length 
+            // data chunk length
             view.setUint32(40, interleavedLength * 2, true);
 
             // write the PCM samples
@@ -2992,7 +2992,7 @@ function CanvasRecorder(htmlElement, config) {
                 throw 'captureStream API are NOT available.';
             }
 
-            // Note: Jan 18, 2016 status is that, 
+            // Note: Jan 18, 2016 status is that,
             // Firefox MediaRecorder API can't record CanvasCaptureMediaStream object.
             mediaStreamRecorder = new MediaStreamRecorder(canvasMediaStream, {
                 mimeType: 'video/webm'
@@ -4270,27 +4270,27 @@ function GifRecorder(mediaStream, config) {
         // external library to record as GIF images
         gifEncoder = new GIFEncoder();
 
-        // void setRepeat(int iter) 
-        // Sets the number of times the set of GIF frames should be played. 
+        // void setRepeat(int iter)
+        // Sets the number of times the set of GIF frames should be played.
         // Default is 1; 0 means play indefinitely.
         gifEncoder.setRepeat(0);
 
-        // void setFrameRate(Number fps) 
-        // Sets frame rate in frames per second. 
+        // void setFrameRate(Number fps)
+        // Sets frame rate in frames per second.
         // Equivalent to setDelay(1000/fps).
         // Using "setDelay" instead of "setFrameRate"
         gifEncoder.setDelay(config.frameRate || 200);
 
-        // void setQuality(int quality) 
-        // Sets quality of color quantization (conversion of images to the 
-        // maximum 256 colors allowed by the GIF specification). 
-        // Lower values (minimum = 1) produce better colors, 
-        // but slow processing significantly. 10 is the default, 
-        // and produces good color mapping at reasonable speeds. 
+        // void setQuality(int quality)
+        // Sets quality of color quantization (conversion of images to the
+        // maximum 256 colors allowed by the GIF specification).
+        // Lower values (minimum = 1) produce better colors,
+        // but slow processing significantly. 10 is the default,
+        // and produces good color mapping at reasonable speeds.
         // Values greater than 20 do not yield significant improvements in speed.
         gifEncoder.setQuality(config.quality || 10);
 
-        // Boolean start() 
+        // Boolean start()
         // This writes the GIF Header and returns false if it fails.
         gifEncoder.start();
 

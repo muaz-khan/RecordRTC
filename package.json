@@ -37,6 +37,7 @@
   "_id": "recordrtc@",
   "_from": "recordrtc@",
   "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
     "grunt": "0.4.5",
     "grunt-bump": "0.7.0",
     "grunt-cli": "0.1.13",

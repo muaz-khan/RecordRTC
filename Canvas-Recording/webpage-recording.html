@@ -228,8 +228,6 @@ window.onbeforeunload = function() {
     document.getElementById('stop').disabled = true;
 };
 
-webrtcUtils.enableLogs = false;
-
 var videoElement = document.querySelector('#camera');
 function playVideo(callback) {
     function successCallback(stream) {

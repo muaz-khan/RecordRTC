@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
+        <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+        <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
         <style>
             video {
               max-width: 100%;
@@ -27,7 +28,7 @@
 
                 // preview camera during recording
                 document.getElementById('your-video-id').muted = true;
-                document.getElementById('your-video-id').srcObject = camera;
+                setSrcObject(camera, document.getElementById('your-video-id'));
 
                 // recording configuration/hints/parameters
                 var recordingHints = {
@@ -76,7 +77,7 @@
                         });
 
                         // release camera
-                        document.getElementById('your-video-id').srcObject = null;
+                        document.getElementById('your-video-id').srcObject = document.getElementById('your-video-id').src = null;
                         camera.getTracks().forEach(function(track) {
                             track.stop();
                         });

@@ -321,6 +321,7 @@ var recordRTC = RecordRTC(stream, options);
 * `mimeType` accepts [all these values](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/mimeType)
 * `recorderType` accepts `MediaStreamRecorder` or `StereoAudioRecorder` or `WhammyRecorder` or `GifRecorder` or any recorder type from [this page](https://github.com/muaz-khan/RecordRTC/tree/master/dev)
 * `timeSlice` accepts numbers in milliseconds; use this to force intervals-based blobs
+* `ondataavailable` pass this function along with `timeSlice` to get intervals based blobs
 * `checkForInactiveTracks` accepts `true` or `false`; use this to disable default inactive-stream-checker functions
 * `onTimeStamp` it is a function that is called-back by the MediaStreamRecorder; `timeSlice` parameter is required for this function
 * `bitsPerSecond` accepts numbers in bits; applies both to audio and video tracks

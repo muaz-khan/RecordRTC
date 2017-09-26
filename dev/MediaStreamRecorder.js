@@ -16,6 +16,7 @@
  *     bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
  *     checkForInactiveTracks: true,
  *     timeSlice: 1000, // concatenate intervals based blobs
+ *     ondataavailable: function() {}, // get intervals based blobs
  *     ignoreMutedMedia: true
  * }
  * var recorder = new MediaStreamRecorder(mediaStream, config);
@@ -157,6 +158,14 @@ function MediaStreamRecorder(mediaStream, config) {
                 if (e.data && e.data.size && e.data.size > 100) {
                     arrayOfBlobs.push(e.data);
                     updateTimeStamp();
+
+                    if (typeof config.ondataavailable === 'function') {
+                        // intervals based blobs
+                        var blob = config.getNativeBlob ? e.data : new Blob([e.data], {
+                            type: mediaRecorder.mimeType || recorderHints.mimeType || 'video/webm'
+                        });
+                        config.ondataavailable(blob);
+                    }
                 }
                 return;
             }

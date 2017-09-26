@@ -61,8 +61,7 @@
     <script src="https://cdn.webrtc-experiment.com/gif-recorder.js"></script>
     <script src="https://cdn.webrtc-experiment.com/getMediaElement.js"></script>
 
-    <!-- for Edige/FF/Chrome/Opera/etc. getUserMedia support -->
-    <script src="https://cdn.webrtc-experiment.com/gumadapter.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 </head>
 
 <body>
@@ -205,11 +204,7 @@
             }, function(stream) {
                 var video = document.createElement('video');
 
-                if (webrtcDetectedBrowser === 'edge') {
-                    video.srcObject = stream;
-                } else {
-                    video.src = URL.createObjectURL(stream);
-                }
+                setSrcObject(stream, video);
 
                 video.play();
                 var mediaElement = getMediaElement(video, {

@@ -1,4 +1,4 @@
-// Last time updated: 2017-09-20 11:19:01 AM UTC
+// Last time updated: 2017-09-26 7:19:00 AM UTC
 
 // ________________________
 // MultiStreamsMixer v1.0.3
@@ -123,6 +123,23 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
         Storage.AudioContext = AudioContext;
     } else if (typeof webkitAudioContext !== 'undefined') {
         Storage.AudioContext = webkitAudioContext;
+    }
+
+    function setSrcObject(stream, element, ignoreCreateObjectURL) {
+        if ('createObjectURL' in URL && !ignoreCreateObjectURL) {
+            try {
+                element.src = URL.createObjectURL(stream);
+            } catch (e) {
+                setSrcObject(stream, element, true);
+                return;
+            }
+        } else if ('srcObject' in element) {
+            element.srcObject = stream;
+        } else if ('mozSrcObject' in element) {
+            element.mozSrcObject = stream;
+        } else {
+            alert('createObjectURL/srcObject both are not supported.');
+        }
     }
 
     this.startDrawingFrames = function() {
@@ -342,11 +359,7 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
     function getVideo(stream) {
         var video = document.createElement('video');
 
-        if ('srcObject' in video) {
-            video.srcObject = stream;
-        } else {
-            video.src = URL.createObjectURL(stream);
-        }
+        setSrcObject(stream, video);
 
         video.muted = true;
         video.volume = 0;

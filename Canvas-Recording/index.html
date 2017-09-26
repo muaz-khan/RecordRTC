@@ -1,4 +1,4 @@
-<script>window.demoVersion = '2017.09.05';</script>
+<script>window.demoVersion = '2017.09.26';</script>
 
 <!--
 > Muaz Khan     - www.MuazKhan.com
@@ -109,7 +109,7 @@
 
         <section style="margin: 20px; text-align: center; color: red;">
             <small id="demoVersion"></small>
-            <script>var date=new Date(window.demoVersion),month=date.toLocaleString("en-us",{month:"long"}),day=date.getUTCDate();day.toString().length<=9&&(day="0"+day);var year=date.getUTCFullYear();document.getElementById("demoVersion").innerHTML="Last Updated On: <time>"+month+" "+day+" "+year+"</time>";</script>
+            <script>var date=new Date(window.demoVersion),month=date.toLocaleString("en-us",{month:"long"}),day=date.getUTCDate();day.toString().length<=9&&(day=day.toString().length == 1 ? "0"+day : day);var year=date.getUTCFullYear(); document.getElementById("demoVersion").innerHTML="Last Updated On: <time>"+month+" "+day+" "+year+"</time>";</script>
         </section>
 
         <div class="github-stargazers"></div>
@@ -122,37 +122,37 @@
             <tbody>
                 <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">WebPage+Canvas Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/webpage-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
+                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="webpage-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/webpage-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
                 </tr>
 
                 <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">HTML5 Canvas Dashboard + 2D Animation Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/record-canvas-drawings.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
+                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="record-canvas-drawings.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/record-canvas-drawings.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
                 </tr>
 
                 <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">HTML5 2D Animation Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/Canvas-Animation-Recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
+                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="Canvas-Animation-Recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/Canvas-Animation-Recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
                 </tr>
 
                 <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">HTML5 2D Animation + Microphone Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/Canvas-Animation-Recording-Plus-Microphone.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
+                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="Canvas-Animation-Recording-Plus-Microphone.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/Canvas-Animation-Recording-Plus-Microphone.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
                 </tr>
 
                 <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">HTML5 2D Animation + Mp3 Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/Canvas-Animation-Recording-Plus-Mp3.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
+                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="Canvas-Animation-Recording-Plus-Mp3.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/Canvas-Animation-Recording-Plus-Mp3.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
                 </tr>
                 
                 <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">HTML5 2D Animation + Microphone + Mp3 Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/Canvas-Animation-Recording-Plus-Microphone-Plus-Mp3.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
+                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="Canvas-Animation-Recording-Plus-Microphone-Plus-Mp3.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
                     <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/Canvas-Animation-Recording-Plus-Microphone-Plus-Mp3.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
                 </tr>
 

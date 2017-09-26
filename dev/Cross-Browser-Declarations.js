@@ -231,3 +231,20 @@ function isElectron() {
 
     return false;
 }
+
+function setSrcObject(stream, element, ignoreCreateObjectURL) {
+    if ('createObjectURL' in URL && !ignoreCreateObjectURL) {
+        try {
+            element.src = URL.createObjectURL(stream);
+        } catch (e) {
+            setSrcObject(stream, element, true);
+            return;
+        }
+    } else if ('srcObject' in element) {
+        element.srcObject = stream;
+    } else if ('mozSrcObject' in element) {
+        element.mozSrcObject = stream;
+    } else {
+        alert('createObjectURL/srcObject both are not supported.');
+    }
+}

@@ -40,7 +40,7 @@ function GifRecorder(mediaStream, config) {
                 config.width = video.offsetWidth || 320;
             }
 
-            if (!this.height) {
+            if (!config.height) {
                 config.height = video.offsetHeight || 240;
             }
 
@@ -237,11 +237,7 @@ function GifRecorder(mediaStream, config) {
         video.muted = true;
         video.autoplay = true;
 
-        if (typeof video.srcObject !== 'undefined') {
-            video.srcObject = mediaStream;
-        } else {
-            video.src = URL.createObjectURL(mediaStream);
-        }
+        setSrcObject(mediaStream, video);
 
         video.play();
     }

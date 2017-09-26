@@ -1,5 +1,5 @@
 <style>
-    html, body, video, canvas {
+    html, body {
         margin: 0!important;
         padding: 0!important;
         overflow: hidden!important;
@@ -7,8 +7,8 @@
     }
 </style>
 
-<title>Preview Blob during Live Recording | RecordRTC</title>
-<h1>Preview Blob during Live Recording</h1>
+<title>ondataavailable | get Intervals based blobs usign RecordRTC | RecordRTC</title>
+<h1>ondataavailable | get Intervals based blobs usign RecordRTC</h1>
 
 <br>
 
@@ -34,15 +34,20 @@ function captureCamera(callback) {
 }
 
 function stopRecordingCallback() {
-    var blob = recorder.getBlob();
+    video.src = video.srcObject = null;
+    var blob = new File(blobs, 'video.webm', {
+        type: 'video/webm'
+    });
     video.src = URL.createObjectURL(blob);
     video.play();
-
     recorder.camera.stop();
     recorder = null;
 }
 
 var recorder; // globally accessible
+
+var h1 = document.querySelector('h1');
+var blobs = [];
 
 document.getElementById('btn-start-recording').onclick = function() {
     this.disabled = true;
@@ -53,25 +58,19 @@ document.getElementById('btn-start-recording').onclick = function() {
         recorder = RecordRTC(camera, {
             recorderType: MediaStreamRecorder,
             mimeType: 'video/webm',
-            timeSlice: 1000 // pass this parameter
-        });
+            timeSlice: 1000, // pass this parameter
+            // getNativeBlob: true,
+            ondataavailable: function(blob) {
+                blobs.push(blob);
 
-        (function looper() {
-            if(!recorder) {
-                return;
-            }
-
-            var internal = recorder.getInternalRecorder();
-            if(internal && internal.getArrayOfBlobs) {
-                var blob = new Blob(internal.getArrayOfBlobs(), {
-                    type: 'video/webm'
+                var size = 0;
+                blobs.forEach(function(b) {
+                    size += b.size;
                 });
 
-                document.querySelector('h1').innerHTML = 'Recording length: ' + bytesToSize(blob.size);
+                h1.innerHTML = 'Total blobs: ' + blobs.length + ' (Total size: ' + bytesToSize(size) + ')';
             }
-
-            setTimeout(looper, 1000);
-        })();
+        });
 
         recorder.startRecording();
 

@@ -230,8 +230,8 @@ bower install recordrtc
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.4.2 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.2/RecordRTC.js"></script>
+<!-- use 5.4.3 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.3/RecordRTC.js"></script>
 ```
 
 ## How to capture stream?

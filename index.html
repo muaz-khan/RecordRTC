@@ -1,4 +1,4 @@
-<script>window.demoVersion = '2017.09.05';</script>
+<script>window.demoVersion = '2017.09.30';</script>
 
 <!--
 > Muaz Khan     - www.MuazKhan.com
@@ -79,7 +79,6 @@
     </style>
 
     <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
-    <script src="https://cdn.webrtc-experiment.com/gif-recorder.js"></script>
 
     <!-- for Edge/FF/Chrome/Opera/etc. getUserMedia support -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
@@ -345,6 +344,18 @@
                         }
                         else {
                             button.recordRTC.stopRecording(function(url) {
+                                if(button.blobs && button.blobs.length) {
+                                    var blob = new File(button.blobs, getFileName(fileExtension), {
+                                        type: mimeType
+                                    });
+                                    
+                                    button.recordRTC.getBlob = function() {
+                                        return blob;
+                                    };
+
+                                    url = URL.createObjectURL(blob);
+                                }
+
                                 button.recordingEndedCallback(url);
                                 saveToDiskOrOpenNewTab(button.recordRTC);
                                 stopStream();
@@ -601,8 +612,12 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        if(timeSlice) {
+                        if(timeSlice && typeof MediaRecorder !== 'undefined') {
                             options.timeSlice = timeSlice;
+                            button.blobs = [];
+                            options.ondataavailable = function(blob) {
+                                button.blobs.push(blob);
+                            };
                         }
 
                         options.ignoreMutedMedia = false;
@@ -1846,6 +1861,10 @@
         <script>
             var chkTimeSlice = document.querySelector('#chk-timeSlice');
             var timeSlice = false;
+
+            if(typeof MediaRecorder === 'undefined') {
+                chkTimeSlice.disabled = true;
+            }
 
             chkTimeSlice.addEventListener('change', function() {
                 if(chkTimeSlice.checked === true) {

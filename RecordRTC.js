@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2017-09-30 3:12:20 PM UTC
+// Last time updated: 2017-10-01 2:53:36 PM UTC
 
 // ________________
-// RecordRTC v5.4.4
+// RecordRTC v5.4.5
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -880,6 +880,14 @@ RecordRTC.writeToDisk = function(options) {
  */
 
 function RecordRTCConfiguration(mediaStream, config) {
+    if (!config.recorderType && !config.type) {
+        if (!!config.audio && !!config.video) {
+            config.type = 'video';
+        } else if (!!config.audio && !config.video) {
+            config.type = 'audio';
+        }
+    }
+
     if (config.recorderType && !config.type) {
         if (config.recorderType === WhammyRecorder || config.recorderType === CanvasRecorder) {
             config.type = 'video';
@@ -4404,6 +4412,11 @@ function GifRecorder(mediaStream, config) {
             return;
         }
 
+        if (!isLoadedMetaData) {
+            setTimeout(self.record, 1000);
+            return;
+        }
+
         if (!isHTMLObject) {
             if (!config.width) {
                 config.width = video.offsetWidth || 320;
@@ -4460,6 +4473,10 @@ function GifRecorder(mediaStream, config) {
         // Boolean start() 
         // This writes the GIF Header and returns false if it fails.
         gifEncoder.start();
+
+        if (typeof config.onGifRecordingStarted === 'function') {
+            config.onGifRecordingStarted();
+        }
 
         startTime = Date.now();
 
@@ -4608,10 +4625,17 @@ function GifRecorder(mediaStream, config) {
         }
     }
 
+    var isLoadedMetaData = true;
+
     if (!isHTMLObject) {
         var video = document.createElement('video');
         video.muted = true;
         video.autoplay = true;
+
+        isLoadedMetaData = false;
+        video.onloadedmetadata = function() {
+            isLoadedMetaData = true;
+        };
 
         setSrcObject(mediaStream, video);
 

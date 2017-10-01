@@ -7,8 +7,8 @@
     }
 </style>
 
-<title>ondataavailable | get Intervals based blobs using RecordRTC | RecordRTC</title>
-<h1>ondataavailable | get Intervals based blobs using RecordRTC</h1>
+<title>Gif Recording | RecordRTC</title>
+<h1>Simple Gif Recording using RecordRTC</h1>
 
 <br>
 
@@ -16,15 +16,16 @@
 <button id="btn-stop-recording" disabled>Stop Recording</button>
 
 <hr>
-<video controls autoplay></video>
+<img>
 
 <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="https://cdn.webrtc-experiment.com/gif-recorder.js"></script>
 <script>
-var video = document.querySelector('video');
+var image = document.querySelector('img');
 
 function captureCamera(callback) {
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function(camera) {
+    navigator.mediaDevices.getUserMedia({ video: true }).then(function(camera) {
         callback(camera);
     }).catch(function(error) {
         alert('Unable to capture your camera. Please check console logs.');
@@ -33,41 +34,30 @@ function captureCamera(callback) {
 }
 
 function stopRecordingCallback() {
-    video.src = video.srcObject = null;
-    var blob = new File(blobs, 'video.webm', {
-        type: 'video/webm'
-    });
-    video.src = URL.createObjectURL(blob);
-    video.play();
+    document.querySelector('h1').innerHTML = 'Gif recording stopped: ' + bytesToSize(recorder.getBlob().size);
+    image.src = URL.createObjectURL(recorder.getBlob());
     recorder.camera.stop();
+    recorder.destroy();
     recorder = null;
 }
 
 var recorder; // globally accessible
 
-var h1 = document.querySelector('h1');
-var blobs = [];
-
 document.getElementById('btn-start-recording').onclick = function() {
     this.disabled = true;
     captureCamera(function(camera) {
-        setSrcObject(camera, video);
-        video.play();
-
+        document.querySelector('h1').innerHTML = 'Waiting for Gif Recorder to start...';
         recorder = RecordRTC(camera, {
-            recorderType: MediaStreamRecorder,
-            mimeType: 'video/webm',
-            timeSlice: 1000, // pass this parameter
-            // getNativeBlob: true,
-            ondataavailable: function(blob) {
-                blobs.push(blob);
-
-                var size = 0;
-                blobs.forEach(function(b) {
-                    size += b.size;
-                });
-
-                h1.innerHTML = 'Total blobs: ' + blobs.length + ' (Total size: ' + bytesToSize(size) + ')';
+            type: 'gif',
+            frameRate: 1,
+            quality: 10,
+            width: 360,
+            hidden: 240,
+            onGifRecordingStarted: function() {
+                document.querySelector('h1').innerHTML = 'Gif recording started.';
+            },
+            onGifPreview: function(gifURL) {
+                image.src = gifURL;
             }
         });
 

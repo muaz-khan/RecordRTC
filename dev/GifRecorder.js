@@ -8,7 +8,7 @@
  * @typedef GifRecorder
  * @class
  * @example
- * var recorder = new GifRecorder(mediaStream || canvas || context, { width: 1280, height: 720, frameRate: 200, quality: 10 });
+ * var recorder = new GifRecorder(mediaStream || canvas || context, { onGifPreview: function, onGifRecordingStarted: function, width: 1280, height: 720, frameRate: 200, quality: 10 });
  * recorder.record();
  * recorder.stop(function(blob) {
  *     img.src = URL.createObjectURL(blob);
@@ -38,6 +38,11 @@ function GifRecorder(mediaStream, config) {
      */
     this.record = function() {
         if (typeof GIFEncoder === 'undefined') {
+            setTimeout(self.record, 1000);
+            return;
+        }
+
+        if (!isLoadedMetaData) {
             setTimeout(self.record, 1000);
             return;
         }
@@ -98,6 +103,10 @@ function GifRecorder(mediaStream, config) {
         // Boolean start() 
         // This writes the GIF Header and returns false if it fails.
         gifEncoder.start();
+
+        if (typeof config.onGifRecordingStarted === 'function') {
+            config.onGifRecordingStarted();
+        }
 
         startTime = Date.now();
 
@@ -246,10 +255,17 @@ function GifRecorder(mediaStream, config) {
         }
     }
 
+    var isLoadedMetaData = true;
+
     if (!isHTMLObject) {
         var video = document.createElement('video');
         video.muted = true;
         video.autoplay = true;
+
+        isLoadedMetaData = false;
+        video.onloadedmetadata = function() {
+            isLoadedMetaData = true;
+        };
 
         setSrcObject(mediaStream, video);
 

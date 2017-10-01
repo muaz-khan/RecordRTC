@@ -7,8 +7,8 @@
     }
 </style>
 
-<title>Video Recording | RecordRTC</title>
-<h1>Simple Video Recording using RecordRTC</h1>
+<title>pass getUserMedia constraints to RecordRTC</title>
+<h1>pass getUserMedia constraints to RecordRTC</h1>
 
 <br>
 
@@ -23,15 +23,6 @@
 <script>
 var video = document.querySelector('video');
 
-function captureCamera(callback) {
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function(camera) {
-        callback(camera);
-    }).catch(function(error) {
-        alert('Unable to capture your camera. Please check console logs.');
-        console.error(error);
-    });
-}
-
 function stopRecordingCallback() {
     video.src = video.srcObject = null;
     video.src = URL.createObjectURL(recorder.getBlob());
@@ -45,13 +36,18 @@ var recorder; // globally accessible
 
 document.getElementById('btn-start-recording').onclick = function() {
     this.disabled = true;
-    captureCamera(function(camera) {
+    // Example snippet
+    var constraints = {
+        video: { width: 360, height: 240 },
+        audio: true,
+        // recorderType: WhammyRecorder
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints).then(function(camera) {
         setSrcObject(camera, video);
         video.play();
 
-        recorder = RecordRTC(camera, {
-            type: 'video'
-        });
+        recorder = RecordRTC(camera, constraints);
 
         recorder.startRecording();
 

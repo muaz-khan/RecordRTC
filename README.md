@@ -230,8 +230,8 @@ bower install recordrtc
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.4.3 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.3/RecordRTC.js"></script>
+<!-- use 5.4.4 or any other version -->
+<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.4/RecordRTC.js"></script>
 ```
 
 ## How to capture stream?
@@ -1086,6 +1086,16 @@ recordRTC.getFromDisk(function(dataURL) {
 ```
 
 In the above example; you can see that `recordRTC` instance object is used instead of global `RecordRTC` object.
+
+## `destroy`
+
+Destroy all internal recorders. Clear memory and ask RecordRTC to stop doing anything internally:
+
+```javascript
+recorder.destroy();
+```
+
+Note: You can use this method anytime, anywhere; even during recording a stream.
 
 ## Promises
 

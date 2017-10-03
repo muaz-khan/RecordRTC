@@ -3,7 +3,6 @@
         margin: 0!important;
         padding: 0!important;
         overflow: hidden!important;
-        width: 100%;
     }
 </style>
 
@@ -53,6 +52,9 @@ document.getElementById('btn-enable-camera').onclick = function() {
         recorder.camera = camera;
 
         document.getElementById('btn-start-recording').disabled = false;
+
+        setSrcObject(recorder.camera, video);
+        video.play();
     });
 };
 

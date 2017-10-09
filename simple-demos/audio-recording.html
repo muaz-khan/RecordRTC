@@ -1,0 +1,102 @@
+<style>
+    html, body {
+        margin: 0!important;
+        padding: 0!important;
+        overflow: hidden!important;
+        width: 100%;
+    }
+</style>
+
+<title>Audio Recording | RecordRTC</title>
+<h1>Simple Audio Recording using RecordRTC</h1>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+<br>
+
+<button id="btn-start-recording">Start Recording</button>
+<button id="btn-stop-recording" disabled>Stop Recording</button>
+
+<hr>
+<div><audio controls autoplay></audio></div>
+
+<script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script>
+var audio = document.querySelector('audio');
+
+function captureMicrophone(callback) {
+    if(typeof navigator.mediaDevices === 'undefined' || !navigator.mediaDevices.getUserMedia) {
+        alert('This browser does not supports WebRTC getUserMedia API.');
+
+        if(!!navigator.getUserMedia) {
+            alert('This browser seems supporting deprecated getUserMedia API.');
+        }
+    }
+
+    navigator.mediaDevices.getUserMedia({
+        audio: true
+    }).then(function(microphone) {
+        callback(microphone);
+    }).catch(function(error) {
+        alert('Unable to capture your microphone. Please check console logs.');
+        console.error(error);
+    });
+}
+
+function stopRecordingCallback() {
+    var newAudio = document.createElement('audio');
+    newAudio.controls = true;
+    newAudio.src = URL.createObjectURL(recorder.getBlob());
+    
+    var parentNode = audio.parentNode;
+    parentNode.innerHTML = '';
+    parentNode.appendChild(newAudio);
+
+    newAudio.play();
+
+    microphone.stop();
+    microphone = null;
+    recorder.destroy();
+    recorder = null;
+}
+
+var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
+var recorder; // globally accessible
+var microphone;
+
+document.getElementById('btn-start-recording').onclick = function() {
+    this.disabled = true;
+
+    if (!microphone) {
+        captureMicrophone(function(mic) {
+            microphone = mic;
+            click(document.getElementById('btn-start-recording'));
+        });
+        return;
+    }
+
+    audio.muted = true;
+    setSrcObject(microphone, audio);
+    audio.play();
+
+    recorder = RecordRTC(microphone, {
+        recorderType: StereoAudioRecorder,
+        numberOfAudioChannels: isEdge ? 1 : 2
+    });
+
+    recorder.startRecording();
+
+    document.getElementById('btn-stop-recording').disabled = false;
+};
+
+document.getElementById('btn-stop-recording').onclick = function() {
+    this.disabled = true;
+    recorder.stopRecording(stopRecordingCallback);
+};
+
+function click(el) {
+    var evt = document.createEvent('Event');
+    evt.initEvent('click', true, true);
+    el.dispatchEvent(evt);
+}
+</script>

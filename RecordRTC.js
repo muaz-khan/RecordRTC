@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-10-01 2:53:36 PM UTC
+// Last time updated: 2017-10-17 2:23:06 PM UTC
 
 // ________________
 // RecordRTC v5.4.5
@@ -4378,7 +4378,7 @@ if (typeof RecordRTC !== 'undefined') {
  * @typedef GifRecorder
  * @class
  * @example
- * var recorder = new GifRecorder(mediaStream || canvas || context, { width: 1280, height: 720, frameRate: 200, quality: 10 });
+ * var recorder = new GifRecorder(mediaStream || canvas || context, { onGifPreview: function, onGifRecordingStarted: function, width: 1280, height: 720, frameRate: 200, quality: 10 });
  * recorder.record();
  * recorder.stop(function(blob) {
  *     img.src = URL.createObjectURL(blob);

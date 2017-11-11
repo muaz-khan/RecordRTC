@@ -15,6 +15,7 @@
 
 <button id="btn-start-recording">Start Recording</button>
 <button id="btn-stop-recording" disabled>Stop Recording</button>
+<button id="btn-release-microphone" disabled>Release Microphone</button>
 
 <hr>
 <div><audio controls autoplay></audio></div>
@@ -25,6 +26,13 @@
 var audio = document.querySelector('audio');
 
 function captureMicrophone(callback) {
+    document.querySelector('#btn-release-microphone').disabled = false;
+
+    if(microphone) {
+        callback(microphone);
+        return;
+    }
+
     if(typeof navigator.mediaDevices === 'undefined' || !navigator.mediaDevices.getUserMedia) {
         alert('This browser does not supports WebRTC getUserMedia API.');
 
@@ -34,31 +42,65 @@ function captureMicrophone(callback) {
     }
 
     navigator.mediaDevices.getUserMedia({
-        audio: true
-    }).then(function(microphone) {
-        callback(microphone);
+        audio: isEdge ? true : {
+            echoCancellation: false
+        }
+    }).then(function(mic) {
+        callback(mic);
     }).catch(function(error) {
         alert('Unable to capture your microphone. Please check console logs.');
         console.error(error);
     });
 }
 
-function stopRecordingCallback() {
+function replaceAudio(src) {
     var newAudio = document.createElement('audio');
     newAudio.controls = true;
-    newAudio.src = URL.createObjectURL(recorder.getBlob());
+
+    if(src) {
+        newAudio.src = src;
+    }
     
     var parentNode = audio.parentNode;
     parentNode.innerHTML = '';
     parentNode.appendChild(newAudio);
 
-    newAudio.play();
+    audio = newAudio;
+}
+
+function stopRecordingCallback() {
+    replaceAudio(URL.createObjectURL(recorder.getBlob()));
+
+    recorder.destroy();
+    recorder = null;
+
+    document.getElementById('btn-start-recording').disabled = false;
+
+    setTimeout(function() {
+        if(!audio.paused) return;
+
+        setTimeout(function() {
+            if(!audio.paused) return;
+            audio.play();
+        }, 1000);
+        
+        audio.play();
+    }, 300);
+
+    audio.play();
+}
+
+document.querySelector('#btn-release-microphone').onclick = function() {
+    this.disabled = true;
+    document.getElementById('btn-start-recording').disabled = false;
 
     microphone.stop();
     microphone = null;
-    recorder.destroy();
-    recorder = null;
-}
+
+    if(recorder) {
+        click(document.getElementById('btn-stop-recording'));
+    }
+};
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
 var recorder; // globally accessible
@@ -75,14 +117,24 @@ document.getElementById('btn-start-recording').onclick = function() {
         return;
     }
 
+    replaceAudio();
+
     audio.muted = true;
     setSrcObject(microphone, audio);
     audio.play();
 
-    recorder = RecordRTC(microphone, {
-        recorderType: StereoAudioRecorder,
-        numberOfAudioChannels: isEdge ? 1 : 2
-    });
+    var options = {
+        type: 'audio',
+        numberOfAudioChannels: isEdge ? 1 : 2,
+        checkForInactiveTracks: true,
+        bufferSize: 16384
+    };
+
+    if(navigator.platform && navigator.platform.toString().toLowerCase().indexOf('win') === -1) {
+        options.sampleRate = 48000; // or 44100 or remove this line for default
+    }
+
+    recorder = RecordRTC(microphone, options);
 
     recorder.startRecording();
 

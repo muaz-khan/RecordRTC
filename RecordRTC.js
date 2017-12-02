@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-11-11 6:28:47 AM UTC
+// Last time updated: 2017-12-02 4:04:02 AM UTC
 
 // ________________
 // RecordRTC v5.4.6
@@ -48,7 +48,13 @@ function RecordRTC(mediaStream, config) {
     // a reference to user's recordRTC object
     var self = this;
 
-    function startRecording() {
+    function startRecording(config2) {
+        if (!!config2) {
+            // allow users to set options using startRecording method
+            // config2 is similar to main "config" object (second parameter over RecordRTC constructor)
+            config = new RecordRTCConfiguration(mediaStream, config2);
+        }
+
         if (!config.disableLogs) {
             console.log('started recording ' + config.type + ' stream.');
         }

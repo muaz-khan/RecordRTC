@@ -34,7 +34,13 @@ function RecordRTC(mediaStream, config) {
     // a reference to user's recordRTC object
     var self = this;
 
-    function startRecording() {
+    function startRecording(config2) {
+        if (!!config2) {
+            // allow users to set options using startRecording method
+            // config2 is similar to main "config" object (second parameter over RecordRTC constructor)
+            config = new RecordRTCConfiguration(mediaStream, config2);
+        }
+
         if (!config.disableLogs) {
             console.log('started recording ' + config.type + ' stream.');
         }

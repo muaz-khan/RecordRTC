@@ -317,6 +317,18 @@ var options = {
 var recordRTC = RecordRTC(stream, options);
 ```
 
+You can pass `options` object over `startRecording` method as well:
+
+```javascript
+var recordRTC = RecordRTC(stream);
+
+var options = {
+    recorderType: MediaStreamRecorder,
+    mimeType: 'video/webm\;codecs=vp9'
+};
+recordRTC.startRecording(options);
+```
+
 * `type` accepts `video` or `audio` or `canvas` or `gif`
 * `mimeType` accepts [all these values](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/mimeType)
 * `recorderType` accepts `MediaStreamRecorder` or `StereoAudioRecorder` or `WhammyRecorder` or `GifRecorder` or any recorder type from [this page](https://github.com/muaz-khan/RecordRTC/tree/master/dev)

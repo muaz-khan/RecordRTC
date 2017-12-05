@@ -739,7 +739,18 @@ function RecordRTC(mediaStream, config) {
             if (!disableLogs) {
                 console.warn('RecordRTC is destroyed.');
             }
-        }
+        },
+
+        /**
+         * RecordRTC version number
+         * @property {String} version - Release version number.
+         * @memberof RecordRTC
+         * @static
+         * @readonly
+         * @example
+         * alert(recorder.version);
+         */
+        version: '@@version'
     };
 
     if (!this) {
@@ -756,6 +767,8 @@ function RecordRTC(mediaStream, config) {
 
     return returnObject;
 }
+
+RecordRTC.version = '@@version';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;

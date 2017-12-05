@@ -452,6 +452,65 @@ Internal recorders can add extra methods. Same as MultiStreamRecorder which is s
 1. `addStreams`
 2. `resetVideoStreams`
 
+## `onStateChanged`
+
+Use this method to detect status of the recording:
+
+```javascript
+recorder = RecordRTC(stream, {
+    type: 'video',
+    onStateChanged: function(state) {
+        alert('Current recorder status: ' + state);
+    }
+});
+
+recorder.startRecording();
+```
+
+## `state`
+
+Use this property to detect status of the recording:
+
+```javascript
+recorder = RecordRTC(stream, {
+    type: 'video'
+});
+
+alert('Current recorder status: ' + recorder.state);
+
+recorder.startRecording();
+
+alert('Current recorder status: ' + recorder.state);
+
+recorder.stopRecording(function() {
+    alert('Current recorder status: ' + recorder.state);
+});
+```
+
+You can event use `getState` method:
+
+```javascript
+alert('Current recorder status: ' + recorder.getState());
+```
+
+## `version`
+
+Detect current RecordRTC version:
+
+```javascript
+recorder = RecordRTC(stream, {
+    type: 'video'
+});
+
+alert('Current recorder version: ' + recorder.version);
+```
+
+You can even use `RecordRTC.version`:
+
+```javascript
+alert('Current recorder version: ' + RecordRTC.version);
+```
+
 ## Echo Issues
 
 Simply set `volume=0` or `muted=true` over `<audio>` or `<video>` element:

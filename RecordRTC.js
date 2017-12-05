@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2017-12-02 4:04:02 AM UTC
+// Last time updated: 2017-12-05 7:27:40 AM UTC
 
 // ________________
 // RecordRTC v5.4.6
@@ -753,7 +753,18 @@ function RecordRTC(mediaStream, config) {
             if (!disableLogs) {
                 console.warn('RecordRTC is destroyed.');
             }
-        }
+        },
+
+        /**
+         * RecordRTC version number
+         * @property {String} version - Release version number.
+         * @memberof RecordRTC
+         * @static
+         * @readonly
+         * @example
+         * alert(recorder.version);
+         */
+        version: '5.4.6'
     };
 
     if (!this) {
@@ -770,6 +781,8 @@ function RecordRTC(mediaStream, config) {
 
     return returnObject;
 }
+
+RecordRTC.version = '5.4.6';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;

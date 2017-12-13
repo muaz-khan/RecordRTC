@@ -38,7 +38,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  | Audio+Video (Both local/remote) |
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio+Video (Both local/remote) |
 | Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | **Only Audio** - No Video - No Canvas - No Screen |
-| Safari 11 | preview | **Only Audio** - No Video - No Canvas - No Screen |
+| Safari 11 | preview/beta (OSX/iOS11) | [Only StereoAudioRecorder](https://www.webrtc-experiment.com/RecordRTC/simple-demos/audio-recording.html) - No Video - No Canvas - No Screen |
 
 ## Frameworks
 

@@ -5167,6 +5167,9 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
             self.audioDestination = null;
         }
 
+        if (self.audioContext) {
+            self.audioContext.close();
+        }
         self.audioContext = null;
 
         context.clearRect(0, 0, canvas.width, canvas.height);

@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2017-12-13 5:07:29 AM UTC
+// Last time updated: 2018-03-02 2:58:16 AM UTC
 
 // ________________
-// RecordRTC v5.4.6
+// RecordRTC v5.4.7
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -764,7 +764,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.4.6'
+        version: '5.4.7'
     };
 
     if (!this) {
@@ -782,7 +782,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.4.6';
+RecordRTC.version = '5.4.7';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -1950,8 +1950,7 @@ function isMediaRecorderCompatible() {
  *     bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
  *     checkForInactiveTracks: true,
  *     timeSlice: 1000, // concatenate intervals based blobs
- *     ondataavailable: function() {}, // get intervals based blobs
- *     ignoreMutedMedia: true
+ *     ondataavailable: function() {} // get intervals based blobs
  * }
  * var recorder = new MediaStreamRecorder(mediaStream, config);
  * recorder.record();
@@ -2078,9 +2077,6 @@ function MediaStreamRecorder(mediaStream, config) {
                 console.warn('MediaRecorder API seems unable to record mimeType:', recorderHints.mimeType);
             }
         }
-
-        // ignore muted/disabled/inactive tracks
-        mediaRecorder.ignoreMutedMedia = config.ignoreMutedMedia === true;
 
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
@@ -4746,10 +4742,10 @@ if (typeof RecordRTC !== 'undefined') {
     RecordRTC.GifRecorder = GifRecorder;
 }
 
-// Last time updated: 2017-09-26 7:19:00 AM UTC
+// Last time updated: 2018-03-02 2:56:28 AM UTC
 
 // ________________________
-// MultiStreamsMixer v1.0.3
+// MultiStreamsMixer v1.0.5
 
 // Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
@@ -5165,6 +5161,10 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
         if (self.audioDestination) {
             self.audioDestination.disconnect();
             self.audioDestination = null;
+        }
+
+        if (self.audioContext) {
+            self.audioContext.close();
         }
 
         self.audioContext = null;

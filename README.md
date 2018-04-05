@@ -225,14 +225,18 @@ bower install recordrtc
 <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 ```
 
+Otherwise check cdnjs below.
+
 ## Releases
 
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.4.6 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.6/RecordRTC.js"></script>
+<!-- use 5.4.6 or any other version on cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.4.6/RecordRTC.js"></script>
 ```
+
+Note: You can use `RecordRTC.min.js` as well. (on webrtc-experiment or cdnjs)
 
 ## How to capture stream?
 

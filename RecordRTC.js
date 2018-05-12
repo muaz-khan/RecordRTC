@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2018-03-02 2:58:16 AM UTC
+// Last time updated: 2018-05-11 2:50:18 PM UTC
 
 // ________________
 // RecordRTC v5.4.7
@@ -3178,6 +3178,10 @@ function CanvasRecorder(htmlElement, config) {
     }
 
     if (_isChrome && chromeVersion < 52) {
+        isCanvasSupportsStreamCapturing = false;
+    }
+
+    if (config.useWhammyRecorder) {
         isCanvasSupportsStreamCapturing = false;
     }
 

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2018-05-22 6:07:01 PM UTC
+// Last time updated: 2018-06-17 2:39:19 AM UTC
 
 // ________________
 // RecordRTC v5.4.7
@@ -1027,12 +1027,12 @@ function GetRecorderType(mediaStream, config) {
         }
     }
 
-    if (config.recorderType) {
-        recorder = config.recorderType;
-    }
-
     if (mediaStream instanceof Array && mediaStream.length) {
         recorder = MultiStreamRecorder;
+    }
+
+    if (config.recorderType) {
+        recorder = config.recorderType;
     }
 
     if (!config.disableLogs && !!recorder && !!recorder.name) {

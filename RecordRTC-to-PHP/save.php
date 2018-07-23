@@ -28,13 +28,13 @@ function selfInvoker()
     }
 
     // do NOT allow third party audio uploads
-    if (isset($_POST['audio-filename']) && strrpos($_POST['audio-filename'], "RecordRTC-") !== 0) {
+    if (false && isset($_POST['audio-filename']) && strrpos($_POST['audio-filename'], "RecordRTC-") !== 0) {
         echo 'File name must start with "RecordRTC-"';
         return;
     }
 
     // do NOT allow third party video uploads
-    if (isset($_POST['video-filename']) && strrpos($_POST['video-filename'], "RecordRTC-") !== 0) {
+    if (false && isset($_POST['video-filename']) && strrpos($_POST['video-filename'], "RecordRTC-") !== 0) {
         echo 'File name must start with "RecordRTC-"';
         return;
     }

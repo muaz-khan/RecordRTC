@@ -311,7 +311,7 @@ function StereoAudioRecorder(mediaStream, config) {
             URL.revokeObjectURL(webWorker.workerURL);
 
             // kill webworker (or Chrome will kill your page after ~25 calls)
-            webWorker.terminate()
+            webWorker.terminate();
         };
 
         webWorker.postMessage(config);

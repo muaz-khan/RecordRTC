@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2018-07-23 7:28:57 AM UTC
+// Last time updated: 2018-07-26 4:28:24 PM UTC
 
 // ________________
 // RecordRTC v5.4.8
@@ -2149,7 +2149,7 @@ function MediaStreamRecorder(mediaStream, config) {
             if (!error.name) {
                 error.name = 'UnknownError';
             }
-    
+
             allStates.push('error: ' + error);
 
             if (!config.disableLogs) {
@@ -2746,6 +2746,9 @@ function StereoAudioRecorder(mediaStream, config) {
 
             // release memory
             URL.revokeObjectURL(webWorker.workerURL);
+
+            // kill webworker (or Chrome will kill your page after ~25 calls)
+            webWorker.terminate();
         };
 
         webWorker.postMessage(config);

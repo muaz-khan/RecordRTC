@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2018-07-26 4:28:24 PM UTC
+// Last time updated: 2018-08-29 4:42:13 AM UTC
 
 // ________________
 // RecordRTC v5.4.8
@@ -273,7 +273,7 @@ function RecordRTC(mediaStream, config) {
 
         function processInWebWorker(_function) {
             var blob = URL.createObjectURL(new Blob([_function.toString(),
-                'this.onmessage =  function (e) {' + _function.name + '(e.data);}'
+                'this.onmessage =  function (eee) {' + _function.name + '(eee.data);}'
             ], {
                 type: 'application/javascript'
             }));
@@ -1435,7 +1435,7 @@ function MRecordRTC(mediaStream) {
 
         function processInWebWorker(_function) {
             var blob = URL.createObjectURL(new Blob([_function.toString(),
-                'this.onmessage =  function (e) {' + _function.name + '(e.data);}'
+                'this.onmessage =  function (eee) {' + _function.name + '(eee.data);}'
             ], {
                 type: 'application/javascript'
             }));
@@ -2756,7 +2756,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
     function processInWebWorker(_function) {
         var workerURL = URL.createObjectURL(new Blob([_function.toString(),
-            ';this.onmessage =  function (e) {' + _function.name + '(e.data);}'
+            ';this.onmessage =  function (eee) {' + _function.name + '(eee.data);}'
         ], {
             type: 'application/javascript'
         }));
@@ -3921,7 +3921,7 @@ var Whammy = (function() {
 
     function processInWebWorker(_function) {
         var blob = URL.createObjectURL(new Blob([_function.toString(),
-            'this.onmessage =  function (e) {' + _function.name + '(e.data);}'
+            'this.onmessage =  function (eee) {' + _function.name + '(eee.data);}'
         ], {
             type: 'application/javascript'
         }));

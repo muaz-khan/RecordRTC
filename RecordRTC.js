@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2018-08-29 4:42:13 AM UTC
+// Last time updated: 2018-09-12 1:14:20 PM UTC
 
 // ________________
 // RecordRTC v5.4.8

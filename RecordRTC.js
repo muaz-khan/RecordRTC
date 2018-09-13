@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2018-09-12 1:14:20 PM UTC
+// Last time updated: 2018-09-13 9:12:03 AM UTC
 
 // ________________
-// RecordRTC v5.4.8
+// RecordRTC v5.4.9
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -767,7 +767,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.4.8'
+        version: '5.4.9'
     };
 
     if (!this) {
@@ -785,7 +785,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.4.8';
+RecordRTC.version = '5.4.9';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -1855,17 +1855,17 @@ function isElectron() {
 }
 
 function setSrcObject(stream, element, ignoreCreateObjectURL) {
-    if ('createObjectURL' in URL && !ignoreCreateObjectURL) {
+    if ('srcObject' in element) {
+        element.srcObject = stream;
+    } else if ('mozSrcObject' in element) {
+        element.mozSrcObject = stream;
+    } else if ('createObjectURL' in URL && !ignoreCreateObjectURL) {
         try {
             element.src = URL.createObjectURL(stream);
         } catch (e) {
             setSrcObject(stream, element, true);
             return;
         }
-    } else if ('srcObject' in element) {
-        element.srcObject = stream;
-    } else if ('mozSrcObject' in element) {
-        element.mozSrcObject = stream;
     } else {
         alert('createObjectURL/srcObject both are not supported.');
     }

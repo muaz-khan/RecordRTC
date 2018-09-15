@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2018-09-13 9:12:03 AM UTC
+// Last time updated: 2018-09-15 5:28:20 PM UTC
 
 // ________________
 // RecordRTC v5.4.9
@@ -1708,8 +1708,8 @@ if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undef
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
 var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
-var isSafari = navigator.userAgent.toLowerCase().indexOf('safari/') > -1;
-var isChrome = (!isOpera && !isEdge && !!navigator.webkitGetUserMedia) || isElectron() || isSafari;
+var isSafari = navigator.userAgent.toLowerCase().indexOf('safari/') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome/') === -1;
+var isChrome = (!isOpera && !isEdge && !!navigator.webkitGetUserMedia) || isElectron() || navigator.userAgent.toLowerCase().indexOf('chrome/') !== -1;
 
 var MediaStream = window.MediaStream;
 
@@ -2731,7 +2731,7 @@ function StereoAudioRecorder(mediaStream, config) {
             });
         }
 
-        if (isEdge || isOpera || isSafari || config.noWorker) {
+        if (isEdge || /*isOpera || */ isSafari || config.noWorker) {
             mergeAudioBuffers(config, function(data) {
                 callback(data.buffer, data.view);
             });

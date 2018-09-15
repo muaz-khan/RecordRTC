@@ -294,7 +294,7 @@ function StereoAudioRecorder(mediaStream, config) {
             });
         }
 
-        if (isEdge || isOpera || isSafari || config.noWorker) {
+        if (isEdge || /*isOpera || */ isSafari || config.noWorker) {
             mergeAudioBuffers(config, function(data) {
                 callback(data.buffer, data.view);
             });

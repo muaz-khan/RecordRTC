@@ -2,8 +2,6 @@
     html, body {
         margin: 0!important;
         padding: 0!important;
-        overflow: hidden!important;
-        width: 100%;
     }
 
     video {
@@ -29,16 +27,13 @@
     <span id="timer"></span><br><br>
     <span id="counter"></span><br><br>
 
-    <!-- <video controls autoplay src="https://www.quirksmode.org/html5/videos/big_buck_bunny.webm"></video> -->
+    <canvas id="canvas-for-video" crossOrigin="Anonymous" width=320 height=240></canvas>
 </div>
 
 <canvas id="background-canvas" style="position:absolute; top:-99999999px; left:-9999999999px;"></canvas>
 
-<!-- <script src="../RecordRTC.js"></script>
-<script src="../libs/screenshot-dev.js"></script> -->
-
 <script src="https://cdn.WebRTC-Experiment.com/RecordRTC.js"></script>
-<script src="https://cdn.webrtc-experiment.com/screenshot.js"></script>
+<script src="https://cdn.webrtc-experiment.com/html2canvas.min.js"></script>
 
 <script>
 var elementToRecord = document.getElementById('element-to-record');
@@ -51,26 +46,58 @@ canvas2d.height = elementToRecord.clientHeight;
 var isRecordingStarted = false;
 var isStoppedRecording = false;
 
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 (function looper() {
     if(!isRecordingStarted) {
         return setTimeout(looper, 500);
     }
 
-    html2canvas(elementToRecord, {
-        grabMouse: true,
-        onrendered: function(canvas) {
-            context.clearRect(0, 0, canvas2d.width, canvas2d.height);
-            context.drawImage(canvas, 0, 0, canvas2d.width, canvas2d.height);
+    html2canvas(elementToRecord).then(function(canvas) {
+        context.clearRect(0, 0, canvas2d.width, canvas2d.height);
+        context.drawImage(canvas, 0, 0, canvas2d.width, canvas2d.height);
 
-            if(isStoppedRecording) {
-                return;
-            }
-
-            setTimeout(looper, 1);
+        if(isStoppedRecording) {
+            return;
         }
+
+        requestAnimationFrame(looper);
     });
 })();
 
+var canvasX = document.getElementById('canvas-for-video');
+canvasX.width = 320;
+canvasX.height = 240;
+var contextX = canvasX.getContext('2d');
+
+var index=0;
+
+function looper2() {
+    index++;
+    if(typeof timer !== 'undefined' && index % 100 == 0) {
+        timer.style.color = getRandomColor();
+    }
+
+    contextX.drawImage(videoX, 0, 0, canvasX.width, canvasX.height);
+    requestAnimationFrame(looper2);
+}
+var videoX = document.createElement('video');
+videoX.onloadedmetadata = function() {
+    looper2();
+};
+videoX.crossOrigin = 'Anonymous';
+videoX.volume=0;
+videoX.autoplay = true;
+videoX.src = 'https://storage.googleapis.com/media-session/caminandes/short.mp4';
+videoX.style = 'position: absolute; top: -99999999999; left: -99999999999;';
+document.body.appendChild(videoX);
 
 var recorder = new RecordRTC(canvas2d, {
     type: 'canvas'

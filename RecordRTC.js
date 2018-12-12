@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2018-10-12 2:39:08 AM UTC
+// Last time updated: 2018-12-12 7:50:08 AM UTC
 
 // ________________
 // RecordRTC v5.4.9
@@ -3265,7 +3265,7 @@ function CanvasRecorder(htmlElement, config) {
             // Note: Jan 18, 2016 status is that, 
             // Firefox MediaRecorder API can't record CanvasCaptureMediaStream object.
             mediaStreamRecorder = new MediaStreamRecorder(canvasMediaStream, {
-                mimeType: 'video/webm'
+                mimeType: config.mimeType || 'video/webm'
             });
             mediaStreamRecorder.record();
         } else {

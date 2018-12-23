@@ -141,7 +141,7 @@
 
             <br>
 
-            <video controls muted></video>
+            <video controls muted playsinline></video>
         </section>
 
         <script>
@@ -288,7 +288,6 @@
                             }
 
                             recordingPlayer.src = url;
-                            recordingPlayer.play();
 
                             recordingPlayer.onended = function() {
                                 recordingPlayer.pause();
@@ -382,7 +381,6 @@
 
                                 audio.onloadedmetadata = function() {
                                     recordingPlayer.src = videoRecorder.toURL();
-                                    recordingPlayer.play();
                                 };
 
                                 recordingPlayer.parentNode.appendChild(document.createElement('hr'));
@@ -404,7 +402,6 @@
                             recordingPlayer.srcObject = null;
                             recordingPlayer.muted = false;
                             recordingPlayer.src = url;
-                            recordingPlayer.play();
 
                             recordingPlayer.onended = function() {
                                 recordingPlayer.pause();
@@ -444,7 +441,6 @@
                             }
 
                             recordingPlayer.src = url;
-                            recordingPlayer.play();
                         };
 
                         button.recordRTC.startRecording();
@@ -466,7 +462,6 @@
                             recordingPlayer.srcObject = null;
                             recordingPlayer.muted = false;
                             recordingPlayer.src = url;
-                            recordingPlayer.play();
 
                             recordingPlayer.onended = function() {
                                 recordingPlayer.pause();
@@ -482,7 +477,6 @@
             function captureVideo(config) {
                 captureUserMedia({video: true}, function(videoStream) {
                     recordingPlayer.srcObject = videoStream;
-                    recordingPlayer.play();
 
                     config.onMediaCaptured(videoStream);
 
@@ -497,7 +491,6 @@
             function captureAudio(config) {
                 captureUserMedia({audio: true}, function(audioStream) {
                     recordingPlayer.srcObject = audioStream;
-                    recordingPlayer.play();
 
                     config.onMediaCaptured(audioStream);
 
@@ -512,7 +505,6 @@
             function captureAudioPlusVideo(config) {
                 captureUserMedia({video: true, audio: true}, function(audioVideoStream) {
                     recordingPlayer.srcObject = audioVideoStream;
-                    recordingPlayer.play();
 
                     config.onMediaCaptured(audioVideoStream);
 
@@ -545,7 +537,6 @@
 
                     captureUserMedia(screenConstraints, function(screenStream) {
                         recordingPlayer.srcObject = screenStream;
-                        recordingPlayer.play();
 
                         config.onMediaCaptured(screenStream);
 
@@ -581,7 +572,6 @@
 
                     captureUserMedia(screenConstraints, function(screenStream) {
                         recordingPlayer.srcObject = screenStream;
-                        recordingPlayer.play();
 
                         config.onMediaCaptured(screenStream);
 

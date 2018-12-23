@@ -1,4 +1,4 @@
-<script>window.demoVersion = '2018.11.05';</script>
+<script>window.demoVersion = '2018.12.23';</script>
 
 <!--
 > Muaz Khan     - www.MuazKhan.com
@@ -222,26 +222,20 @@
             })();
 
             function addStreamStopListener(stream, callback) {
-                var streamEndedEvent = 'ended';
-
-                if ('oninactive' in stream) {
-                    streamEndedEvent = 'inactive';
-                }
-
-                stream.addEventListener(streamEndedEvent, function() {
+                stream.addEventListener('ended', function() {
                     callback();
                     callback = function() {};
                 }, false);
-
-                stream.getAudioTracks().forEach(function(track) {
-                    track.addEventListener(streamEndedEvent, function() {
+                stream.addEventListener('inactive', function() {
+                    callback();
+                    callback = function() {};
+                }, false);
+                stream.getTracks().forEach(function(track) {
+                    track.addEventListener('ended', function() {
                         callback();
                         callback = function() {};
                     }, false);
-                });
-
-                stream.getVideoTracks().forEach(function(track) {
-                    track.addEventListener(streamEndedEvent, function() {
+                    track.addEventListener('inactive', function() {
                         callback();
                         callback = function() {};
                     }, false);
@@ -854,11 +848,11 @@
                             var newStream = new MediaStream();
 
                             // merge audio and video tracks in a single stream
-                            audioStream.getAudioTracks().forEach(function(track) {
+                            getTracks(audioStream, 'audio').forEach(function(track) {
                                 newStream.addTrack(track);
                             });
 
-                            screenStream.getVideoTracks().forEach(function(track) {
+                            getTracks(screenStream, 'video').forEach(function(track) {
                                 newStream.addTrack(track);
                             });
 
@@ -1201,11 +1195,11 @@
                 }
 
                 if(btnStartRecording.stream) {
-                    info += '\n\naudio-tracks: ' + btnStartRecording.stream.getAudioTracks().length;
-                    info += '\nvideo-tracks: ' + btnStartRecording.stream.getVideoTracks().length;
+                    info += '\n\naudio-tracks: ' + getTracks(btnStartRecording.stream, 'audio').length;
+                    info += '\nvideo-tracks: ' + getTracks(btnStartRecording.stream, 'video').length;
                     info += '\nstream-active? ' + !!btnStartRecording.stream.active;
 
-                    btnStartRecording.stream.getAudioTracks().concat(btnStartRecording.stream.getVideoTracks()).forEach(function(track) {
+                    btnStartRecording.stream.getTracks().forEach(function(track) {
                         info += '\n' + track.kind + '-track-' + (track.label || track.id) + ': (enabled: ' + !!track.enabled + ', readyState: ' + track.readyState + ', muted: ' + !!track.muted + ')';
 
                         if(track.getConstraints && Object.keys(track.getConstraints()).length) {
@@ -1489,7 +1483,7 @@
                     url = URL.createObjectURL(arg.getBlob());
                 }
 
-                if(arg instanceof MediaStream || arg.getTracks || arg.getVideoTracks || arg.getAudioTracks) {
+                if(arg instanceof MediaStream || arg.getTracks) {
                     // url = URL.createObjectURL(arg);
                 }
 

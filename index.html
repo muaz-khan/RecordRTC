@@ -1,4 +1,4 @@
-<script>window.demoVersion = '2018.12.23';</script>
+<script>window.demoVersion = '2019.01.02';</script>
 
 <!--
 > Muaz Khan     - www.MuazKhan.com
@@ -1361,6 +1361,11 @@
             }
 
             function uploadToPHPServer(fileName, recordRTC, callback) {
+                if(document.domain === "www.webrtc-experiment.com") {
+                    alert('This option is not supported on "www.webrtc-experiment.com".');
+                    return;
+                }
+
                 var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.getBlob();
                 
                 blob = new File([blob], getFileName(fileExtension), {
@@ -1374,13 +1379,13 @@
 
                 callback('Uploading recorded-file to server.');
 
-                makeXMLHttpRequest('https://webrtcweb.com/RecordRTC/', formData, function(progress) {
+                makeXMLHttpRequest('/RecordRTC-to-PHP/save.php', formData, function(progress) {
                     if (progress !== 'upload-ended') {
                         callback(progress);
                         return;
                     }
 
-                    var initialURL = 'https://webrtcweb.com/RecordRTC/uploads/';
+                    var initialURL = '/RecordRTC-to-PHP/uploads/';
 
                     callback('ended', initialURL + fileName);
                 });
@@ -1922,7 +1927,7 @@
 
         <section class="experiment" style="padding: 10px 20px; text-align: center;">
             <a href="https://chrome.google.com/webstore/detail/recordrtc/ndcljioonkecdnaaihodjgiliohngojp" target="_blank">
-                <img alt="RecordRTC" src="https://webrtcweb.com/RecordRTC/icon.png" style="width: 20px;vertical-align: middle;margin-right: 3px;">
+                <img alt="RecordRTC" src="https://cdn.webrtc-experiment.com/images/recordrtc-icon.png" style="width: 20px;vertical-align: middle;margin-right: 3px;">
                 RecordRTC Google Chrome Extension
             </a>
             <br>

@@ -683,6 +683,11 @@
             var listOfFilesUploaded = [];
 
             function uploadToServer(recordRTC, callback) {
+                if(document.domain === "www.webrtc-experiment.com") {
+                    alert('This option is not supported on "www.webrtc-experiment.com".');
+                    return;
+                }
+
                 var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.blob;
                 var fileType = blob.type.split('/')[0] || 'audio';
                 var fileName = (Math.random() * 1000).toString().replace('.', '');

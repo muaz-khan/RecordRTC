@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2018-12-22 9:57:01 AM UTC
+// Last time updated: 2019-01-07 6:40:58 AM UTC
 
 // ________________
-// RecordRTC v5.5.0
+// RecordRTC v5.5.1
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -773,7 +773,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.0'
+        version: '5.5.1'
     };
 
     if (!this) {
@@ -791,7 +791,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.0';
+RecordRTC.version = '5.5.1';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -922,7 +922,7 @@ function RecordRTCConfiguration(mediaStream, config) {
     }
 
     if (config.recorderType && !config.type) {
-        if (config.recorderType === WhammyRecorder || config.recorderType === CanvasRecorder) {
+        if (config.recorderType === WhammyRecorder || config.recorderType === CanvasRecorder || (typeof WebAssemblyRecorder !== 'undefined' && config.recorderType === WebAssemblyRecorder)) {
             config.type = 'video';
         } else if (config.recorderType === GifRecorder) {
             config.type = 'gif';
@@ -1004,6 +1004,10 @@ function GetRecorderType(mediaStream, config) {
     // video recorder (in WebM format)
     if (config.type === 'video' && (isChrome || isOpera)) {
         recorder = WhammyRecorder;
+
+        if (typeof WebAssemblyRecorder !== 'undefined' && typeof ReadableStream !== 'undefined') {
+            recorder = WebAssemblyRecorder;
+        }
     }
 
     // video recorder (in Gif format)

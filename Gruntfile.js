@@ -52,7 +52,8 @@ module.exports = function(grunt) {
                     'dev/GifRecorder.js',
                     'dev/MultiStreamsMixer.js', // github/muaz-khan/MultiStreamsMixer
                     'dev/MultiStreamRecorder.js',
-                    'dev/RecordRTC.promises.js'
+                    'dev/RecordRTC.promises.js',
+                    // 'dev/WebAssemblyRecorder.js' // grunt-contrib-uglify fails; maybe we should use uglify-es instead?
                 ],
                 dest: './temp/RecordRTC.js',
             },
@@ -86,6 +87,7 @@ module.exports = function(grunt) {
                     postMessage: true,
                     Whammy: true,
                     WhammyRecorder: true,
+                    WebAssemblyRecorder: true,
                     MediaStreamRecorder: true,
                     StereoAudioRecorder: true,
                     RecordRTC: true,

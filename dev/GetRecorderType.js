@@ -34,6 +34,10 @@ function GetRecorderType(mediaStream, config) {
     // video recorder (in WebM format)
     if (config.type === 'video' && (isChrome || isOpera)) {
         recorder = WhammyRecorder;
+
+        if (typeof WebAssemblyRecorder !== 'undefined' && typeof ReadableStream !== 'undefined') {
+            recorder = WebAssemblyRecorder;
+        }
     }
 
     // video recorder (in Gif format)

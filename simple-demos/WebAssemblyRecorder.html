@@ -20,7 +20,7 @@ video {
 <br><br>
 <video id="video" controls autoplay playsinline></video>
 
-<script src="../dev/WebAssemblyRecorder.js"></script>
+<script src="https://cdn.webrtc-experiment.com/RecordRTC/dev/WebAssemblyRecorder.js"></script>
 
 <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
@@ -49,7 +49,7 @@ document.getElementById('start').onclick = function() {
             // webAssemblyPath: '../libs/webm-wasm.wasm',
             width: 640,
             height: 480,
-            framerate: 30
+            frameRate: 30
         });
         recorder.startRecording();
 

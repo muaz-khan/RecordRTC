@@ -6,7 +6,7 @@
 
 /**
  * WebAssemblyRecorder lets you create webm videos in JavaScript via WebAssembly. The library consumes raw RGBA32 buffers (4 bytes per pixel) and turns them into a webm video with the given framerate and quality. This makes it compatible out-of-the-box with ImageData from a CANVAS. With realtime mode you can also use webm-wasm for streaming webm videos.
- * @summary Video recording feature in Chrome.
+ * @summary Video recording feature in Chrome and maybe Edge. Firefox is not supporting WritableStream yet. ReadableStream is also behind two flags on Firefox.
  * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
  * @author {@link http://www.MuazKhan.com|Muaz Khan}
  * @typedef WebAssemblyRecorder
@@ -19,18 +19,14 @@
  * });
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
- * @param {object} config - {webAssemblyPath:'webm-wasm.wasm',workerPath: 'webm-worker.js', framerate: 30, width: 1920, height: 1080}
+ * @param {object} config - {webAssemblyPath:'webm-wasm.wasm',workerPath: 'webm-worker.js', frameRate: 30, width: 1920, height: 1080}
  */
 function WebAssemblyRecorder(stream, config) {
-    // todo: remove all async/wait
-
-    /* jshint ignore:start */
-
     config = config || {};
 
     config.width = config.width || 640;
     config.height = config.height || 480;
-    config.framerate = config.framerate || 30;
+    config.frameRate = config.frameRate || 30;
     // config.bitrate = config.bitrate || 200;
 
     function createBufferURL(buffer, type = '') {
@@ -40,6 +36,9 @@ function WebAssemblyRecorder(stream, config) {
     }
 
     function cameraStream() {
+        // Firefox requires:
+        // 1) dom.streams.enabled
+        // 2) javascript.options.streams
         return new ReadableStream({
             async start(controller) {
                 const cvs = document.createElement('canvas');
@@ -49,7 +48,7 @@ function WebAssemblyRecorder(stream, config) {
                 await nextEvent(video, 'playing');
                 [cvs.width, cvs.height] = [config.width, config.height];
                 const ctx = cvs.getContext('2d');
-                const frameTimeout = 1000 / config.framerate;
+                const frameTimeout = 1000 / config.frameRate;
                 setTimeout(async function f() {
                     ctx.drawImage(video, 0, 0);
                     await controller.enqueue(
@@ -97,9 +96,11 @@ function WebAssemblyRecorder(stream, config) {
             height: config.height,
             realtime: true
         });
+
+        // Firefox do not support "WritableStream" YET.
         cameraStream().pipeTo(new WritableStream({
             write(image) {
-                worker.postMessage(image.data.buffer, [image.data.buffer]);
+                worker && worker.postMessage(image.data.buffer, [image.data.buffer]);
             }
         }));
 
@@ -150,8 +151,13 @@ function WebAssemblyRecorder(stream, config) {
     };
 
     async function terminate() {
+        if(!worker) {
+            return;
+        }
+
         worker.postMessage(null);
         worker.terminate();
+        worker = null;
     }
 
     var arrayOfBuffers = [];
@@ -173,8 +179,6 @@ function WebAssemblyRecorder(stream, config) {
         });
         callback(blob);
     };
-
-    /* jshint ignore:end */
 }
 
 if (typeof RecordRTC !== 'undefined') {

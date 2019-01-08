@@ -1,4 +1,4 @@
-<script>window.demoVersion = '2019.01.02';</script>
+<script>window.demoVersion = '2019.01.09';</script>
 
 <!--
 > Muaz Khan     - www.MuazKhan.com
@@ -79,6 +79,7 @@
     </style>
 
     <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+    <script src="https://cdn.webrtc-experiment.com/RecordRTC/dev/WebAssemblyRecorder.js"></script>
 
     <!-- for Edge/FF/Chrome/Opera/etc. getUserMedia support -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
@@ -138,6 +139,7 @@
                     <option>pcm</option>
                     <option>gif</option>
                     <option>whammy</option>
+                    <option>WebAssembly</option>
                 </select>
 
                 <input type="checkbox" id="chk-timeSlice" style="margin:0;width:auto;" title="Use intervals based recording">
@@ -454,6 +456,13 @@
                     type = 'video';
                 }
 
+                if(mediaContainerFormat.value === 'WebAssembly') {
+                    mimeType = 'video/webm';
+                    fileExtension = 'webm';
+                    recorderType = WebAssemblyRecorder;
+                    type = 'video';
+                }
+
                 if(mediaContainerFormat.value === 'gif') {
                     mimeType = 'image/gif';
                     fileExtension = 'gif';
@@ -592,7 +601,7 @@
                         if(recorderType) {
                             options.recorderType = recorderType;
 
-                            if(recorderType == WhammyRecorder || recorderType == GifRecorder) {
+                            if(recorderType == WhammyRecorder || recorderType == GifRecorder || recorderType == WebAssemblyRecorder) {
                                 options.canvas = options.video = {
                                     width: defaultWidth || 320,
                                     height: defaultHeight || 240
@@ -640,7 +649,7 @@
                         if(recorderType) {
                             options.recorderType = recorderType;
 
-                            if(recorderType == WhammyRecorder || recorderType == GifRecorder) {
+                            if(recorderType == WhammyRecorder || recorderType == GifRecorder || recorderType == WebAssemblyRecorder) {
                                 options.canvas = options.video = {
                                     width: defaultWidth || 320,
                                     height: defaultHeight || 240
@@ -681,7 +690,7 @@
                         if(recorderType) {
                             options.recorderType = recorderType;
 
-                            if(recorderType == WhammyRecorder || recorderType == GifRecorder) {
+                            if(recorderType == WhammyRecorder || recorderType == GifRecorder || recorderType == WebAssemblyRecorder) {
                                 options.canvas = options.video = {
                                     width: defaultWidth || 320,
                                     height: defaultHeight || 240
@@ -1120,8 +1129,12 @@
 
                 recordingOptions.push('gif'); // GifRecorder
 
-                if(isChrome) {
+                if(DetectRTC.browser.name == 'Chrome') {
                     recordingOptions.push('whammy'); // WhammyRecorder
+                }
+
+                if(DetectRTC.browser.name == 'Chrome') {
+                    recordingOptions.push('WebAssembly'); // WebAssemblyRecorder
                 }
 
                 recordingOptions.push('default'); // Default mimeType for MediaStreamRecorder
@@ -1361,11 +1374,6 @@
             }
 
             function uploadToPHPServer(fileName, recordRTC, callback) {
-                if(document.domain === "www.webrtc-experiment.com") {
-                    alert('This option is not supported on "www.webrtc-experiment.com".');
-                    return;
-                }
-
                 var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.getBlob();
                 
                 blob = new File([blob], getFileName(fileExtension), {
@@ -1379,15 +1387,19 @@
 
                 callback('Uploading recorded-file to server.');
 
-                makeXMLHttpRequest('/RecordRTC-to-PHP/save.php', formData, function(progress) {
+                var upload_url = 'https://webrtcweb.com/f/';
+                // var upload_url = 'RecordRTC-to-PHP/save.php';
+
+                var upload_directory = upload_url;
+                // var upload_directory = 'RecordRTC-to-PHP/uploads/';
+
+                makeXMLHttpRequest(upload_url, formData, function(progress) {
                     if (progress !== 'upload-ended') {
                         callback(progress);
                         return;
                     }
 
-                    var initialURL = '/RecordRTC-to-PHP/uploads/';
-
-                    callback('ended', initialURL + fileName);
+                    callback('ended', upload_directory + fileName);
                 });
             }
 

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-01-07 6:40:58 AM UTC
+// Last time updated: 2019-01-09 11:20:14 AM UTC
 
 // ________________
 // RecordRTC v5.5.1
@@ -2656,7 +2656,8 @@ function StereoAudioRecorder(mediaStream, config) {
             writeUTFBytes(view, 0, 'RIFF');
 
             // RIFF chunk length
-            view.setUint32(4, 44 + interleavedLength * 2, true);
+            // changed "44" to "36" via #401
+            view.setUint32(4, 36 + interleavedLength * 2, true);
 
             // RIFF type 
             writeUTFBytes(view, 8, 'WAVE');

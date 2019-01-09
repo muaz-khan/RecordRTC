@@ -27,7 +27,7 @@ function WebAssemblyRecorder(stream, config) {
     config.width = config.width || 640;
     config.height = config.height || 480;
     config.frameRate = config.frameRate || 30;
-    // config.bitrate = config.bitrate || 200;
+    config.bitrate = config.bitrate || 1200;
 
     function createBufferURL(buffer, type = '') {
         return URL.createObjectURL(new Blob([buffer], {
@@ -74,7 +74,7 @@ function WebAssemblyRecorder(stream, config) {
         if (!config.workerPath) {
             // is it safe to use @latest ?
             const buffer = await fetch(
-                'https://unpkg.com/webm-wasm@0.3.2/dist/webm-worker.js'
+                'https://unpkg.com/webm-wasm@latest/dist/webm-worker.js'
             ).then(function(r) {
                 return r.arrayBuffer();
             });
@@ -88,12 +88,14 @@ function WebAssemblyRecorder(stream, config) {
             worker = new Worker(config.workerPath);
         }
 
-        worker.postMessage(config.webAssemblyPath || 'https://unpkg.com/webm-wasm@0.3.2/dist/webm-wasm.wasm');
+        worker.postMessage(config.webAssemblyPath || 'https://unpkg.com/webm-wasm@latest/dist/webm-wasm.wasm');
 
         await nextEvent(worker, 'message');
         worker.postMessage({
             width: config.width,
             height: config.height,
+            bitrate: config.bitrate || 1200,
+            timebaseDen: config.frameRate || 30,
             realtime: true
         });
 
@@ -151,7 +153,7 @@ function WebAssemblyRecorder(stream, config) {
     };
 
     async function terminate() {
-        if(!worker) {
+        if (!worker) {
             return;
         }
 

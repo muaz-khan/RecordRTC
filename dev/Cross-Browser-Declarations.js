@@ -87,8 +87,15 @@ if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undef
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
 var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
-var isSafari = navigator.userAgent.toLowerCase().indexOf('safari/') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome/') === -1;
+var isFirefox = typeof window.InstallTrigger !== 'undefined';
 var isChrome = (!isOpera && !isEdge && !!navigator.webkitGetUserMedia) || isElectron() || navigator.userAgent.toLowerCase().indexOf('chrome/') !== -1;
+
+var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+if (isSafari && !isChrome && navigator.userAgent.indexOf('CriOS') !== -1) {
+    isSafari = false;
+    isChrome = true;
+}
 
 var MediaStream = window.MediaStream;
 

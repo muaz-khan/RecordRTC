@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-01-09 11:20:14 AM UTC
+// Last time updated: 2019-01-10 3:06:44 PM UTC
 
 // ________________
 // RecordRTC v5.5.1
@@ -1049,6 +1049,10 @@ function GetRecorderType(mediaStream, config) {
         console.log('Using recorderType:', recorder.name || recorder.constructor.name);
     }
 
+    if (!recorder && (!(recorder instanceof StereoAudioRecorder) && isSafari)) {
+        recorder = MediaStreamRecorder;
+    }
+
     return recorder;
 }
 
@@ -1718,8 +1722,15 @@ if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undef
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
 var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
-var isSafari = navigator.userAgent.toLowerCase().indexOf('safari/') !== -1 && navigator.userAgent.toLowerCase().indexOf('chrome/') === -1;
+var isFirefox = typeof window.InstallTrigger !== 'undefined';
 var isChrome = (!isOpera && !isEdge && !!navigator.webkitGetUserMedia) || isElectron() || navigator.userAgent.toLowerCase().indexOf('chrome/') !== -1;
+
+var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+if (isSafari && !isChrome && navigator.userAgent.indexOf('CriOS') !== -1) {
+    isSafari = false;
+    isChrome = true;
+}
 
 var MediaStream = window.MediaStream;
 
@@ -1881,11 +1892,7 @@ if (typeof RecordRTC !== 'undefined') {
 }
 
 function isMediaRecorderCompatible() {
-    var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
-    var isChrome = (!!window.chrome && !isOpera) || isElectron();
-    var isFirefox = typeof window.InstallTrigger !== 'undefined';
-
-    if (isFirefox) {
+    if (isFirefox || isSafari || isEdge) {
         return true;
     }
 

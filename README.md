@@ -40,7 +40,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  | Audio+Video (Both local/remote) |
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio+Video (Both local/remote) |
 | Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | **Only Audio** - No Video - No Canvas - No Screen |
-| Safari | iOS/MacOSX) | Audio+Video (video requires "Safari Preview") |
+| Safari | iOS / MacOSX | Audio+Video (video requires "Safari Preview") |
 
 ## Frameworks
 
@@ -131,6 +131,10 @@ var recordRTC = RecordRTC(stream, options);
 | ------------- |-------------|-------------|-------------|-------------|
 |Audio File (WAV) | 1411 kbps | pcm_s16le |44100 Hz|stereo, s16|
 |Video File (WebM)|60 kb/s | (whammy) vp8 codec yuv420p|--|SAR 1:1 DAR 4:3, 1k tbr, 1k tbn, 1k tbc (default)|
+
+**Safari:**
+
+<img src="https://user-images.githubusercontent.com/305679/50975925-f794b200-14ee-11e9-8540-1471e7003896.png" alert="RecordRTC on Safari" />
 
 ## RecordRTC Demos
 

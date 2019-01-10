@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-01-10 3:09:57 PM UTC
+// Last time updated: 2019-01-10 3:33:50 PM UTC
 
 // ________________
 // RecordRTC v5.5.1
@@ -1722,7 +1722,7 @@ if (typeof navigator !== 'undefined' && typeof navigator.getUserMedia === 'undef
 
 var isEdge = navigator.userAgent.indexOf('Edge') !== -1 && (!!navigator.msSaveBlob || !!navigator.msSaveOrOpenBlob);
 var isOpera = !!window.opera || navigator.userAgent.indexOf('OPR/') !== -1;
-var isFirefox = typeof window.InstallTrigger !== 'undefined';
+var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 && ('netscape' in window) && / rv:/.test(navigator.userAgent);
 var isChrome = (!isOpera && !isEdge && !!navigator.webkitGetUserMedia) || isElectron() || navigator.userAgent.toLowerCase().indexOf('chrome/') !== -1;
 
 var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);

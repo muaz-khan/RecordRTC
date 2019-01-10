@@ -79,7 +79,7 @@ function GetRecorderType(mediaStream, config) {
         console.log('Using recorderType:', recorder.name || recorder.constructor.name);
     }
 
-    if (!recorder && (!(recorder instanceof StereoAudioRecorder) && isSafari)) {
+    if (!recorder && isSafari) {
         recorder = MediaStreamRecorder;
     }
 

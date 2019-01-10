@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-01-10 3:06:44 PM UTC
+// Last time updated: 2019-01-10 3:09:57 PM UTC
 
 // ________________
 // RecordRTC v5.5.1
@@ -1049,7 +1049,7 @@ function GetRecorderType(mediaStream, config) {
         console.log('Using recorderType:', recorder.name || recorder.constructor.name);
     }
 
-    if (!recorder && (!(recorder instanceof StereoAudioRecorder) && isSafari)) {
+    if (!recorder && isSafari) {
         recorder = MediaStreamRecorder;
     }
 

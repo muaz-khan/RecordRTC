@@ -115,7 +115,8 @@ module.exports = function(grunt) {
                     Promise: true,
                     JSON: true,
                     typeof: true,
-                    define: true
+                    define: true,
+                    EBML: true
                 },
                 browser: true,
                 browserify: true,

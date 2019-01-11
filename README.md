@@ -1208,6 +1208,19 @@ Demo:
 
 * [simple-demos/RecordRTCPromisesHandler.html](https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/RecordRTCPromisesHandler.html)
 
+## How to Fix video seeking issues?
+
+```html
+<script src="https://cdn.webrtc-experiment.com/EBML.js"></script>
+<script>
+recorder.stopRecording(function(blob) {
+    getSeekableBlob(recorder.getBlob(), function(seekableBlob) {
+        invokeSaveAsDialog(seekableBlob);
+    });
+});
+</script>
+```
+
 ## Credits
 
 1. [Recorderjs](https://github.com/mattdiamond/Recorderjs) for audio recording

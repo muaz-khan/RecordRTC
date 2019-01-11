@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-01-10 3:33:50 PM UTC
+// Last time updated: 2019-01-11 12:28:08 PM UTC
 
 // ________________
 // RecordRTC v5.5.1
@@ -1864,6 +1864,41 @@ function setSrcObject(stream, element) {
     } else {
         element.srcObject = stream;
     }
+}
+
+/**
+ * @param {Blob} file - File or Blob object.
+ * @param {function} callback - Callback function.
+ * @example
+ * getSeekableBlob(blob or file, callback);
+ * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
+ */
+function getSeekableBlob(inputBlob, callback) {
+    // EBML.js copyrights goes to: https://github.com/legokichi/ts-ebml
+    if (typeof EBML === 'undefined') {
+        throw new Error('Please link: https://cdn.webrtc-experiment.com/EBML.js');
+    }
+
+    var reader = new EBML.Reader();
+    var decoder = new EBML.Decoder();
+    var tools = EBML.tools;
+
+    var fileReader = new FileReader();
+    fileReader.onload = function(e) {
+        var ebmlElms = decoder.decode(this.result);
+        ebmlElms.forEach(function(element) {
+            reader.read(element);
+        });
+        reader.stop();
+        var refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
+        var body = this.result.slice(reader.metadataSize);
+        var newBlob = new Blob([refinedMetadataBuf, body], {
+            type: 'video/webm'
+        });
+
+        callback(newBlob);
+    };
+    fileReader.readAsArrayBuffer(inputBlob);
 }
 
 // __________ (used to handle stuff like http://goo.gl/xmE5eg) issue #129

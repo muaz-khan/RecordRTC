@@ -238,8 +238,8 @@ Otherwise check cdnjs below.
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.4.8 or any other version on cdnjs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.4.8/RecordRTC.js"></script>
+<!-- use 5.5.1 or any other version on cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.5.1/RecordRTC.js"></script>
 ```
 
 Note: You can use `RecordRTC.min.js` as well. (on webrtc-experiment or cdnjs)

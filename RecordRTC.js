@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-01-11 12:28:08 PM UTC
+// Last time updated: 2019-01-13 11:46:56 AM UTC
 
 // ________________
-// RecordRTC v5.5.1
+// RecordRTC v5.5.2
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -773,7 +773,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.1'
+        version: '5.5.2'
     };
 
     if (!this) {
@@ -791,7 +791,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.1';
+RecordRTC.version = '5.5.2';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -5541,6 +5541,12 @@ function RecordRTCPromisesHandler(mediaStream, options) {
             try {
                 self.recordRTC.stopRecording(function(url) {
                     self.blob = self.recordRTC.getBlob();
+
+                    if (!self.blob || !self.blob.size) {
+                        reject('Empty blob.', self.blob);
+                        return;
+                    }
+
                     resolve(url);
                 });
             } catch (e) {
@@ -5578,11 +5584,17 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @memberof RecordRTCPromisesHandler
      * @example
      * recorder.stopRecording().then(function() {
-     *     var blob = recorder.getBlob();
+     *     recorder.getBlob().then(function(blob) {})
      * }).catch(errorCB);
      */
     this.getBlob = function() {
-        return self.recordRTC.getBlob();
+        return new Promise(function(resolve, reject) {
+            try {
+                resolve(self.recordRTC.getBlob());
+            } catch (e) {
+                reject(e);
+            }
+        });
     };
 
     /**

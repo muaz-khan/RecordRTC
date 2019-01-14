@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-01-13 12:45:07 PM UTC
+// Last time updated: 2019-01-14 2:23:47 AM UTC
 
 // ________________
-// RecordRTC v5.5.2
+// RecordRTC v5.5.3
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -773,7 +773,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.2'
+        version: '5.5.3'
     };
 
     if (!this) {
@@ -791,7 +791,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.2';
+RecordRTC.version = '5.5.3';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -5611,9 +5611,6 @@ function RecordRTCPromisesHandler(mediaStream, options) {
 if (typeof RecordRTC !== 'undefined') {
     RecordRTC.RecordRTCPromisesHandler = RecordRTCPromisesHandler;
 }
-
-// All Copyrights goes to: Google Inc.
-// Original: https://github.com/GoogleChromeLabs/webm-wasm
 
 // ______________________
 // WebAssemblyRecorder.js

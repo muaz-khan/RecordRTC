@@ -1,6 +1,3 @@
-// All Copyrights goes to: Google Inc.
-// Original: https://github.com/GoogleChromeLabs/webm-wasm
-
 // ______________________
 // WebAssemblyRecorder.js
 

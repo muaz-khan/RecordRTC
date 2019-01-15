@@ -19,6 +19,8 @@
  * @param {object} config - {webAssemblyPath:'webm-wasm.wasm',workerPath: 'webm-worker.js', frameRate: 30, width: 1920, height: 1080}
  */
 function WebAssemblyRecorder(stream, config) {
+    // based on: github.com/GoogleChromeLabs/webm-wasm
+
     if (typeof ReadableStream === 'undefined' || typeof WritableStream === 'undefined') {
         // because it fixes readable/writable streams issues
         console.error('Following polyfill is strongly recommended: https://unpkg.com/@mattiasbuelens/web-streams-polyfill/dist/polyfill.min.js');

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-01-14 2:23:47 AM UTC
+// Last time updated: 2019-01-15 1:33:03 AM UTC
 
 // ________________
 // RecordRTC v5.5.3
@@ -1071,7 +1071,7 @@ function GetRecorderType(mediaStream, config) {
  * recorder.addStream(MediaStream);
  * recorder.mediaType = {
  *     audio: true, // or StereoAudioRecorder or MediaStreamRecorder
- *     video: true, // or WhammyRecorder or MediaStreamRecorder
+ *     video: true, // or WhammyRecorder or MediaStreamRecorder or WebAssemblyRecorder
  *     gif: true    // or GifRecorder
  * };
  * // mimeType is optional and should be set only in advance cases.
@@ -1111,7 +1111,7 @@ function MRecordRTC(mediaStream) {
      * var recorder = new MRecordRTC();
      * recorder.mediaType = {
      *     audio: true, // TRUE or StereoAudioRecorder or MediaStreamRecorder
-     *     video: true, // TRUE or WhammyRecorder or MediaStreamRecorder
+     *     video: true, // TRUE or WhammyRecorder or MediaStreamRecorder or WebAssemblyRecorder
      *     gif  : true  // TRUE or GifRecorder
      * };
      */
@@ -1208,7 +1208,9 @@ function MRecordRTC(mediaStream) {
                 recorderType: recorderType,
                 mimeType: mimeType.video,
                 timeSlice: this.timeSlice,
-                onTimeStamp: this.onTimeStamp
+                onTimeStamp: this.onTimeStamp,
+                workerPath: this.workerPath,
+                webAssemblyPath: this.webAssemblyPath
             });
 
             if (!mediaType.audio) {
@@ -5633,6 +5635,8 @@ if (typeof RecordRTC !== 'undefined') {
  * @param {object} config - {webAssemblyPath:'webm-wasm.wasm',workerPath: 'webm-worker.js', frameRate: 30, width: 1920, height: 1080}
  */
 function WebAssemblyRecorder(stream, config) {
+    // based on: github.com/GoogleChromeLabs/webm-wasm
+
     if (typeof ReadableStream === 'undefined' || typeof WritableStream === 'undefined') {
         // because it fixes readable/writable streams issues
         console.error('Following polyfill is strongly recommended: https://unpkg.com/@mattiasbuelens/web-streams-polyfill/dist/polyfill.min.js');

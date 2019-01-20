@@ -131,6 +131,10 @@ function WebAssemblyRecorder(stream, config) {
         isPaused = false;
         this.blob = null;
         startRecording(stream);
+
+        if (typeof config.initCallback === 'function') {
+            config.initCallback();
+        }
     };
 
     var isPaused;
@@ -187,6 +191,27 @@ function WebAssemblyRecorder(stream, config) {
         });
 
         callback(this.blob);
+    };
+
+    // for debugging
+    this.name = 'WebAssemblyRecorder';
+    this.toString = function() {
+        return this.name;
+    };
+
+    /**
+     * This method resets currently recorded data.
+     * @method
+     * @memberof WebAssemblyRecorder
+     * @example
+     * recorder.clearRecordedData();
+     */
+    this.clearRecordedData = function() {
+        arrayOfBuffers = [];
+        isPaused = false;
+        this.blob = null;
+
+        // todo: if recording-ON then STOP it first
     };
 
     /**

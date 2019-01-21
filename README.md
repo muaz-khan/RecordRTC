@@ -49,22 +49,22 @@ navigator.mediaDevices.getUserMedia({
 
 ## Browsers Support
 
-| Browser        | Operating System                    | Features     |
-| -------------  |-------------                        |------------  |
-| Google Chrome  | Windows + MacOSX + Ubuntu + Android | audo + video |
-| Firefox        | Windows + MacOSX + Ubuntu + Android | audo + video |
-| Opera          | Windows + MacOSX + Ubuntu + Android | audo + video |
-| Edge           | Windows 10                          | only audio   |
-| Safari         | MacOSX + iOS (iphone/ipad)          | audo + video |
+| Browser        | Operating System                    | Features              |
+| -------------  |-------------                        |---------------------  |
+| Google Chrome  | Windows + MacOSX + Ubuntu + Android | audo + video + screen |
+| Firefox        | Windows + MacOSX + Ubuntu + Android | audo + video + screen |
+| Opera          | Windows + MacOSX + Ubuntu + Android | audo + video + screen |
+| Edge           | Windows 10                          | only audio            |
+| Safari         | MacOSX + iOS (iphone/ipad)          | audo + video          |
 
 ## Codecs Support
 
 | Browser       | Video               | Audio            |
 | ------------- |-------------        |-------------     |
 | Chrome        | VP8, VP9, H264, MKV | OPUS/VORBIS, PCM |
+| Opera         | VP8, VP9, H264, MKV | OPUS/VORBIS, PCM |
 | Firefox       | VP8, H264           | OPUS/VORBIS, PCM |
 | Safari        | VP8                 | OPUS/VORBIS, PCM |
-| Opera         | VP8                 | OPUS/VORBIS, PCM |
 | Edge          | None                | PCM              |
 
 
@@ -91,14 +91,16 @@ let recorder = RecordRTC(stream, {
      // audio, video, canvas, gif
     type: 'video',
 
+    // audio/webm
     // video/webm;codecs=vp9
     // video/webm;codecs=vp8
     // video/webm;codecs=h264
     // video/x-matroska;codecs=avc1
     // video/mpeg -- NOT supported by any browser, yet
+    // video/mp4  -- NOT supported by any browser, yet
     // audio/wav
-    // audio/webm
-    // audio/ogg
+    // audio/ogg  -- ONLY Firefox
+    // demo: simple-demos/isTypeSupported.html
     mimeType: 'video/webm',
 
     // MediaStreamRecorder, StereoAudioRecorder, WebAssemblyRecorder
@@ -184,7 +186,7 @@ let recorder = RecordRTC(MediaStream || HTMLCanvasElement || HTMLVideoElement ||
 
 ## API
 
-```javscript
+```javascript
 RecordRTC.prototype = {
     // start the recording
     startRecording: function() {},

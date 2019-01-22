@@ -49,13 +49,13 @@ navigator.mediaDevices.getUserMedia({
 
 ## Browsers Support
 
-| Browser        | Operating System                    | Features              |
-| -------------  |-------------                        |---------------------  |
-| Google Chrome  | Windows + MacOSX + Ubuntu + Android | audo + video + screen |
-| Firefox        | Windows + MacOSX + Ubuntu + Android | audo + video + screen |
-| Opera          | Windows + MacOSX + Ubuntu + Android | audo + video + screen |
-| Edge           | Windows 10                          | only audio            |
-| Safari         | MacOSX + iOS (iphone/ipad)          | audo + video          |
+| Browser        | Operating System                    | Features               |
+| -------------  |-------------                        |---------------------   |
+| Google Chrome  | Windows + MacOSX + Ubuntu + Android | audio + video + screen |
+| Firefox        | Windows + MacOSX + Ubuntu + Android | audio + video + screen |
+| Opera          | Windows + MacOSX + Ubuntu + Android | audio + video + screen |
+| Edge           | Windows 10                          | only audio             |
+| Safari         | MacOSX + iOS (iphone/ipad)          | audio + video          |
 
 ## Codecs Support
 

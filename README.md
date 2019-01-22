@@ -306,7 +306,7 @@ DiskStorage = {
 
 * [https://github.com/muaz-khan/RecordRTC/releases](https://github.com/muaz-khan/RecordRTC/releases)
 
-## Unti Tests
+## Unit Tests
 
 * [https://travis-ci.org/muaz-khan/RecordRTC](https://travis-ci.org/muaz-khan/RecordRTC)
 

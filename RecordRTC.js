@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-01-20 9:21:50 AM UTC
+// Last time updated: 2019-01-29 11:29:34 AM UTC
 
 // ________________
-// RecordRTC v5.5.3
+// RecordRTC v5.5.4
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -715,7 +715,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * // this looper function will keep you updated about the recorder's states.
          * (function looper() {
-         *     document.querySelector('h1').innerHTML = 'Recorder's state is: ' + recorder.state;
+         *     document.querySelector('h1').innerHTML = 'Recorder\'s state is: ' + recorder.state;
          *     if(recorder.state === 'stopped') return; // ignore+stop
          *     setTimeout(looper, 1000); // update after every 3-seconds
          * })();
@@ -773,7 +773,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.3'
+        version: '5.5.4'
     };
 
     if (!this) {
@@ -791,7 +791,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.3';
+RecordRTC.version = '5.5.4';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;

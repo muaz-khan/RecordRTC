@@ -1,5 +1,3 @@
-**Disclaimer:** [https://www.webrtc-experiment.com/disclaimer/](https://www.webrtc-experiment.com/disclaimer/)
-
 # RecordRTC.js | [Live Demo](https://www.webrtc-experiment.com/RecordRTC/)
 
 **WebRTC JavaScript Library for Audio+Video+Screen+Canvas (2D+3D animation) Recording**
@@ -343,6 +341,10 @@ DiskStorage = {
 | Rect.js       | [github](https://github.com/szwang/recordrtc-react) | [article](http://suzannewang.com/recordrtc/) |
 | Video.js      | [github](https://github.com/collab-project/videojs-record) | None |
 | Meteor        | [github](https://github.com/launchbricklabs/recordrtc-meteor-demo) | None |
+
+## Disclaimer
+
+* [https://www.webrtc-experiment.com/disclaimer/](https://www.webrtc-experiment.com/disclaimer/)
 
 ## License
 

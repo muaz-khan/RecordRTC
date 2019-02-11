@@ -344,6 +344,8 @@ DiskStorage = {
 
 ## Disclaimer
 
+There is no warranty, expressed or implied, associated with this product. Use at your own risk.
+
 * [https://www.webrtc-experiment.com/disclaimer/](https://www.webrtc-experiment.com/disclaimer/)
 
 ## License

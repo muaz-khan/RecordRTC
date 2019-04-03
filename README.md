@@ -287,7 +287,7 @@ let browserInfo = {isSafari, isChrome, isFirefox, isEdge, isOpera};
 DiskStorage = {
     init: function() {},
     Fetch: function({audioBlob: Blob, videoBlob: Blob, gifBlob: Blob}) {},
-    Store: functiom({audioBlob: Blob, videoBlob: Blob, gifBlob: Blob}) {},
+    Store: function({audioBlob: Blob, videoBlob: Blob, gifBlob: Blob}) {},
     onError: function() {},
     dataStoreName: function() {}
 };

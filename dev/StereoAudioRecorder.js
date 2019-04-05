@@ -412,7 +412,7 @@ function StereoAudioRecorder(mediaStream, config) {
         RecordRTC.Storage.AudioContextConstructor = new RecordRTC.Storage.AudioContext();
     }
 
-    var context = Storage.AudioContextConstructor;
+    var context = RecordRTC.Storage.AudioContextConstructor;
 
     // creates an audio node from the microphone incoming stream
     var audioInput = context.createMediaStreamSource(mediaStream);

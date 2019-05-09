@@ -1881,6 +1881,7 @@ function setSrcObject(stream, element) {
 /**
  * @param {Blob} file - File or Blob object.
  * @param {function} callback - Callback function.
+ * @returns {Blob} seekableFile - New seekable File or Blob; returns null if error occurred
  * @example
  * getSeekableBlob(blob or file, callback);
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
@@ -1897,19 +1898,29 @@ function getSeekableBlob(inputBlob, callback) {
 
     var fileReader = new FileReader();
     fileReader.onload = function(e) {
-        var ebmlElms = decoder.decode(this.result);
-        ebmlElms.forEach(function(element) {
-            reader.read(element);
-        });
-        reader.stop();
-        var refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
-        var body = this.result.slice(reader.metadataSize);
-        var newBlob = new Blob([refinedMetadataBuf, body], {
-            type: 'video/webm'
-        });
+		try {
+			var ebmlElms = decoder.decode(this.result);
+			ebmlElms.forEach(function(element) {
+				reader.read(element);
+			});
+			reader.stop();
+			var refinedMetadataBuf = tools.makeMetadataSeekable(reader.metadatas, reader.duration, reader.cues);
+			var body = this.result.slice(reader.metadataSize);
+			var newBlob = new Blob([refinedMetadataBuf, body], {
+				type: 'video/webm'
+			});
 
-        callback(newBlob);
-    };
+			callback(newBlob);
+		}
+		catch (error) {
+			console.error("Could not decode file to make it seekable", {error});
+			callback(null);
+		}
+	};
+	fileReader.onerror = function(error) {
+		console.error("An error occurred attempting to load file", {error});
+		callback(null);
+	};
     fileReader.readAsArrayBuffer(inputBlob);
 }
 

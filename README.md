@@ -80,7 +80,7 @@ navigator.mediaDevices.getUserMedia({
 <!-- bower -->
 <script src="bower_components/recordrtc/RecordRTC.js"></script>
 
-<!-- Not Recommended -->
+<!-- it is using github-pages hosting behind the scene -->
 <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 ```
 

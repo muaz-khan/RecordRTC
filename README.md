@@ -87,7 +87,7 @@ navigator.mediaDevices.getUserMedia({
 ## Configuration
 
 ```javascript
-let recorder = RecordRTC(stream, {
+const recorder = RecordRTC(stream, {
      // audio, video, canvas, gif
     type: 'video',
 
@@ -122,7 +122,7 @@ let recorder = RecordRTC(stream, {
     checkForInactiveTracks: false,
 
     // requires timeSlice above
-    onTimeStamp: functiom(timestamp) {},
+    onTimeStamp: function(timestamp) {},
 
     // both for audio and video tracks
     bitsPerSecond: 128000,
@@ -131,7 +131,7 @@ let recorder = RecordRTC(stream, {
     audioBitsPerSecond: 128000,
 
     // only for video track
-    videoBitsPerSecond: 128000
+    videoBitsPerSecond: 128000,
 
     // used by CanvasRecorder and WhammyRecorder
     // it is kind of a "frameRate"
@@ -173,7 +173,7 @@ let recorder = RecordRTC(stream, {
 
     // used by WebAssemblyRecorder
     bitrate: 128000
-};
+});
 ```
 
 ## MediaStream parameter

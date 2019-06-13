@@ -71,17 +71,17 @@ navigator.mediaDevices.getUserMedia({
 ## CDN
 
 ```html
-<!-- use 5.5.3 or any other version on cdnjs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.5.3/RecordRTC.js"></script>
+<!-- recommended -->
+<script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+<!-- use 5.5.5 or any other version on cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.5.5/RecordRTC.js"></script>
 
 <!-- NPM i.e. "npm install recordrtc" -->
 <script src="node_modules/recordrtc/RecordRTC.js"></script>
 
 <!-- bower -->
 <script src="bower_components/recordrtc/RecordRTC.js"></script>
-
-<!-- it is using github-pages hosting behind the scene -->
-<script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 ```
 
 ## Configuration

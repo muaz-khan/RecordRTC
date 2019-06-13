@@ -265,3 +265,11 @@ function getSeekableBlob(inputBlob, callback) {
     };
     fileReader.readAsArrayBuffer(inputBlob);
 }
+
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.invokeSaveAsDialog = invokeSaveAsDialog;
+    RecordRTC.getTracks = getTracks;
+    RecordRTC.getSeekableBlob = getSeekableBlob;
+    RecordRTC.bytesToSize = bytesToSize;
+    RecordRTC.isElectron = isElectron;
+}

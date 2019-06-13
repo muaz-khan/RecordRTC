@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-02-06 11:32:40 AM UTC
+// Last time updated: 2019-06-13 2:08:18 AM UTC
 
 // ________________
-// RecordRTC v5.5.4
+// RecordRTC v5.5.5
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -773,7 +773,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.4'
+        version: '5.5.5'
     };
 
     if (!this) {
@@ -791,7 +791,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.4';
+RecordRTC.version = '5.5.5';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -1913,6 +1913,14 @@ function getSeekableBlob(inputBlob, callback) {
     fileReader.readAsArrayBuffer(inputBlob);
 }
 
+if (typeof RecordRTC !== 'undefined') {
+    RecordRTC.invokeSaveAsDialog = invokeSaveAsDialog;
+    RecordRTC.getTracks = getTracks;
+    RecordRTC.getSeekableBlob = getSeekableBlob;
+    RecordRTC.bytesToSize = bytesToSize;
+    RecordRTC.isElectron = isElectron;
+}
+
 // __________ (used to handle stuff like http://goo.gl/xmE5eg) issue #129
 // Storage.js
 
@@ -2015,7 +2023,7 @@ function MediaStreamRecorder(mediaStream, config) {
     }
 
     if (typeof MediaRecorder === 'undefined') {
-        throw 'Your browser does not supports Media Recorder API. Please try other modules e.g. WhammyRecorder or StereoAudioRecorder.';
+        throw 'Your browser does not support the Media Recorder API. Please try other modules e.g. WhammyRecorder or StereoAudioRecorder.';
     }
 
     config = config || {

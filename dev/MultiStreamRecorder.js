@@ -37,6 +37,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     var mediaRecorder;
 
     options = options || {
+        elementClass: 'multi-streams-mixer',
         mimeType: 'video/webm',
         video: {
             width: 360,
@@ -69,7 +70,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      */
     this.record = function() {
         // github/muaz-khan/MultiStreamsMixer
-        mixer = new MultiStreamsMixer(arrayOfMediaStreams);
+        mixer = new MultiStreamsMixer(arrayOfMediaStreams, options.elementClass || 'multi-streams-mixer');
 
         if (getAllVideoTracks().length) {
             mixer.frameInterval = options.frameInterval || 10;

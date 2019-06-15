@@ -30,7 +30,13 @@ var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko
 
     if (typeof document === 'undefined') {
         /*global document:true */
-        that.document = {};
+        that.document = {
+            documentElement: {
+                appendChild: function() {
+                    return '';
+                }
+            }
+        };
 
         document.createElement = document.captureStream = document.mozCaptureStream = function() {
             var obj = {
@@ -42,7 +48,8 @@ var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko
                 drawImage: function() {},
                 toDataURL: function() {
                     return '';
-                }
+                },
+                style: {}
             };
             return obj;
         };

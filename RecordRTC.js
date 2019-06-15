@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-06-13 2:08:18 AM UTC
+// Last time updated: 2019-06-15 1:10:26 AM UTC
 
 // ________________
-// RecordRTC v5.5.5
+// RecordRTC v5.5.6
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -773,7 +773,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.5'
+        version: '5.5.6'
     };
 
     if (!this) {
@@ -791,7 +791,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.5';
+RecordRTC.version = '5.5.6';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -1592,7 +1592,13 @@ var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko
 
     if (typeof document === 'undefined') {
         /*global document:true */
-        that.document = {};
+        that.document = {
+            documentElement: {
+                appendChild: function() {
+                    return '';
+                }
+            }
+        };
 
         document.createElement = document.captureStream = document.mozCaptureStream = function() {
             var obj = {
@@ -1604,7 +1610,8 @@ var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko
                 drawImage: function() {},
                 toDataURL: function() {
                     return '';
-                }
+                },
+                style: {}
             };
             return obj;
         };
@@ -4816,10 +4823,10 @@ if (typeof RecordRTC !== 'undefined') {
     RecordRTC.GifRecorder = GifRecorder;
 }
 
-// Last time updated: 2018-12-22 9:13:29 AM UTC
+// Last time updated: 2019-06-15 1:07:23 AM UTC
 
 // ________________________
-// MultiStreamsMixer v1.0.7
+// MultiStreamsMixer v1.2.0
 
 // Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
@@ -4828,16 +4835,115 @@ if (typeof RecordRTC !== 'undefined') {
 // MIT License   - www.WebRTC-Experiment.com/licence
 // --------------------------------------------------
 
-function MultiStreamsMixer(arrayOfMediaStreams) {
+function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
+
+    var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko) Fake/12.3.4567.89 Fake/123.45';
+
+    (function(that) {
+        if (!that) {
+            return;
+        }
+
+        if (typeof window !== 'undefined') {
+            return;
+        }
+
+        if (typeof global === 'undefined') {
+            return;
+        }
+
+        global.navigator = {
+            userAgent: browserFakeUserAgent,
+            getUserMedia: function() {}
+        };
+
+        if (!global.console) {
+            global.console = {};
+        }
+
+        if (typeof global.console.log === 'undefined' || typeof global.console.error === 'undefined') {
+            global.console.error = global.console.log = global.console.log || function() {
+                console.log(arguments);
+            };
+        }
+
+        if (typeof document === 'undefined') {
+            /*global document:true */
+            that.document = {
+                documentElement: {
+                    appendChild: function() {
+                        return '';
+                    }
+                }
+            };
+
+            document.createElement = document.captureStream = document.mozCaptureStream = function() {
+                var obj = {
+                    getContext: function() {
+                        return obj;
+                    },
+                    play: function() {},
+                    pause: function() {},
+                    drawImage: function() {},
+                    toDataURL: function() {
+                        return '';
+                    },
+                    style: {}
+                };
+                return obj;
+            };
+
+            that.HTMLVideoElement = function() {};
+        }
+
+        if (typeof location === 'undefined') {
+            /*global location:true */
+            that.location = {
+                protocol: 'file:',
+                href: '',
+                hash: ''
+            };
+        }
+
+        if (typeof screen === 'undefined') {
+            /*global screen:true */
+            that.screen = {
+                width: 0,
+                height: 0
+            };
+        }
+
+        if (typeof URL === 'undefined') {
+            /*global screen:true */
+            that.URL = {
+                createObjectURL: function() {
+                    return '';
+                },
+                revokeObjectURL: function() {
+                    return '';
+                }
+            };
+        }
+
+        /*global window:true */
+        that.window = global;
+    })(typeof global !== 'undefined' ? global : null);
 
     // requires: chrome://flags/#enable-experimental-web-platform-features
+
+    elementClass = elementClass || 'multi-streams-mixer';
 
     var videos = [];
     var isStopDrawingFrames = false;
 
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
-    canvas.style = 'opacity:0;position:absolute;z-index:-1;top: -100000000;left:-1000000000; margin-top:-1000000000;margin-left:-1000000000;';
+    canvas.style.opacity = 0;
+    canvas.style.position = 'absolute';
+    canvas.style.zIndex = -1;
+    canvas.style.top = '-1000em';
+    canvas.style.left = '-1000em';
+    canvas.className = elementClass;
     (document.body || document.documentElement).appendChild(canvas);
 
     this.disableLogs = false;
@@ -4944,6 +5050,7 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
             if (video.stream.fullcanvas) {
                 fullcanvas = video;
             } else {
+                // todo: video.stream.active or video.stream.live to fix blank frames issues?
                 remaining.push(video);
             }
         });
@@ -5068,6 +5175,10 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
             }
         });
 
+        // mixedVideoStream.prototype.appendStreams = appendStreams;
+        // mixedVideoStream.prototype.resetVideoStreams = resetVideoStreams;
+        // mixedVideoStream.prototype.clearRecordedData = clearRecordedData;
+
         return mixedVideoStream;
     }
 
@@ -5133,6 +5244,8 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
         });
 
         if (!audioTracksLength) {
+            // because "self.audioContext" is not initialized
+            // that's why we've to ignore rest of the code
             return;
         }
 
@@ -5147,6 +5260,8 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
         var video = document.createElement('video');
 
         setSrcObject(stream, video);
+
+        video.className = elementClass;
 
         video.muted = true;
         video.volume = 0;
@@ -5168,7 +5283,7 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
             streams = [streams];
         }
 
-        arrayOfMediaStreams.concat(streams);
+        arrayOfMediaStreams = arrayOfMediaStreams.concat(streams);
 
         streams.forEach(function(stream) {
             if (stream.getTracks().filter(function(t) {
@@ -5181,7 +5296,7 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
 
             if (stream.getTracks().filter(function(t) {
                     return t.kind === 'audio';
-                }).length && self.audioContext) {
+                }).length && self.audioContext && self.audioDestination) {
                 var audioSource = self.audioContext.createMediaStreamSource(stream);
                 audioSource.connect(self.audioDestination);
                 self.audioSources.push(audioSource);
@@ -5260,6 +5375,16 @@ function MultiStreamsMixer(arrayOfMediaStreams) {
 
 }
 
+if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
+    module.exports = MultiStreamsMixer;
+}
+
+if (typeof define === 'function' && define.amd) {
+    define('MultiStreamsMixer', [], function() {
+        return MultiStreamsMixer;
+    });
+}
+
 // ______________________
 // MultiStreamRecorder.js
 
@@ -5299,6 +5424,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
     var mediaRecorder;
 
     options = options || {
+        elementClass: 'multi-streams-mixer',
         mimeType: 'video/webm',
         video: {
             width: 360,
@@ -5331,7 +5457,7 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      */
     this.record = function() {
         // github/muaz-khan/MultiStreamsMixer
-        mixer = new MultiStreamsMixer(arrayOfMediaStreams);
+        mixer = new MultiStreamsMixer(arrayOfMediaStreams, options.elementClass || 'multi-streams-mixer');
 
         if (getAllVideoTracks().length) {
             mixer.frameInterval = options.frameInterval || 10;

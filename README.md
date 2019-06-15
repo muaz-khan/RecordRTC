@@ -74,8 +74,8 @@ navigator.mediaDevices.getUserMedia({
 <!-- recommended -->
 <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 
-<!-- use 5.5.5 or any other version on cdnjs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.5.5/RecordRTC.js"></script>
+<!-- use 5.5.6 or any other version on cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.5.6/RecordRTC.js"></script>
 
 <!-- NPM i.e. "npm install recordrtc" -->
 <script src="node_modules/recordrtc/RecordRTC.js"></script>
@@ -172,7 +172,10 @@ const recorder = RecordRTC(stream, {
     frameRate: 30,
 
     // used by WebAssemblyRecorder
-    bitrate: 128000
+    bitrate: 128000,
+
+    // used by MultiStreamRecorder - to access HTMLCanvasElement
+    elementClass: 'multi-streams-mixer'
 });
 ```
 

@@ -345,12 +345,6 @@ DiskStorage = {
 | Video.js      | [github](https://github.com/collab-project/videojs-record) | None |
 | Meteor        | [github](https://github.com/launchbricklabs/recordrtc-meteor-demo) | None |
 
-## Disclaimer
-
-There is no warranty, expressed or implied, associated with this product. Use at your own risk.
-
-* [https://www.webrtc-experiment.com/disclaimer/](https://www.webrtc-experiment.com/disclaimer/)
-
 ## License
 
 [RecordRTC.js](https://github.com/muaz-khan/RecordRTC) is released under [MIT license](https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE) . Copyright (c) [Muaz Khan](https://MuazKhan.com).

@@ -1,7 +1,7 @@
-// Last time updated: 2019-06-15 1:07:23 AM UTC
+// Last time updated: 2019-06-18 3:19:53 AM UTC
 
 // ________________________
-// MultiStreamsMixer v1.2.0
+// MultiStreamsMixer v1.2.1
 
 // Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
@@ -15,6 +15,10 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
     var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko) Fake/12.3.4567.89 Fake/123.45';
 
     (function(that) {
+        if (typeof RecordRTC !== 'undefined') {
+            return;
+        }
+
         if (!that) {
             return;
         }
@@ -550,12 +554,14 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
 
 }
 
-if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
-    module.exports = MultiStreamsMixer;
-}
+if (typeof RecordRTC === 'undefined') {
+    if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
+        module.exports = MultiStreamsMixer;
+    }
 
-if (typeof define === 'function' && define.amd) {
-    define('MultiStreamsMixer', [], function() {
-        return MultiStreamsMixer;
-    });
+    if (typeof define === 'function' && define.amd) {
+        define('MultiStreamsMixer', [], function() {
+            return MultiStreamsMixer;
+        });
+    }
 }

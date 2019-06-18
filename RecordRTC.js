@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-06-15 1:10:26 AM UTC
+// Last time updated: 2019-06-18 3:20:07 AM UTC
 
 // ________________
-// RecordRTC v5.5.6
+// RecordRTC v5.5.7
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -773,7 +773,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.6'
+        version: '5.5.7'
     };
 
     if (!this) {
@@ -791,7 +791,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.6';
+RecordRTC.version = '5.5.7';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -4823,10 +4823,10 @@ if (typeof RecordRTC !== 'undefined') {
     RecordRTC.GifRecorder = GifRecorder;
 }
 
-// Last time updated: 2019-06-15 1:07:23 AM UTC
+// Last time updated: 2019-06-18 3:19:53 AM UTC
 
 // ________________________
-// MultiStreamsMixer v1.2.0
+// MultiStreamsMixer v1.2.1
 
 // Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
@@ -4840,6 +4840,10 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
     var browserFakeUserAgent = 'Fake/5.0 (FakeOS) AppleWebKit/123 (KHTML, like Gecko) Fake/12.3.4567.89 Fake/123.45';
 
     (function(that) {
+        if (typeof RecordRTC !== 'undefined') {
+            return;
+        }
+
         if (!that) {
             return;
         }
@@ -5375,14 +5379,16 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
 
 }
 
-if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
-    module.exports = MultiStreamsMixer;
-}
+if (typeof RecordRTC === 'undefined') {
+    if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
+        module.exports = MultiStreamsMixer;
+    }
 
-if (typeof define === 'function' && define.amd) {
-    define('MultiStreamsMixer', [], function() {
-        return MultiStreamsMixer;
-    });
+    if (typeof define === 'function' && define.amd) {
+        define('MultiStreamsMixer', [], function() {
+            return MultiStreamsMixer;
+        });
+    }
 }
 
 // ______________________

@@ -269,6 +269,8 @@ RecordRTC.prototype = {
 }
 ```
 
+Please check documentation here: [https://recordrtc.org/](https://recordrtc.org/)
+
 ## Global APIs
 
 ```javascript

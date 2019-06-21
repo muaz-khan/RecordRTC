@@ -8,8 +8,8 @@
 /**
  * MultiStreamRecorder can record multiple videos in single container.
  * @summary Multi-videos recorder.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef MultiStreamRecorder
  * @class
  * @example
@@ -191,6 +191,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         mixer.appendStreams(streams);
+
+        if (options.previewStream && typeof options.previewStream === 'function') {
+            options.previewStream(mixer.getMixedStream());
+        }
     };
 
     /**
@@ -211,6 +215,19 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         mixer.resetVideoStreams(streams);
+    };
+
+    /**
+     * Returns MultiStreamsMixer
+     * @method
+     * @memberof MultiStreamRecorder
+     * @param {MediaStreams} mediaStreams - Array of MediaStreams
+     * @example
+     * let mixer = recorder.getMixer();
+     * mixer.appendStreams([newStream]);
+     */
+    this.getMixer = function(streams) {
+        return mixer;
     };
 
     // for debugging

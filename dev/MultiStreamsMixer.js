@@ -1,7 +1,7 @@
-// Last time updated: 2019-06-18 3:19:53 AM UTC
+// Last time updated: 2019-06-21 4:09:42 AM UTC
 
 // ________________________
-// MultiStreamsMixer v1.2.1
+// MultiStreamsMixer v1.2.2
 
 // Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
@@ -462,24 +462,34 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
             streams = [streams];
         }
 
-        arrayOfMediaStreams = arrayOfMediaStreams.concat(streams);
-
         streams.forEach(function(stream) {
+            var newStream = new MediaStream();
+
             if (stream.getTracks().filter(function(t) {
                     return t.kind === 'video';
                 }).length) {
                 var video = getVideo(stream);
                 video.stream = stream;
                 videos.push(video);
+
+                newStream.addTrack(stream.getTracks().filter(function(t) {
+                    return t.kind === 'video';
+                })[0]);
             }
 
             if (stream.getTracks().filter(function(t) {
                     return t.kind === 'audio';
-                }).length && self.audioContext && self.audioDestination) {
+                }).length) {
                 var audioSource = self.audioContext.createMediaStreamSource(stream);
+                self.audioDestination = self.audioContext.createMediaStreamDestination();
                 audioSource.connect(self.audioDestination);
-                self.audioSources.push(audioSource);
+
+                newStream.addTrack(self.audioDestination.stream.getTracks().filter(function(t) {
+                    return t.kind === 'audio';
+                })[0]);
             }
+
+            arrayOfMediaStreams.push(newStream);
         });
     };
 

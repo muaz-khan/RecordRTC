@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-06-18 3:20:07 AM UTC
+// Last time updated: 2019-06-21 4:32:42 AM UTC
 
 // ________________
-// RecordRTC v5.5.7
+// RecordRTC v5.5.8
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -18,8 +18,8 @@
 /**
  * {@link https://github.com/muaz-khan/RecordRTC|RecordRTC} is a WebRTC JavaScript library for audio/video as well as screen activity recording. It supports Chrome, Firefox, Opera, Android, and Microsoft Edge. Platforms: Linux, Mac and Windows. 
  * @summary Record audio, video or screen inside the browser.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef RecordRTC
  * @class
  * @example
@@ -49,6 +49,10 @@ function RecordRTC(mediaStream, config) {
     var self = this;
 
     function startRecording(config2) {
+        if (!config.disableLogs) {
+            console.log('RecordRTC version: ', self.version);
+        }
+
         if (!!config2) {
             // allow users to set options using startRecording method
             // config2 is similar to main "config" object (second parameter over RecordRTC constructor)
@@ -533,10 +537,10 @@ function RecordRTC(mediaStream, config) {
          * @memberof RecordRTC
          * @instance
          * @example
-         * var internal = recorder.getInternalRecorder();
-         * if(internal instanceof MultiStreamRecorder) {
-         *     internal.addStreams([newAudioStream]);
-         *     internal.resetVideoStreams([screenStream]);
+         * var internalRecorder = recorder.getInternalRecorder();
+         * if(internalRecorder instanceof MultiStreamRecorder) {
+         *     internalRecorder.addStreams([newAudioStream]);
+         *     internalRecorder.resetVideoStreams([screenStream]);
          * }
          * @returns {Object} Returns internal recording object.
          */
@@ -681,6 +685,10 @@ function RecordRTC(mediaStream, config) {
          * recorder.startRecording();
          */
         reset: function() {
+            if (self.state === 'recording' && !config.disableLogs) {
+                console.warn('Stop an active recorder.');
+            }
+
             if (mediaRecorder && typeof mediaRecorder.clearRecordedData === 'function') {
                 mediaRecorder.clearRecordedData();
             }
@@ -760,7 +768,7 @@ function RecordRTC(mediaStream, config) {
             config.disableLogs = disableLogsCache;
 
             if (!config.disableLogs) {
-                console.warn('RecordRTC is destroyed.');
+                console.log('RecordRTC is destroyed.');
             }
         },
 
@@ -773,7 +781,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.7'
+        version: '5.5.8'
     };
 
     if (!this) {
@@ -791,7 +799,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.7';
+RecordRTC.version = '5.5.8';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -901,8 +909,8 @@ RecordRTC.writeToDisk = function(options) {
 /**
  * {@link RecordRTCConfiguration} is an inner/private helper for {@link RecordRTC}.
  * @summary It configures the 2nd parameter passed over {@link RecordRTC} and returns a valid "config" object.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef RecordRTCConfiguration
  * @class
  * @example
@@ -974,8 +982,8 @@ function RecordRTCConfiguration(mediaStream, config) {
 /**
  * {@link GetRecorderType} is an inner/private helper for {@link RecordRTC}.
  * @summary It returns best recorder-type available for your browser.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef GetRecorderType
  * @class
  * @example
@@ -1062,8 +1070,8 @@ function GetRecorderType(mediaStream, config) {
 /**
  * MRecordRTC runs on top of {@link RecordRTC} to bring multiple recordings in a single place, by providing simple API.
  * @summary MRecordRTC stands for "Multiple-RecordRTC".
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef MRecordRTC
  * @class
  * @example
@@ -1933,8 +1941,8 @@ if (typeof RecordRTC !== 'undefined') {
 
 /**
  * Storage is a standalone object used by {@link RecordRTC} to store reusable objects e.g. "new AudioContext".
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @example
  * Storage.AudioContext === webkitAudioContext
  * @property {webkitAudioContext} AudioContext - Keeps a reference to AudioContext object.
@@ -1994,7 +2002,7 @@ function isMediaRecorderCompatible() {
 /**
  * MediaStreamRecorder is an abstraction layer for {@link https://w3c.github.io/mediacapture-record/MediaRecorder.html|MediaRecorder API}. It is used by {@link RecordRTC} to record MediaStream(s) in both Chrome and Firefox.
  * @summary Runs top over {@link https://w3c.github.io/mediacapture-record/MediaRecorder.html|MediaRecorder API}.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
  * @author {@link https://github.com/muaz-khan|Muaz Khan}
  * @typedef MediaStreamRecorder
  * @class
@@ -2496,8 +2504,8 @@ if (typeof RecordRTC !== 'undefined') {
 /**
  * StereoAudioRecorder is a standalone class used by {@link RecordRTC} to bring "stereo" audio-recording in chrome.
  * @summary JavaScript standalone object for stereo audio recording.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef StereoAudioRecorder
  * @class
  * @example
@@ -3213,8 +3221,8 @@ if (typeof RecordRTC !== 'undefined') {
 /**
  * CanvasRecorder is a standalone class used by {@link RecordRTC} to bring HTML5-Canvas recording into video WebM. It uses HTML2Canvas library and runs top over {@link Whammy}.
  * @summary HTML2Canvas recording into video WebM.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef CanvasRecorder
  * @class
  * @example
@@ -3551,8 +3559,8 @@ if (typeof RecordRTC !== 'undefined') {
 /**
  * WhammyRecorder is a standalone class used by {@link RecordRTC} to bring video recording in Chrome. It runs top over {@link Whammy}.
  * @summary Video recording feature in Chrome.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef WhammyRecorder
  * @class
  * @example
@@ -3934,8 +3942,8 @@ if (typeof RecordRTC !== 'undefined') {
 /**
  * Whammy is a standalone class used by {@link RecordRTC} to bring video recording in Chrome. It is written by {@link https://github.com/antimatter15|antimatter15}
  * @summary A real time javascript webm encoder based on a canvas hack.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef Whammy
  * @class
  * @example
@@ -4367,8 +4375,8 @@ if (typeof RecordRTC !== 'undefined') {
 /**
  * DiskStorage is a standalone object used by {@link RecordRTC} to store recorded blobs in IndexedDB storage.
  * @summary Writing blobs into IndexedDB.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @example
  * DiskStorage.Store({
  *     audioBlob: yourAudioBlob,
@@ -4542,8 +4550,8 @@ if (typeof RecordRTC !== 'undefined') {
 
 /**
  * GifRecorder is standalone calss used by {@link RecordRTC} to record video or canvas into animated gif.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef GifRecorder
  * @class
  * @example
@@ -4823,10 +4831,10 @@ if (typeof RecordRTC !== 'undefined') {
     RecordRTC.GifRecorder = GifRecorder;
 }
 
-// Last time updated: 2019-06-18 3:19:53 AM UTC
+// Last time updated: 2019-06-21 4:09:42 AM UTC
 
 // ________________________
-// MultiStreamsMixer v1.2.1
+// MultiStreamsMixer v1.2.2
 
 // Open-Sourced: https://github.com/muaz-khan/MultiStreamsMixer
 
@@ -5287,24 +5295,34 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
             streams = [streams];
         }
 
-        arrayOfMediaStreams = arrayOfMediaStreams.concat(streams);
-
         streams.forEach(function(stream) {
+            var newStream = new MediaStream();
+
             if (stream.getTracks().filter(function(t) {
                     return t.kind === 'video';
                 }).length) {
                 var video = getVideo(stream);
                 video.stream = stream;
                 videos.push(video);
+
+                newStream.addTrack(stream.getTracks().filter(function(t) {
+                    return t.kind === 'video';
+                })[0]);
             }
 
             if (stream.getTracks().filter(function(t) {
                     return t.kind === 'audio';
-                }).length && self.audioContext && self.audioDestination) {
+                }).length) {
                 var audioSource = self.audioContext.createMediaStreamSource(stream);
+                self.audioDestination = self.audioContext.createMediaStreamDestination();
                 audioSource.connect(self.audioDestination);
-                self.audioSources.push(audioSource);
+
+                newStream.addTrack(self.audioDestination.stream.getTracks().filter(function(t) {
+                    return t.kind === 'audio';
+                })[0]);
             }
+
+            arrayOfMediaStreams.push(newStream);
         });
     };
 
@@ -5401,8 +5419,8 @@ if (typeof RecordRTC === 'undefined') {
 /**
  * MultiStreamRecorder can record multiple videos in single container.
  * @summary Multi-videos recorder.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef MultiStreamRecorder
  * @class
  * @example
@@ -5584,6 +5602,10 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         }
 
         mixer.appendStreams(streams);
+
+        if (options.previewStream && typeof options.previewStream === 'function') {
+            options.previewStream(mixer.getMixedStream());
+        }
     };
 
     /**
@@ -5606,6 +5628,19 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
         mixer.resetVideoStreams(streams);
     };
 
+    /**
+     * Returns MultiStreamsMixer
+     * @method
+     * @memberof MultiStreamRecorder
+     * @param {MediaStreams} mediaStreams - Array of MediaStreams
+     * @example
+     * let mixer = recorder.getMixer();
+     * mixer.appendStreams([newStream]);
+     */
+    this.getMixer = function(streams) {
+        return mixer;
+    };
+
     // for debugging
     this.name = 'MultiStreamRecorder';
     this.toString = function() {
@@ -5623,8 +5658,8 @@ if (typeof RecordRTC !== 'undefined') {
 /**
  * RecordRTCPromisesHandler adds promises support in {@link RecordRTC}. Try a {@link https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/RecordRTCPromisesHandler.html|demo here}
  * @summary Promises for {@link RecordRTC}
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef RecordRTCPromisesHandler
  * @class
  * @example
@@ -5632,6 +5667,9 @@ if (typeof RecordRTC !== 'undefined') {
  * recorder.startRecording()
  *         .then(successCB)
  *         .catch(errorCB);
+ * // Note: You can access all RecordRTC API using "recorder.recordRTC" e.g. 
+ * recorder.recordRTC.onStateChanged = function(state) {};
+ * recorder.recordRTC.setRecordingDuration(5000);
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - Single media-stream object, array of media-streams, html-canvas-element, etc.
  * @param {object} config - {type:"video", recorderType: MediaStreamRecorder, disableLogs: true, numberOfAudioChannels: 1, bufferSize: 0, sampleRate: 0, video: HTMLVideoElement, etc.}
@@ -5654,8 +5692,9 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @property {Blob} blob - Access/reach the native {@link RecordRTC} object.
      * @memberof RecordRTCPromisesHandler
      * @example
-     * var internal = recorder.recordRTC.getInternalRecorder();
+     * let internal = recorder.recordRTC.getInternalRecorder();
      * alert(internal instanceof MediaStreamRecorder);
+     * recorder.recordRTC.onStateChanged = function(state) {};
      */
     self.recordRTC = new RecordRTC(mediaStream, options);
 
@@ -5708,6 +5747,46 @@ function RecordRTCPromisesHandler(mediaStream, options) {
     };
 
     /**
+     * This method pauses the recording. You can resume recording using "resumeRecording" method.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.pauseRecording()
+     *         .then(successCB)
+     *         .catch(errorCB);
+     */
+    this.pauseRecording = function() {
+        return new Promise(function(resolve, reject) {
+            try {
+                self.recordRTC.pauseRecording();
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
+    };
+
+    /**
+     * This method resumes the recording.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.resumeRecording()
+     *         .then(successCB)
+     *         .catch(errorCB);
+     */
+    this.resumeRecording = function() {
+        return new Promise(function(resolve, reject) {
+            try {
+                self.recordRTC.resumeRecording();
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
+    };
+
+    /**
      * This method returns data-url for the recorded blob.
      * @method
      * @memberof RecordRTCPromisesHandler
@@ -5750,14 +5829,102 @@ function RecordRTCPromisesHandler(mediaStream, options) {
     };
 
     /**
+     * Destroy RecordRTC instance. Clear all recorders and objects.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * let internalRecorder = await recorder.getInternalRecorder();
+     * if(internalRecorder instanceof MultiStreamRecorder) {
+     *     internalRecorder.addStreams([newAudioStream]);
+     *     internalRecorder.resetVideoStreams([screenStream]);
+     * }
+     * @returns {Object} Returns internal recording object.
+     */
+    this.getInternalRecorder = function() {
+        return new Promise(function(resolve, reject) {
+            try {
+                resolve(self.recordRTC.getInternalRecorder());
+            } catch (e) {
+                reject(e);
+            }
+        });
+    };
+
+    /**
+     * This method resets the recorder. So that you can reuse single recorder instance many times.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * await recorder.reset();
+     * recorder.startRecording(); // record again
+     */
+    this.reset = function() {
+        return new Promise(function(resolve, reject) {
+            try {
+                resolve(self.recordRTC.reset());
+            } catch (e) {
+                reject(e);
+            }
+        });
+    };
+
+    /**
+     * Destroy RecordRTC instance. Clear all recorders and objects.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * recorder.destroy().then(successCB).catch(errorCB);
+     */
+    this.destroy = function() {
+        return new Promise(function(resolve, reject) {
+            try {
+                resolve(self.recordRTC.destroy());
+            } catch (e) {
+                reject(e);
+            }
+        });
+    };
+
+    /**
+     * Get recorder's readonly state.
+     * @method
+     * @memberof RecordRTCPromisesHandler
+     * @example
+     * let state = await recorder.getState();
+     * // or
+     * recorder.getState().then(state => { console.log(state); })
+     * @returns {String} Returns recording state.
+     */
+    this.getState = function() {
+        return new Promise(function(resolve, reject) {
+            try {
+                resolve(self.recordRTC.getState());
+            } catch (e) {
+                reject(e);
+            }
+        });
+    };
+
+    /**
      * @property {Blob} blob - Recorded data as "Blob" object.
      * @memberof RecordRTCPromisesHandler
      * @example
-     * recorder.stopRecording().then(function() {
-     *     var blob = recorder.getBlob();
-     * }).catch(errorCB);
+     * await recorder.stopRecording();
+     * let blob = recorder.getBlob(); // or "recorder.recordRTC.blob"
+     * invokeSaveAsDialog(blob);
      */
     this.blob = null;
+
+    /**
+     * RecordRTC version number
+     * @property {String} version - Release version number.
+     * @memberof RecordRTCPromisesHandler
+     * @static
+     * @readonly
+     * @example
+     * alert(recorder.version);
+     */
+    this.version = '5.5.8';
 }
 
 if (typeof RecordRTC !== 'undefined') {
@@ -5770,8 +5937,8 @@ if (typeof RecordRTC !== 'undefined') {
 /**
  * WebAssemblyRecorder lets you create webm videos in JavaScript via WebAssembly. The library consumes raw RGBA32 buffers (4 bytes per pixel) and turns them into a webm video with the given framerate and quality. This makes it compatible out-of-the-box with ImageData from a CANVAS. With realtime mode you can also use webm-wasm for streaming webm videos.
  * @summary Video recording feature in Chrome, Firefox and maybe Edge.
- * @license {@link https://github.com/muaz-khan/RecordRTC#license|MIT}
- * @author {@link http://www.MuazKhan.com|Muaz Khan}
+ * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
+ * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef WebAssemblyRecorder
  * @class
  * @example

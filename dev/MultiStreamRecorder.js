@@ -221,12 +221,11 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      * Returns MultiStreamsMixer
      * @method
      * @memberof MultiStreamRecorder
-     * @param {MediaStreams} mediaStreams - Array of MediaStreams
      * @example
      * let mixer = recorder.getMixer();
      * mixer.appendStreams([newStream]);
      */
-    this.getMixer = function(streams) {
+    this.getMixer = function() {
         return mixer;
     };
 

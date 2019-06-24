@@ -21,7 +21,7 @@
 
 function CanvasRecorder(htmlElement, config) {
     if (typeof html2canvas === 'undefined') {
-        throw 'Please link: https://cdn.webrtc-experiment.com/screenshot.js';
+        throw 'Please link: https://www.webrtc-experiment.com/screenshot.js';
     }
 
     config = config || {};

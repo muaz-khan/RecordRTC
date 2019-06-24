@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2019-06-21 4:32:42 AM UTC
+// Last time updated: 2019-06-24 7:56:58 AM UTC
 
 // ________________
-// RecordRTC v5.5.8
+// RecordRTC v5.5.9
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -781,7 +781,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.8'
+        version: '5.5.9'
     };
 
     if (!this) {
@@ -799,7 +799,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.8';
+RecordRTC.version = '5.5.9';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -1903,7 +1903,7 @@ function setSrcObject(stream, element) {
 function getSeekableBlob(inputBlob, callback) {
     // EBML.js copyrights goes to: https://github.com/legokichi/ts-ebml
     if (typeof EBML === 'undefined') {
-        throw new Error('Please link: https://cdn.webrtc-experiment.com/EBML.js');
+        throw new Error('Please link: https://www.webrtc-experiment.com/EBML.js');
     }
 
     var reader = new EBML.Reader();
@@ -3238,7 +3238,7 @@ if (typeof RecordRTC !== 'undefined') {
 
 function CanvasRecorder(htmlElement, config) {
     if (typeof html2canvas === 'undefined') {
-        throw 'Please link: https://cdn.webrtc-experiment.com/screenshot.js';
+        throw 'Please link: https://www.webrtc-experiment.com/screenshot.js';
     }
 
     config = config || {};
@@ -4568,7 +4568,7 @@ if (typeof RecordRTC !== 'undefined') {
 function GifRecorder(mediaStream, config) {
     if (typeof GIFEncoder === 'undefined') {
         var script = document.createElement('script');
-        script.src = 'https://cdn.webrtc-experiment.com/gif-recorder.js';
+        script.src = 'https://www.webrtc-experiment.com/gif-recorder.js';
         (document.body || document.documentElement).appendChild(script);
     }
 
@@ -5632,12 +5632,11 @@ function MultiStreamRecorder(arrayOfMediaStreams, options) {
      * Returns MultiStreamsMixer
      * @method
      * @memberof MultiStreamRecorder
-     * @param {MediaStreams} mediaStreams - Array of MediaStreams
      * @example
      * let mixer = recorder.getMixer();
      * mixer.appendStreams([newStream]);
      */
-    this.getMixer = function(streams) {
+    this.getMixer = function() {
         return mixer;
     };
 
@@ -5924,7 +5923,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @example
      * alert(recorder.version);
      */
-    this.version = '5.5.8';
+    this.version = '5.5.9';
 }
 
 if (typeof RecordRTC !== 'undefined') {

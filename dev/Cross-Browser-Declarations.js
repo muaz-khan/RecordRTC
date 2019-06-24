@@ -241,7 +241,7 @@ function setSrcObject(stream, element) {
 function getSeekableBlob(inputBlob, callback) {
     // EBML.js copyrights goes to: https://github.com/legokichi/ts-ebml
     if (typeof EBML === 'undefined') {
-        throw new Error('Please link: https://cdn.webrtc-experiment.com/EBML.js');
+        throw new Error('Please link: https://www.webrtc-experiment.com/EBML.js');
     }
 
     var reader = new EBML.Reader();

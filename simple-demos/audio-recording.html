@@ -180,7 +180,7 @@ btnReleaseMicrophone.onclick = function() {
     btnStartRecording.disabled = false;
 
     if(microphone) {
-        microphone.stop();
+        microphone.getTracks().forEach( t => t.stop());();
         microphone = null;
     }
 

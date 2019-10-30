@@ -51,11 +51,11 @@ navigator.mediaDevices.getUserMedia({
 
 | Browser        | Operating System                    | Features               |
 | -------------  |-------------                        |---------------------   |
-| Google Chrome  | Windows + MacOSX + Ubuntu + Android | audio + video + screen |
-| Firefox        | Windows + MacOSX + Ubuntu + Android | audio + video + screen |
-| Opera          | Windows + MacOSX + Ubuntu + Android | audio + video + screen |
+| Google Chrome  | Windows + macOS + Ubuntu + Android  | audio + video + screen |
+| Firefox        | Windows + macOS + Ubuntu + Android  | audio + video + screen |
+| Opera          | Windows + macOS + Ubuntu + Android  | audio + video + screen |
 | Edge           | Windows 10                          | only audio             |
-| Safari         | MacOSX + iOS (iphone/ipad)          | audio + video          |
+| Safari         | macOS + iOS (iPhone/iPad)           | audio + video          |
 
 ## Codecs Support
 

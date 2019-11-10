@@ -261,6 +261,7 @@ function GifRecorder(mediaStream, config) {
         var video = document.createElement('video');
         video.muted = true;
         video.autoplay = true;
+        video.playsinline = true;
 
         isLoadedMetaData = false;
         video.onloadedmetadata = function() {

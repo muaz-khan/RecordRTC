@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-06-24 7:56:58 AM UTC
+// Last time updated: 2019-11-15 12:19:25 AM UTC
 
 // ________________
 // RecordRTC v5.5.9
@@ -2899,18 +2899,21 @@ function StereoAudioRecorder(mediaStream, config) {
         });
     };
 
-    if (typeof Storage === 'undefined') {
-        var Storage = {
+    if (typeof window.Storage === 'undefined') {
+        window.Storage = {
             AudioContextConstructor: null,
-            AudioContext: window.AudioContext || window.webkitAudioContext
         };
     }
 
-    if (!Storage.AudioContextConstructor) {
-        Storage.AudioContextConstructor = new Storage.AudioContext();
+    if (!window.Storage.audioContext) {
+        window.Storage.AudioContext = window.AudioContext || window.webkitAudioContext;
     }
 
-    var context = Storage.AudioContextConstructor;
+    if (!window.Storage.AudioContextConstructor || window.Storage.AudioContextConstructor.state === 'closed') {
+        window.Storage.AudioContextConstructor = new window.Storage.AudioContext();
+    }
+
+    var context = window.Storage.AudioContextConstructor;
 
     // creates an audio node from the microphone incoming stream
     var audioInput = context.createMediaStreamSource(mediaStream);
@@ -4808,6 +4811,7 @@ function GifRecorder(mediaStream, config) {
         var video = document.createElement('video');
         video.muted = true;
         video.autoplay = true;
+        video.playsInline = true;
 
         isLoadedMetaData = false;
         video.onloadedmetadata = function() {

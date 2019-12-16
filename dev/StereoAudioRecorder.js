@@ -447,7 +447,7 @@ function StereoAudioRecorder(mediaStream, config) {
     var bufferSize = typeof config.bufferSize === 'undefined' ? 4096 : config.bufferSize;
     if (typeof config.bufferSizeSeconds !== 'undefined') {
         // derive bufferSize as nearest power of two from sampling rate
-        bufferSize = 1 << 31 - Math.clz32(bufferLengthSeconds * context.sampleRate);
+        bufferSize = 1 << 31 - Math.clz32(config.bufferSizeSeconds * context.sampleRate);
     }
 
     if (legalBufferValues.indexOf(bufferSize) === -1) {
@@ -642,7 +642,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         var left = e.inputBuffer.getChannelData(0);
         if ('onaudioprocess' in config && typeof config.onaudioprocess === 'function') {
-            const bufferStartTime = e.playbackTime - 2*e.inputBuffer.duration;
+            const bufferStartTime = e.playbackTime - 2 * e.inputBuffer.duration;
             const bufferEndTime = bufferStartTime + e.inputBuffer.duration;
             config.onaudioprocess(left, bufferStartTime, bufferEndTime);
         }

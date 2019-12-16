@@ -24,6 +24,7 @@
  * @param {object} config - {sampleRate: 44100, bufferSize: 4096, numberOfAudioChannels: 1, etc.}
  */
 
+
 function StereoAudioRecorder(mediaStream, config) {
     if (!getTracks(mediaStream, 'audio').length) {
         throw 'Your stream has no audio tracks.';
@@ -71,8 +72,8 @@ function StereoAudioRecorder(mediaStream, config) {
         console.log('StereoAudioRecorder is set to record number of channels: ' + numberOfAudioChannels);
     }
 
-    // if any Track within the MediaStream is muted or not enabled at any time, 
-    // the browser will only record black frames 
+    // if any Track within the MediaStream is muted or not enabled at any time,
+    // the browser will only record black frames
     // or silence since that is the content produced by the Track
     // so we need to stopRecording as soon as any single track ends.
     if (typeof config.checkForInactiveTracks === 'undefined') {
@@ -231,21 +232,21 @@ function StereoAudioRecorder(mediaStream, config) {
 
             var view = new DataView(buffer);
 
-            // RIFF chunk descriptor/identifier 
+            // RIFF chunk descriptor/identifier
             writeUTFBytes(view, 0, 'RIFF');
 
             // RIFF chunk length
             // changed "44" to "36" via #401
             view.setUint32(4, 36 + interleavedLength * 2, true);
 
-            // RIFF type 
+            // RIFF type
             writeUTFBytes(view, 8, 'WAVE');
 
-            // format chunk identifier 
+            // format chunk identifier
             // FMT sub-chunk
             writeUTFBytes(view, 12, 'fmt ');
 
-            // format chunk length 
+            // format chunk length
             view.setUint32(16, 16, true);
 
             // sample format (raw)
@@ -254,23 +255,23 @@ function StereoAudioRecorder(mediaStream, config) {
             // stereo (2 channels)
             view.setUint16(22, numberOfAudioChannels, true);
 
-            // sample rate 
+            // sample rate
             view.setUint32(24, sampleRate, true);
 
             // byte rate (sample rate * block align)
             view.setUint32(28, sampleRate * 2, true);
 
-            // block align (channel count * bytes per sample) 
+            // block align (channel count * bytes per sample)
             view.setUint16(32, numberOfAudioChannels * 2, true);
 
-            // bits per sample 
+            // bits per sample
             view.setUint16(34, 16, true);
 
             // data sub-chunk
-            // data chunk identifier 
+            // data chunk identifier
             writeUTFBytes(view, 36, 'data');
 
-            // data chunk length 
+            // data chunk length
             view.setUint32(40, interleavedLength * 2, true);
 
             // write the PCM samples
@@ -409,7 +410,14 @@ function StereoAudioRecorder(mediaStream, config) {
     }
 
     if (!Storage.AudioContextConstructor) {
-        Storage.AudioContextConstructor = new Storage.AudioContext();
+        const sampleRateSupported = isChrome || isSafari;
+        if (sampleRateSupported === true) {
+            Storage.AudioContextConstructor = new Storage.AudioContext({
+                sampleRate: config.sampleRate
+            });
+        } else {
+            Storage.AudioContextConstructor = new Storage.AudioContext();
+        }
     }
 
     var context = Storage.AudioContextConstructor;
@@ -437,6 +445,10 @@ function StereoAudioRecorder(mediaStream, config) {
 
     // "0" means, let chrome decide the most accurate buffer-size for current platform.
     var bufferSize = typeof config.bufferSize === 'undefined' ? 4096 : config.bufferSize;
+    if (typeof config.bufferSizeSeconds !== 'undefined') {
+        // derive bufferSize as nearest power of two from sampling rate
+        bufferSize = 1 << 31 - Math.clz32(bufferLengthSeconds * context.sampleRate);
+    }
 
     if (legalBufferValues.indexOf(bufferSize) === -1) {
         if (!config.disableLogs) {
@@ -476,7 +488,7 @@ function StereoAudioRecorder(mediaStream, config) {
      *     sampleRate: 44100
      * });
      */
-    var sampleRate = typeof config.sampleRate !== 'undefined' ? config.sampleRate : context.sampleRate || 44100;
+    var sampleRate = context.sampleRate || 44100;
 
     if (sampleRate < 22050 || sampleRate > 96000) {
         // Ref: http://stackoverflow.com/a/26303918/552182
@@ -629,6 +641,11 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         var left = e.inputBuffer.getChannelData(0);
+        if ('onaudioprocess' in config && typeof config.onaudioprocess === 'function') {
+            const bufferStartTime = e.playbackTime - 2*e.inputBuffer.duration;
+            const bufferEndTime = bufferStartTime + e.inputBuffer.duration;
+            config.onaudioprocess(left, bufferStartTime, bufferEndTime);
+        }
 
         // we clone the samples
         var chLeft = new Float32Array(left);
@@ -670,6 +687,8 @@ function StereoAudioRecorder(mediaStream, config) {
     this.numberOfAudioChannels = numberOfAudioChannels;
     this.desiredSampRate = desiredSampRate;
     this.sampleRate = sampleRate;
+    this.context = Storage.AudioContextConstructor;
+    this.bufferSize = bufferSize;
     self.recordingLength = recordingLength;
 
     // helper for intervals based blobs

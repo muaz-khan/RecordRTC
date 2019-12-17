@@ -26,13 +26,10 @@
 
 
 function StereoAudioRecorder(mediaStream, config) {
-    if (!getTracks(mediaStream, 'audio').length) {
-        throw 'Your stream has no audio tracks.';
-    }
-
     config = config || {};
 
     var self = this;
+    var browser = bowser.getParser(window.navigator.userAgent);
 
     // variables
     var leftchannel = [];
@@ -402,25 +399,28 @@ function StereoAudioRecorder(mediaStream, config) {
         });
     };
 
-    if (typeof Storage === 'undefined') {
-        var Storage = {
+    if (typeof window.Storage !== 'object') {
+        window.Storage = {
             AudioContextConstructor: null,
             AudioContext: window.AudioContext || window.webkitAudioContext
         };
     }
 
-    if (!Storage.AudioContextConstructor) {
-        const sampleRateSupported = isChrome || isSafari;
+    if (!window.Storage.AudioContextConstructor) {
+        // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext
+        const sampleRateSupported = browser.satisfies({
+            chrome: '>= 74'
+        });
         if (sampleRateSupported === true) {
-            Storage.AudioContextConstructor = new Storage.AudioContext({
+            window.Storage.AudioContextConstructor = new window.Storage.AudioContext({
                 sampleRate: config.sampleRate
             });
         } else {
-            Storage.AudioContextConstructor = new Storage.AudioContext();
+            window.Storage.AudioContextConstructor = new window.Storage.AudioContext();
         }
     }
 
-    var context = Storage.AudioContextConstructor;
+    var context = window.Storage.AudioContextConstructor;
 
     // creates an audio node from the microphone incoming stream
     var audioInput = context.createMediaStreamSource(mediaStream);
@@ -490,10 +490,10 @@ function StereoAudioRecorder(mediaStream, config) {
      */
     var sampleRate = context.sampleRate || 44100;
 
-    if (sampleRate < 22050 || sampleRate > 96000) {
+    if (sampleRate < 8000 || sampleRate > 96000) {
         // Ref: http://stackoverflow.com/a/26303918/552182
         if (!config.disableLogs) {
-            console.log('sample-rate must be under range 22050 and 96000.');
+            console.log('sample-rate must be under range 8000 and 96000.');
         }
     }
 
@@ -642,34 +642,21 @@ function StereoAudioRecorder(mediaStream, config) {
 
         var left = e.inputBuffer.getChannelData(0);
         if ('onaudioprocess' in config && typeof config.onaudioprocess === 'function') {
-            const bufferStartTime = e.playbackTime - 2 * e.inputBuffer.duration;
+            var bufferStartTime = e.playbackTime - 2 * e.inputBuffer.duration;
+            if (browser.satisfies({
+                    'firefox': '>=25'
+                }) === true) {
+                // firefox seems to populate e.playbackTime correctly, while other browsers hop forward too far
+                bufferStartTime += e.inputBuffer.duration;
+            }
             const bufferEndTime = bufferStartTime + e.inputBuffer.duration;
             config.onaudioprocess(left, bufferStartTime, bufferEndTime);
-        }
-
-        // we clone the samples
-        var chLeft = new Float32Array(left);
-        leftchannel.push(chLeft);
-
-        if (numberOfAudioChannels === 2) {
-            var right = e.inputBuffer.getChannelData(1);
-            var chRight = new Float32Array(right);
-            rightchannel.push(chRight);
         }
 
         recordingLength += bufferSize;
 
         // export raw PCM
         self.recordingLength = recordingLength;
-
-        if (typeof config.timeSlice !== 'undefined') {
-            intervalsBasedBuffers.recordingLength += bufferSize;
-            intervalsBasedBuffers.left.push(chLeft);
-
-            if (numberOfAudioChannels === 2) {
-                intervalsBasedBuffers.right.push(chRight);
-            }
-        }
     }
 
     jsAudioNode.onaudioprocess = onAudioProcessDataAvailable;
@@ -730,8 +717,6 @@ function StereoAudioRecorder(mediaStream, config) {
             setTimeout(looper, config.timeSlice);
         }
     }
-}
 
-if (typeof RecordRTC !== 'undefined') {
-    RecordRTC.StereoAudioRecorder = StereoAudioRecorder;
+    return self;
 }

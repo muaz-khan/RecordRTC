@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-06-24 7:56:58 AM UTC
+// Last time updated: 2019-12-17 7:57:03 PM UTC
 
 // ________________
 // RecordRTC v5.5.9
@@ -781,7 +781,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.5.9'
+        version: '@@version'
     };
 
     if (!this) {
@@ -799,7 +799,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.5.9';
+RecordRTC.version = '@@version';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -2522,14 +2522,12 @@ if (typeof RecordRTC !== 'undefined') {
  * @param {object} config - {sampleRate: 44100, bufferSize: 4096, numberOfAudioChannels: 1, etc.}
  */
 
-function StereoAudioRecorder(mediaStream, config) {
-    if (!getTracks(mediaStream, 'audio').length) {
-        throw 'Your stream has no audio tracks.';
-    }
 
+function StereoAudioRecorder(mediaStream, config) {
     config = config || {};
 
     var self = this;
+    var browser = bowser.getParser(window.navigator.userAgent);
 
     // variables
     var leftchannel = [];
@@ -2569,8 +2567,8 @@ function StereoAudioRecorder(mediaStream, config) {
         console.log('StereoAudioRecorder is set to record number of channels: ' + numberOfAudioChannels);
     }
 
-    // if any Track within the MediaStream is muted or not enabled at any time, 
-    // the browser will only record black frames 
+    // if any Track within the MediaStream is muted or not enabled at any time,
+    // the browser will only record black frames
     // or silence since that is the content produced by the Track
     // so we need to stopRecording as soon as any single track ends.
     if (typeof config.checkForInactiveTracks === 'undefined') {
@@ -2729,21 +2727,21 @@ function StereoAudioRecorder(mediaStream, config) {
 
             var view = new DataView(buffer);
 
-            // RIFF chunk descriptor/identifier 
+            // RIFF chunk descriptor/identifier
             writeUTFBytes(view, 0, 'RIFF');
 
             // RIFF chunk length
             // changed "44" to "36" via #401
             view.setUint32(4, 36 + interleavedLength * 2, true);
 
-            // RIFF type 
+            // RIFF type
             writeUTFBytes(view, 8, 'WAVE');
 
-            // format chunk identifier 
+            // format chunk identifier
             // FMT sub-chunk
             writeUTFBytes(view, 12, 'fmt ');
 
-            // format chunk length 
+            // format chunk length
             view.setUint32(16, 16, true);
 
             // sample format (raw)
@@ -2752,23 +2750,23 @@ function StereoAudioRecorder(mediaStream, config) {
             // stereo (2 channels)
             view.setUint16(22, numberOfAudioChannels, true);
 
-            // sample rate 
+            // sample rate
             view.setUint32(24, sampleRate, true);
 
             // byte rate (sample rate * block align)
             view.setUint32(28, sampleRate * 2, true);
 
-            // block align (channel count * bytes per sample) 
+            // block align (channel count * bytes per sample)
             view.setUint16(32, numberOfAudioChannels * 2, true);
 
-            // bits per sample 
+            // bits per sample
             view.setUint16(34, 16, true);
 
             // data sub-chunk
-            // data chunk identifier 
+            // data chunk identifier
             writeUTFBytes(view, 36, 'data');
 
-            // data chunk length 
+            // data chunk length
             view.setUint32(40, interleavedLength * 2, true);
 
             // write the PCM samples
@@ -2899,18 +2897,28 @@ function StereoAudioRecorder(mediaStream, config) {
         });
     };
 
-    if (typeof Storage === 'undefined') {
-        var Storage = {
+    if (typeof window.Storage !== 'object') {
+        window.Storage = {
             AudioContextConstructor: null,
             AudioContext: window.AudioContext || window.webkitAudioContext
         };
     }
 
-    if (!Storage.AudioContextConstructor) {
-        Storage.AudioContextConstructor = new Storage.AudioContext();
+    if (!window.Storage.AudioContextConstructor) {
+        // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext
+        const sampleRateSupported = browser.satisfies({
+            chrome: '>= 74'
+        });
+        if (sampleRateSupported === true) {
+            window.Storage.AudioContextConstructor = new window.Storage.AudioContext({
+                sampleRate: config.sampleRate
+            });
+        } else {
+            window.Storage.AudioContextConstructor = new window.Storage.AudioContext();
+        }
     }
 
-    var context = Storage.AudioContextConstructor;
+    var context = window.Storage.AudioContextConstructor;
 
     // creates an audio node from the microphone incoming stream
     var audioInput = context.createMediaStreamSource(mediaStream);
@@ -2935,6 +2943,10 @@ function StereoAudioRecorder(mediaStream, config) {
 
     // "0" means, let chrome decide the most accurate buffer-size for current platform.
     var bufferSize = typeof config.bufferSize === 'undefined' ? 4096 : config.bufferSize;
+    if (typeof config.bufferSizeSeconds !== 'undefined') {
+        // derive bufferSize as nearest power of two from sampling rate
+        bufferSize = 1 << 31 - Math.clz32(config.bufferSizeSeconds * context.sampleRate);
+    }
 
     if (legalBufferValues.indexOf(bufferSize) === -1) {
         if (!config.disableLogs) {
@@ -2974,12 +2986,12 @@ function StereoAudioRecorder(mediaStream, config) {
      *     sampleRate: 44100
      * });
      */
-    var sampleRate = typeof config.sampleRate !== 'undefined' ? config.sampleRate : context.sampleRate || 44100;
+    var sampleRate = context.sampleRate || 44100;
 
-    if (sampleRate < 22050 || sampleRate > 96000) {
+    if (sampleRate < 8000 || sampleRate > 96000) {
         // Ref: http://stackoverflow.com/a/26303918/552182
         if (!config.disableLogs) {
-            console.log('sample-rate must be under range 22050 and 96000.');
+            console.log('sample-rate must be under range 8000 and 96000.');
         }
     }
 
@@ -3127,30 +3139,20 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         var left = e.inputBuffer.getChannelData(0);
-
-        // we clone the samples
-        var chLeft = new Float32Array(left);
-        leftchannel.push(chLeft);
-
-        if (numberOfAudioChannels === 2) {
-            var right = e.inputBuffer.getChannelData(1);
-            var chRight = new Float32Array(right);
-            rightchannel.push(chRight);
+        if ('onaudioprocess' in config && typeof config.onaudioprocess === 'function') {
+            var bufferStartTime = e.playbackTime - 2 * e.inputBuffer.duration;
+            if (browser.satisfies({'firefox': '>=25'}) === true) {
+                // firefox seems to populate e.playbackTime correctly, while other browsers hop forward too far
+                bufferStartTime += e.inputBuffer.duration;
+            }
+            const bufferEndTime = bufferStartTime + e.inputBuffer.duration;
+            config.onaudioprocess(left, bufferStartTime, bufferEndTime);
         }
 
         recordingLength += bufferSize;
 
         // export raw PCM
         self.recordingLength = recordingLength;
-
-        if (typeof config.timeSlice !== 'undefined') {
-            intervalsBasedBuffers.recordingLength += bufferSize;
-            intervalsBasedBuffers.left.push(chLeft);
-
-            if (numberOfAudioChannels === 2) {
-                intervalsBasedBuffers.right.push(chRight);
-            }
-        }
     }
 
     jsAudioNode.onaudioprocess = onAudioProcessDataAvailable;
@@ -3168,6 +3170,8 @@ function StereoAudioRecorder(mediaStream, config) {
     this.numberOfAudioChannels = numberOfAudioChannels;
     this.desiredSampRate = desiredSampRate;
     this.sampleRate = sampleRate;
+    this.context = Storage.AudioContextConstructor;
+    this.bufferSize = bufferSize;
     self.recordingLength = recordingLength;
 
     // helper for intervals based blobs
@@ -3209,10 +3213,8 @@ function StereoAudioRecorder(mediaStream, config) {
             setTimeout(looper, config.timeSlice);
         }
     }
-}
 
-if (typeof RecordRTC !== 'undefined') {
-    RecordRTC.StereoAudioRecorder = StereoAudioRecorder;
+    return self;
 }
 
 // _________________
@@ -4808,6 +4810,7 @@ function GifRecorder(mediaStream, config) {
         var video = document.createElement('video');
         video.muted = true;
         video.autoplay = true;
+        video.playsInline = true;
 
         isLoadedMetaData = false;
         video.onloadedmetadata = function() {
@@ -5837,7 +5840,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      *     internalRecorder.addStreams([newAudioStream]);
      *     internalRecorder.resetVideoStreams([screenStream]);
      * }
-     * @returns {Object}
+     * @returns {Object} 
      */
     this.getInternalRecorder = function() {
         return new Promise(function(resolve, reject) {
@@ -5923,7 +5926,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @example
      * alert(recorder.version);
      */
-    this.version = '5.5.9';
+    this.version = '@@version';
 }
 
 if (typeof RecordRTC !== 'undefined') {

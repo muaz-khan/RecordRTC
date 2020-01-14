@@ -641,6 +641,10 @@ function StereoAudioRecorder(mediaStream, config) {
         }
 
         var left = e.inputBuffer.getChannelData(0);
+        // we clone the samples
+        var chLeft = new Float32Array(left);
+        leftchannel.push(chLeft);
+
         if ('onaudioprocess' in config && typeof config.onaudioprocess === 'function') {
             var bufferStartTime = e.playbackTime - 2 * e.inputBuffer.duration;
             if (browser.satisfies({

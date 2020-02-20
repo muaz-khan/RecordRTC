@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2020-02-20 6:18:56 PM UTC
+// Last time updated: 2020-02-20 6:53:45 PM UTC
 
 // ________________
 // RecordRTC v5.5.9
@@ -2671,12 +2671,27 @@ function StereoAudioRecorder(mediaStream, config) {
                 return before + (after - before) * atPoint;
             }
 
+            function getMaxAmplitude(channelBuffer) {
+                var maxAmplitude = 0;
+                for (var i = 0; i < channelBuffer.length; i++) {
+                    for (var j = 0; j < channelBuffer[i].length; j++) {
+                        if (Math.abs(channelBuffer[i][j]) >= maxAmplitude) {
+                            maxAmplitude = Math.abs(channelBuffer[i][j]);
+                        }
+                    }
+                }
+                return maxAmplitude;
+            }
+
             function mergeBuffers(channelBuffer, rLength) {
                 var result = new Float64Array(rLength);
                 var offset = 0;
                 var lng = channelBuffer.length;
-
+                var maxAmplitude = getMaxAmplitude(channelBuffer);
                 for (var i = 0; i < lng; i++) {
+                    for (var j = 0; j < channelBuffer[i].length; j++) {
+                        channelBuffer[i][j] /= maxAmplitude;
+                    }
                     var buffer = channelBuffer[i];
                     result.set(buffer, offset);
                     offset += buffer.length;

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2019-12-17 7:57:03 PM UTC
+// Last time updated: 2020-03-16 9:33:40 PM UTC
 
 // ________________
 // RecordRTC v5.5.9
@@ -781,7 +781,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '@@version'
+        version: '5.5.9'
     };
 
     if (!this) {
@@ -799,7 +799,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '@@version';
+RecordRTC.version = '5.5.9';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -3142,10 +3142,12 @@ function StereoAudioRecorder(mediaStream, config) {
         // we clone the samples
         var chLeft = new Float32Array(left);
         leftchannel.push(chLeft);
-        
+
         if ('onaudioprocess' in config && typeof config.onaudioprocess === 'function') {
-            var bufferStartTime = e.playbackTime - 2 * e.inputBuffer.duration;
-            if (browser.satisfies({'firefox': '>=25'}) === true) {
+            var bufferStartTime = e.playbackTime - 3 * e.inputBuffer.duration;
+            if (browser.satisfies({
+                    'firefox': '>=25'
+                }) === true) {
                 // firefox seems to populate e.playbackTime correctly, while other browsers hop forward too far
                 bufferStartTime += e.inputBuffer.duration;
             }
@@ -5930,7 +5932,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @example
      * alert(recorder.version);
      */
-    this.version = '@@version';
+    this.version = '5.5.9';
 }
 
 if (typeof RecordRTC !== 'undefined') {

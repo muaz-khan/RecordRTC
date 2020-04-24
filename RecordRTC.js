@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2020-04-24 4:01:50 PM UTC
+// Last time updated: 2020-04-24 4:39:01 PM UTC
 
 // ________________
 // RecordRTC v5.5.9
@@ -5980,6 +5980,7 @@ function WebAssemblyRecorder(stream, config) {
             start: function(controller) {
                 var cvs = document.createElement('canvas');
                 var video = document.createElement('video');
+                var first = true;
                 video.srcObject = stream;
                 video.muted = true;
                 video.height = config.height;
@@ -5996,6 +5997,12 @@ function WebAssemblyRecorder(stream, config) {
                             controller.close();
                         }
 
+                        if (first) {
+                            first = false;
+                            if (config.onVideoProcessStarted) {
+                                config.onVideoProcessStarted();
+                            }
+                        }
 
                         ctx.drawImage(video, 0, 0);
                         controller.enqueue(

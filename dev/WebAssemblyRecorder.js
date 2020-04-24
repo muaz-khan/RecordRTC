@@ -39,23 +39,26 @@ function WebAssemblyRecorder(stream, config) {
         }));
     }
 
+    var cameraTimer;
+
     function cameraStream() {
         return new ReadableStream({
             start: function(controller) {
                 var cvs = document.createElement('canvas');
                 var video = document.createElement('video');
                 video.srcObject = stream;
+                video.muted = true;
+                video.volume = 0;
                 video.onplaying = function() {
                     cvs.width = config.width;
                     cvs.height = config.height;
                     var ctx = cvs.getContext('2d');
                     var frameTimeout = 1000 / config.frameRate;
-                    setTimeout(function f() {
+                    cameraTimer = setInterval(function f() {
                         ctx.drawImage(video, 0, 0);
                         controller.enqueue(
                             ctx.getImageData(0, 0, config.width, config.height)
                         );
-                        setTimeout(f, frameTimeout);
                     }, frameTimeout);
                 };
                 video.play();
@@ -189,6 +192,11 @@ function WebAssemblyRecorder(stream, config) {
         this.blob = new Blob(arrayOfBuffers, {
             type: 'video/webm'
         });
+
+        if (cameraTimer) {
+            clearInterval(cameraTimer);
+            cameraTimer = undefined;
+        }
 
         callback(this.blob);
     };

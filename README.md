@@ -54,7 +54,7 @@ navigator.mediaDevices.getUserMedia({
 | Google Chrome  | Windows + macOS + Ubuntu + Android  | audio + video + screen |
 | Firefox        | Windows + macOS + Ubuntu + Android  | audio + video + screen |
 | Opera          | Windows + macOS + Ubuntu + Android  | audio + video + screen |
-| Edge           | Windows 10                          | only audio             |
+| Edge (new)     | Windows 10 (latest updates)         | audio + video + screen |
 | Safari         | macOS + iOS (iPhone/iPad)           | audio + video          |
 
 ## Codecs Support
@@ -65,7 +65,7 @@ navigator.mediaDevices.getUserMedia({
 | Opera         | VP8, VP9, H264, MKV | OPUS/VORBIS, PCM |
 | Firefox       | VP8, H264           | OPUS/VORBIS, PCM |
 | Safari        | VP8                 | OPUS/VORBIS, PCM |
-| Edge          | None                | PCM              |
+| Edge (new)    | VP8, VP9, H264, MKV | OPUS/VORBIS, PCM |
 
 
 ## CDN

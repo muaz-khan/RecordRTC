@@ -54,7 +54,7 @@ navigator.mediaDevices.getUserMedia({
 | Google Chrome  | Windows + macOS + Ubuntu + Android  | audio + video + screen |
 | Firefox        | Windows + macOS + Ubuntu + Android  | audio + video + screen |
 | Opera          | Windows + macOS + Ubuntu + Android  | audio + video + screen |
-| Edge (new)     | Windows 10 (latest updates)         | audio + video + screen |
+| Edge (new)     | Windows (7 or 8 or 10) and MacOSX   | audio + video + screen |
 | Safari         | macOS + iOS (iPhone/iPad)           | audio + video          |
 
 ## Codecs Support

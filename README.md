@@ -92,12 +92,12 @@ const recorder = RecordRTC(stream, {
     type: 'video',
 
     // audio/webm
+    // video/mp4
     // video/webm;codecs=vp9
     // video/webm;codecs=vp8
     // video/webm;codecs=h264
     // video/x-matroska;codecs=avc1
     // video/mpeg -- NOT supported by any browser, yet
-    // video/mp4  -- NOT supported by any browser, yet
     // audio/wav
     // audio/ogg  -- ONLY Firefox
     // demo: simple-demos/isTypeSupported.html

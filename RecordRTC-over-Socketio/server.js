@@ -117,8 +117,8 @@ function merge(socket, fileName) {
             console.log('Merging finished !');
 
             // removing audio/video files
-            fs.unlink(audioFile);
-            fs.unlink(videoFile);
+            fs.unlinkSync(audioFile);
+            fs.unlinkSync(videoFile);
         })
         .saveToFile(mergedFile);
 }

@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2020-02-26 1:11:47 PM UTC
+// Last time updated: 2020-04-24 4:39:01 PM UTC
 
 // ________________
 // RecordRTC v5.5.9
@@ -5949,7 +5949,7 @@ if (typeof RecordRTC !== 'undefined') {
  * });
  * @see {@link https://github.com/muaz-khan/RecordRTC|RecordRTC Source Code}
  * @param {MediaStream} mediaStream - MediaStream object fetched using getUserMedia API or generated using captureStreamUntilEnded or WebAudio API.
- * @param {object} config - {webAssemblyPath:'webm-wasm.wasm',workerPath: 'webm-worker.js', frameRate: 30, width: 1920, height: 1080, bitrate: 1024}
+ * @param {object} config - {webAssemblyPath:'webm-wasm.wasm',workerPath: 'webm-worker.js', frameRate: 30, width: 1920, height: 1080, bitrate: 1024, realtime: true}
  */
 function WebAssemblyRecorder(stream, config) {
     // based on: github.com/GoogleChromeLabs/webm-wasm
@@ -5965,6 +5965,7 @@ function WebAssemblyRecorder(stream, config) {
     config.height = config.height || 480;
     config.frameRate = config.frameRate || 30;
     config.bitrate = config.bitrate || 1200;
+    config.realtime = config.realtime || true;
 
     function createBufferURL(buffer, type) {
         return URL.createObjectURL(new Blob([buffer], {
@@ -5972,23 +5973,41 @@ function WebAssemblyRecorder(stream, config) {
         }));
     }
 
+    var finished;
+
     function cameraStream() {
         return new ReadableStream({
             start: function(controller) {
                 var cvs = document.createElement('canvas');
                 var video = document.createElement('video');
+                var first = true;
                 video.srcObject = stream;
+                video.muted = true;
+                video.height = config.height;
+                video.width = config.width;
+                video.volume = 0;
                 video.onplaying = function() {
                     cvs.width = config.width;
                     cvs.height = config.height;
                     var ctx = cvs.getContext('2d');
                     var frameTimeout = 1000 / config.frameRate;
-                    setTimeout(function f() {
+                    var cameraTimer = setInterval(function f() {
+                        if (finished) {
+                            clearInterval(cameraTimer);
+                            controller.close();
+                        }
+
+                        if (first) {
+                            first = false;
+                            if (config.onVideoProcessStarted) {
+                                config.onVideoProcessStarted();
+                            }
+                        }
+
                         ctx.drawImage(video, 0, 0);
                         controller.enqueue(
                             ctx.getImageData(0, 0, config.width, config.height)
                         );
-                        setTimeout(f, frameTimeout);
                     }, frameTimeout);
                 };
                 video.play();
@@ -6000,7 +6019,10 @@ function WebAssemblyRecorder(stream, config) {
 
     function startRecording(stream, buffer) {
         if (!config.workerPath && !buffer) {
+            finished = false;
+
             // is it safe to use @latest ?
+
             fetch(
                 'https://unpkg.com/webm-wasm@latest/dist/webm-worker.js'
             ).then(function(r) {
@@ -6032,12 +6054,13 @@ function WebAssemblyRecorder(stream, config) {
                     height: config.height,
                     bitrate: config.bitrate || 1200,
                     timebaseDen: config.frameRate || 30,
-                    realtime: true
+                    realtime: config.realtime
                 });
 
                 cameraStream().pipeTo(new WritableStream({
                     write: function(image) {
-                        if (!worker) {
+                        if (finished) {
+                            console.error('Got image, but recorder is finished!');
                             return;
                         }
 
@@ -6094,14 +6117,28 @@ function WebAssemblyRecorder(stream, config) {
         isPaused = false;
     };
 
-    function terminate() {
+    function terminate(callback) {
         if (!worker) {
+            if (callback) {
+                callback();
+            }
+
             return;
         }
 
+        // Wait for null event data to indicate that the encoding is complete
+        worker.addEventListener('message', function(event) {
+            if (event.data === null) {
+                worker.terminate();
+                worker = null;
+
+                if (callback) {
+                    callback();
+                }
+            }
+        });
+
         worker.postMessage(null);
-        worker.terminate();
-        worker = null;
     }
 
     var arrayOfBuffers = [];
@@ -6117,13 +6154,17 @@ function WebAssemblyRecorder(stream, config) {
      * });
      */
     this.stop = function(callback) {
-        terminate();
+        finished = true;
 
-        this.blob = new Blob(arrayOfBuffers, {
-            type: 'video/webm'
+        var recorder = this;
+
+        terminate(function() {
+            recorder.blob = new Blob(arrayOfBuffers, {
+                type: 'video/webm'
+            });
+
+            callback(recorder.blob);
         });
-
-        callback(this.blob);
     };
 
     // for debugging

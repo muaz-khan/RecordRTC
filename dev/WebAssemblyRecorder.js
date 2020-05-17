@@ -72,9 +72,13 @@ function WebAssemblyRecorder(stream, config) {
                         }
 
                         ctx.drawImage(video, 0, 0);
-                        controller.enqueue(
-                            ctx.getImageData(0, 0, config.width, config.height)
-                        );
+                        if (controller._controlledReadableStream.state !== 'closed') {
+                            try {
+                                controller.enqueue(
+                                    ctx.getImageData(0, 0, config.width, config.height)
+                                );
+                            } catch (e) {}
+                        }
                     }, frameTimeout);
                 };
                 video.play();

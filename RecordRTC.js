@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2020-05-16 3:19:43 PM UTC
+// Last time updated: 2020-05-17 5:04:38 PM UTC
 
 // ________________
-// RecordRTC v5.6.0
+// RecordRTC v5.6.1
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -781,7 +781,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.6.0'
+        version: '5.6.1'
     };
 
     if (!this) {
@@ -799,7 +799,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.6.0';
+RecordRTC.version = '5.6.1';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -5924,7 +5924,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @example
      * alert(recorder.version);
      */
-    this.version = '5.6.0';
+    this.version = '5.6.1';
 }
 
 if (typeof RecordRTC !== 'undefined') {
@@ -6005,9 +6005,13 @@ function WebAssemblyRecorder(stream, config) {
                         }
 
                         ctx.drawImage(video, 0, 0);
-                        controller.enqueue(
-                            ctx.getImageData(0, 0, config.width, config.height)
-                        );
+                        if (controller._controlledReadableStream.state !== 'closed') {
+                            try {
+                                controller.enqueue(
+                                    ctx.getImageData(0, 0, config.width, config.height)
+                                );
+                            } catch (e) {}
+                        }
                     }, frameTimeout);
                 };
                 video.play();

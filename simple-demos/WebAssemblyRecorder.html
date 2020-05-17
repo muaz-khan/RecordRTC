@@ -10,7 +10,7 @@ video {
 }
 </style>
 
-<h1>WebAssembly Recorder using RecordRTC</h1>
+<h1>WebAssembly Recorder using RecordRTC <span id="version"></span></h1>
 <button id="start">Start Recording</button>
 <button id="stop" disabled>Stop Recording</button>
 <br><br>
@@ -22,6 +22,8 @@ video {
 <script src="/RecordRTC.js"></script>
 
 <script>
+document.getElementById('version').innerHTML = RecordRTC.version;
+
 var recorder;
 
 document.getElementById('start').onclick = function() {

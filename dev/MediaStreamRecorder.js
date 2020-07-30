@@ -151,7 +151,7 @@ function MediaStreamRecorder(mediaStream, config) {
             }
 
             if (typeof config.timeSlice === 'number') {
-                if (e.data && e.data.size && e.data.size > 100) {
+                if (e.data && e.data.size) {
                     arrayOfBlobs.push(e.data);
                     updateTimeStamp();
 

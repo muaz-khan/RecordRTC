@@ -20,6 +20,7 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
 				test: /\.min\.js$/,
+				extractComments: false,
 				sourceMap: true
       }),
     ],

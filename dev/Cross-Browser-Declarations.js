@@ -67,9 +67,6 @@ if (typeof AudioContext === 'undefined') {
     }
 }
 
-/*jshint -W079 */
-var URL = window.URL;
-
 if (typeof URL === 'undefined' && typeof webkitURL !== 'undefined') {
     /*global URL:true */
     URL = webkitURL;

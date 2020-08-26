@@ -45,10 +45,13 @@
     "grunt-contrib-copy": "0.8.2",
     "grunt-contrib-jshint": "0.11.3",
     "grunt-contrib-uglify": "0.11.0",
+    "grunt-contrib-watch": "1.1.0",
     "grunt-jsbeautifier": "0.2.10",
     "grunt-replace": "0.11.0",
     "load-grunt-tasks": "3.4.0",
-    "grunt-contrib-watch": "1.1.0"
+    "terser-webpack-plugin": "^4.1.0",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   },
   "dependencies": {}
 }

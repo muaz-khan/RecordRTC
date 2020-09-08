@@ -92,6 +92,7 @@ const recorder = RecordRTC(stream, {
     type: 'video',
 
     // audio/webm
+    // audio/webm;codecs=pcm
     // video/mp4
     // video/webm;codecs=vp9
     // video/webm;codecs=vp8
@@ -128,6 +129,7 @@ const recorder = RecordRTC(stream, {
     bitsPerSecond: 128000,
 
     // only for audio track
+    // ignored when codecs=pcm
     audioBitsPerSecond: 128000,
 
     // only for video track

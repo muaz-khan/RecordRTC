@@ -153,7 +153,10 @@ function invokeSaveAsDialog(file, fileName) {
     }
 
     var fileExtension = (file.type || 'video/webm').split('/')[1];
-
+    if (fileExtension.indexOf(';') !== -1) {
+        // extended mimetype, e.g. 'video/webm;codecs=vp8,opus'
+        fileExtension = fileExtension.split(';')[0];
+    }
     if (fileName && fileName.indexOf('.') !== -1) {
         var splitted = fileName.split('.');
         fileName = splitted[0];

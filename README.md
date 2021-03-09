@@ -74,8 +74,8 @@ navigator.mediaDevices.getUserMedia({
 <!-- recommended -->
 <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 
-<!-- use 5.6.1 or any other version on cdnjs -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.1/RecordRTC.js"></script>
+<!-- use 5.6.2 or any other version on cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.2/RecordRTC.js"></script>
 
 <!-- NPM i.e. "npm install recordrtc" -->
 <script src="node_modules/recordrtc/RecordRTC.js"></script>

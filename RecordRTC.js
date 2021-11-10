@@ -3044,6 +3044,30 @@ function StereoAudioRecorder(mediaStream, config) {
         clearRecordedDataCB();
     };
 
+    /**
+     * This method will reset internal storage and recording length
+     * so that old audio is not retained when using `timeSlice`.
+     * @method
+     * @memberof StereoAudioRecorder
+     * @example
+     * recorder.emptyBuffers();
+     */
+    this.emptyBuffers = function() {
+        leftchannel = [];
+        rightchannel = [];
+        recordingLength = 0;
+
+        self.leftchannel = leftchannel;
+        self.rightchannel = rightchannel;
+        self.recordingLength = recordingLength;
+
+        intervalsBasedBuffers = {
+            left: [],
+            right: [],
+            recordingLength: 0
+        };
+    };
+
     function resetVariables() {
         leftchannel = [];
         rightchannel = [];

@@ -119,6 +119,16 @@ const recorder = RecordRTC(stream, {
     // returns blob via callback function
     ondataavailable: function(blob) {},
 
+    // requires timeSlice above (or will default to 1000 otherwise)
+    // will write blobs to the WritableStream
+    // will disable ondataavailable and onTimeStamp
+    // will not keep blobs in memory. As a result, stopRecording will have empty blobs as parameter
+    writableStream: WritableStream,
+
+    // callback called after the writableStream is closed
+    // useful, for example, to apply getSeekableBlob on the recorded video 
+    onWritableStreamClosed: function() {},
+
     // auto stop recording if camera stops
     checkForInactiveTracks: false,
 

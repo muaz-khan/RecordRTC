@@ -1,0 +1,174 @@
+<style>
+    html, body {
+        margin: 0!important;
+        padding: 0!important;
+        text-align: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        font-size: 1em;
+    }
+
+    video {
+        height: 50vh;
+        border-radius: 5px;
+        border: 1px solid black;
+    }
+</style>
+
+<title>Screen Recording | RecordRTC</title>
+<h1>Screen Recording using RecordRTC</h1>
+
+<br>
+
+<button id="btn-start-recording">Start Recording</button>
+<button id="btn-stop-recording" disabled>Stop Recording</button>
+
+<hr>
+<video controls autoplay playsinline></video>
+
+<script type="module" src="https://cdn.jsdelivr.net/npm/native-file-system-adapter/mod.js"></script>
+<script src="https://www.webrtc-experiment.com/EBML.js"></script>           <!-- ../libs/DBML.js -->
+<script src="/RecordRTC.js"></script>
+<script>
+var video = document.querySelector('video');
+
+if(!navigator.getDisplayMedia && !navigator.mediaDevices.getDisplayMedia) {
+    var error = 'Your browser does NOT support the getDisplayMedia API.';
+    document.querySelector('h1').innerHTML = error;
+
+    document.querySelector('video').style.display = 'none';
+    document.getElementById('btn-start-recording').style.display = 'none';
+    document.getElementById('btn-stop-recording').style.display = 'none';
+    throw new Error(error);
+}
+
+function invokeGetDisplayMedia(success, error) {
+    var displaymediastreamconstraints = {
+        video: {
+            displaySurface: 'monitor', // monitor, window, application, browser
+            logicalSurface: true,
+            cursor: 'always' // never, always, motion
+        }
+    };
+
+    // above constraints are NOT supported YET
+    // that's why overriding them
+    displaymediastreamconstraints = {
+        video: true
+    };
+
+    if(navigator.mediaDevices.getDisplayMedia) {
+        navigator.mediaDevices.getDisplayMedia(displaymediastreamconstraints).then(success).catch(error);
+    }
+    else {
+        navigator.getDisplayMedia(displaymediastreamconstraints).then(success).catch(error);
+    }
+}
+
+function captureScreen(callback) {
+    invokeGetDisplayMedia(function(screen) {
+        addStreamStopListener(screen, function() {
+            document.getElementById('btn-stop-recording').click();
+        });
+        callback(screen);
+    }, function(error) {
+        console.error(error);
+        alert('Unable to capture your screen. Please check console logs.\n' + error);
+    });
+}
+
+async function stopRecordingCallback() {
+    delete video.src;
+    delete video.srcObject;
+
+    const file = await recorder.fileHandle.getFile();
+
+    recorder.screen.stop();
+    recorder.destroy();
+    recorder = null;
+
+    document.getElementById('btn-start-recording').disabled = false;
+
+    document.getElementById('footer').innerHTML = 'The video has been recorded to ' + file.name;
+}
+
+var recorder; // globally accessible
+
+async function getFileHandle(fileName) {
+    return await showSaveFilePicker({
+        excludeAcceptAllOption: true,
+        suggestedName: fileName,
+        types: [{
+            description: 'WEBM video',
+            accept: { 'video/webm': ['.webm'] },
+        }],
+    })
+}
+
+function makeSeekable(fileHandle) {
+    return async function() {
+        const file = await fileHandle.getFile()
+        const blob = file.slice()
+
+        getSeekableBlob(blob, async(seekableBlob) => {
+            const rewriteStream = await fileHandle.createWritable()
+            await rewriteStream.write(seekableBlob)
+            await rewriteStream.close()
+        })
+    }
+}
+
+document.getElementById('btn-start-recording').onclick = async function() {
+    const fileHandle = await getFileHandle('test-stream-to-file.webm');
+    this.disabled = true;
+    captureScreen(async function(screen) {
+        video.srcObject = screen;
+
+        recorder = RecordRTC(screen, {
+            type: 'video',
+            writableStream: await fileHandle.createWritable(),
+            onWritableStreamClosed: makeSeekable(fileHandle),
+        });
+
+        recorder.startRecording();
+
+        // release screen on stopRecording
+        recorder.screen = screen;
+        recorder.fileHandle = fileHandle;
+
+        document.getElementById('btn-stop-recording').disabled = false;
+    });
+};
+
+document.getElementById('btn-stop-recording').onclick = function() {
+    this.disabled = true;
+    recorder.stopRecording(stopRecordingCallback);
+};
+
+function addStreamStopListener(stream, callback) {
+    stream.addEventListener('ended', function() {
+        callback();
+        callback = function() {};
+    }, false);
+    stream.addEventListener('inactive', function() {
+        callback();
+        callback = function() {};
+    }, false);
+    stream.getTracks().forEach(function(track) {
+        track.addEventListener('ended', function() {
+            callback();
+            callback = function() {};
+        }, false);
+        track.addEventListener('inactive', function() {
+            callback();
+            callback = function() {};
+        }, false);
+    });
+}
+</script>
+
+<br><br>
+
+<footer id="footer" style="margin-top: 20px; text-align: left;">
+
+</footer>
+<script src="https://www.webrtc-experiment.com/common.js"></script>

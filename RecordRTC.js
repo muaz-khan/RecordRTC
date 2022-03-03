@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2021-03-09 3:20:22 AM UTC
+// Last time updated: 2022-03-03 3:04:56 PM UTC
 
 // ________________
 // RecordRTC v5.6.2
@@ -2145,50 +2145,6 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         }
 
-        // Dispatching OnDataAvailable Handler
-        mediaRecorder.ondataavailable = function(e) {
-            if (e.data) {
-                allStates.push('ondataavailable: ' + bytesToSize(e.data.size));
-            }
-
-            if (typeof config.timeSlice === 'number') {
-                if (e.data && e.data.size) {
-                    arrayOfBlobs.push(e.data);
-                    updateTimeStamp();
-
-                    if (typeof config.ondataavailable === 'function') {
-                        // intervals based blobs
-                        var blob = config.getNativeBlob ? e.data : new Blob([e.data], {
-                            type: getMimeType(recorderHints)
-                        });
-                        config.ondataavailable(blob);
-                    }
-                }
-                return;
-            }
-
-            if (!e.data || !e.data.size || e.data.size < 100 || self.blob) {
-                // make sure that stopRecording always getting fired
-                // even if there is invalid data
-                if (self.recordingCallback) {
-                    self.recordingCallback(new Blob([], {
-                        type: getMimeType(recorderHints)
-                    }));
-                    self.recordingCallback = null;
-                }
-                return;
-            }
-
-            self.blob = config.getNativeBlob ? e.data : new Blob([e.data], {
-                type: getMimeType(recorderHints)
-            });
-
-            if (self.recordingCallback) {
-                self.recordingCallback(self.blob);
-                self.recordingCallback = null;
-            }
-        };
-
         mediaRecorder.onstart = function() {
             allStates.push('started');
         };
@@ -2203,6 +2159,16 @@ function MediaStreamRecorder(mediaStream, config) {
 
         mediaRecorder.onstop = function() {
             allStates.push('stopped');
+            if (config.writableStream) {
+                Queue.enqueue(function() {
+                    return config.writableStream.close()
+                        .then(function() {
+                            if (config.onWritableStreamClosed && typeof config.onWritableStreamClosed === 'function') {
+                                config.onWritableStreamClosed();
+                            }
+                        });
+                });
+            }
         };
 
         mediaRecorder.onerror = function(error) {
@@ -2257,18 +2223,72 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         };
 
-        if (typeof config.timeSlice === 'number') {
-            updateTimeStamp();
+        if (config.writableStream) {
+            mediaRecorder.ondataavailable = function(e) {
+                Queue.enqueue(function() {
+                    return config.writableStream.write(e.data);
+                });
+            };
+            config.timeSlice  = config.timeSlice || 1000;
             mediaRecorder.start(config.timeSlice);
         } else {
-            // default is 60 minutes; enough?
-            // use config => {timeSlice: 1000} otherwise
+            // Dispatching OnDataAvailable Handler
+            mediaRecorder.ondataavailable = function(e) {
+                if (e.data) {
+                    allStates.push('ondataavailable: ' + bytesToSize(e.data.size));
+                }
 
-            mediaRecorder.start(3.6e+6);
-        }
+                if (typeof config.timeSlice === 'number') {
+                    if (e.data && e.data.size) {
+                        arrayOfBlobs.push(e.data);
+                        updateTimeStamp();
 
-        if (config.initCallback) {
-            config.initCallback(); // old code
+                        if (typeof config.ondataavailable === 'function') {
+                            // intervals based blobs
+                            var blob = config.getNativeBlob ? e.data : new Blob([e.data], {
+                                type: getMimeType(recorderHints)
+                            });
+                            config.ondataavailable(blob);
+                        }
+                    }
+                    return;
+                }
+
+                if (!e.data || !e.data.size || e.data.size < 100 || self.blob) {
+                    // make sure that stopRecording always getting fired
+                    // even if there is invalid data
+                    if (self.recordingCallback) {
+                        self.recordingCallback(new Blob([], {
+                            type: getMimeType(recorderHints)
+                        }));
+                        self.recordingCallback = null;
+                    }
+                    return;
+                }
+
+                self.blob = config.getNativeBlob ? e.data : new Blob([e.data], {
+                    type: getMimeType(recorderHints)
+                });
+
+                if (self.recordingCallback) {
+                    self.recordingCallback(self.blob);
+                    self.recordingCallback = null;
+                }
+            };
+
+            if (typeof config.timeSlice === 'number') {
+                updateTimeStamp();
+                mediaRecorder.start(config.timeSlice);
+            } else {
+                // default is 60 minutes; enough?
+                // use config => {timeSlice: 1000} otherwise
+
+                mediaRecorder.start(3.6e+6);
+            }
+
+            if (config.initCallback) {
+                config.initCallback(); // old code
+            }
         }
     };
 
@@ -2460,8 +2480,8 @@ function MediaStreamRecorder(mediaStream, config) {
         return allStates;
     };
 
-    // if any Track within the MediaStream is muted or not enabled at any time, 
-    // the browser will only record black frames 
+    // if any Track within the MediaStream is muted or not enabled at any time,
+    // the browser will only record black frames
     // or silence since that is the content produced by the Track
     // so we need to stopRecording as soon as any single track ends.
     if (typeof config.checkForInactiveTracks === 'undefined') {
@@ -2498,6 +2518,122 @@ function MediaStreamRecorder(mediaStream, config) {
 if (typeof RecordRTC !== 'undefined') {
     RecordRTC.MediaStreamRecorder = MediaStreamRecorder;
 }
+
+/**
+ * From https://medium.com/@karenmarkosyan/how-to-manage-promises-into-dynamic-queue-with-vanilla-javascript-9d0d1f8d4df5 (+ Babel to convert to ES5)
+ * Allows resolving promises in the order they are added to the queue.
+ */
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError('Cannot call a class as a function');
+    }
+}
+
+function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ('value' in descriptor) {
+            descriptor.writable = true;
+        }
+        Object.defineProperty(target, descriptor.key, descriptor);
+    }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) {
+        _defineProperties(Constructor.prototype, protoProps);
+    }
+    if (staticProps) {
+        _defineProperties(Constructor, staticProps);
+    }
+    Object.defineProperty(Constructor, 'prototype', {
+        writable: false
+    });
+    return Constructor;
+}
+
+function _defineProperty(obj, key, value) {
+    if (key in obj) {
+        Object.defineProperty(obj, key, {
+            value: value,
+            enumerable: true,
+            configurable: true,
+            writable: true
+        });
+    } else {
+        obj[key] = value;
+    }
+    return obj;
+}
+var Queue = /*#__PURE__*/ (function() {
+    function Queue() {
+        _classCallCheck(this, Queue);
+    }
+
+    _createClass(Queue, null, [{
+            key: 'enqueue',
+            value: function enqueue(promise) {
+                var _this = this;
+
+                return new Promise(function(resolve, reject) {
+                    _this.queue.push({
+                        promise: promise,
+                        resolve: resolve,
+                        reject: reject
+                    });
+
+                    _this.dequeue();
+                });
+            }
+        },
+        {
+            key: 'dequeue',
+            value: function dequeue() {
+                var _this2 = this;
+
+                if (this.workingOnPromise) {
+                    return false;
+                }
+
+                var item = this.queue.shift();
+
+                if (!item) {
+                    return false;
+                }
+
+                try {
+                    this.workingOnPromise = true;
+                    item
+                        .promise()
+                        .then(function(value) {
+                            _this2.workingOnPromise = false;
+                            item.resolve(value);
+
+                            _this2.dequeue();
+                        })
+                        .catch(function(err) {
+                            _this2.workingOnPromise = false;
+                            item.reject(err);
+
+                            _this2.dequeue();
+                        });
+                } catch (err) {
+                    this.workingOnPromise = false;
+                    item.reject(err);
+                    this.dequeue();
+                }
+
+                return true;
+            }
+        }
+    ]);
+
+    return Queue;
+})();
+_defineProperty(Queue, 'queue', []);
+_defineProperty(Queue, 'workingOnPromise', false);
 
 // source code from: http://typedarray.org/wp-content/projects/WebAudioRecorder/script.js
 // https://github.com/mattdiamond/Recorderjs#license-mit

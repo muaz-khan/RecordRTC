@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2021-03-09 3:20:22 AM UTC
+// Last time updated: 2022-04-05 11:18:05 AM UTC
 
 // ________________
 // RecordRTC v5.6.2
@@ -2261,10 +2261,10 @@ function MediaStreamRecorder(mediaStream, config) {
             updateTimeStamp();
             mediaRecorder.start(config.timeSlice);
         } else {
-            // default is 60 minutes; enough?
+            // default is 24 hours; enough? (thanks https://github.com/slidevjs/slidev/pull/488)
             // use config => {timeSlice: 1000} otherwise
 
-            mediaRecorder.start(3.6e+6);
+            mediaRecorder.start(24 * 60 * 60 * 1000);
         }
 
         if (config.initCallback) {

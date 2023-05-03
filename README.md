@@ -345,7 +345,7 @@ DiskStorage = {
 | Framework     | Github               | Article            |
 | ------------- |-------------        |-------------     |
 | Angular2      | [github](https://github.com/ShankarSumanth/Angular2-RecordRTC) | [article](https://medium.com/@SumanthShankar/integrate-recordrtc-with-angular-2-typescript-942c9c4ca93f#.7x5yf2nr5) |
-| React.js       | [github](https://github.com/szwang/recordrtc-react) | [article](http://suzannewang.com/recordrtc/) |
+| React.js       | [github](https://github.com/szwang/recordrtc-react) | [article]([http://suzannewang.com/recordrtc/](https://web.archive.org/web/20220819225619/https://suzannewang.com/recordrtc/)) |
 | Video.js      | [github](https://github.com/collab-project/videojs-record) | None |
 | Meteor        | [github](https://github.com/launchbricklabs/recordrtc-meteor-demo) | None |
 

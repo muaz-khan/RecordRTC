@@ -281,6 +281,10 @@ function RecordRTC(mediaStream, config) {
     }
 
     function handleRecordingDuration(counter) {
+        if (!self) {
+            return;
+        }
+
         counter = counter || 0;
 
         if (self.state === 'paused') {

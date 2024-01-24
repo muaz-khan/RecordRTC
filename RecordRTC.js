@@ -1,6 +1,6 @@
 'use strict';
 
-// Last time updated: 2024-01-03 12:51:19 PM UTC
+// Last time updated: 2024-01-24 6:01:52 PM UTC
 
 // ________________
 // RecordRTC v5.6.3
@@ -295,6 +295,10 @@ function RecordRTC(mediaStream, config) {
     }
 
     function handleRecordingDuration(counter) {
+        if (!self) {
+            return;
+        }
+
         counter = counter || 0;
 
         if (self.state === 'paused') {

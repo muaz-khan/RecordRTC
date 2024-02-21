@@ -114,7 +114,7 @@
                 onAudioProcessStarted: function() {
                     recordVideo.startRecording();
 
-                    cameraPreview.src = window.URL.createObjectURL(stream);
+                    cameraPreview.srcObject=stream;
                     cameraPreview.play();
 
                     cameraPreview.muted = true;

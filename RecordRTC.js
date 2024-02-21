@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2024-02-21 10:42:52 PM UTC
+// Last time updated: 2024-02-21 11:24:40 PM UTC
 
 // ________________
-// RecordRTC v5.6.4
+// RecordRTC v5.6.5
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -11,6 +11,54 @@
 // Muaz Khan     - www.MuazKhan.com
 // MIT License   - www.WebRTC-Experiment.com/licence
 // --------------------------------------------------
+
+// Monkey patch console to use Cresta logger when defined
+var consoleLogFns = {
+  log: console.log,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+  debug: console.debug,
+};
+
+console.log = function () {
+  if (window.cresta && window.cresta.logger) {
+    window.cresta.logger.info.apply(window.cresta.logger, arguments);
+  } else {
+    consoleLogFns.log.apply(console, arguments);
+  }
+};
+
+console.info = function () {
+  if (window.cresta && window.cresta.logger) {
+    window.cresta.logger.info.apply(window.cresta.logger, arguments);
+  } else {
+    consoleLogFns.info.apply(console, arguments);
+  }
+};
+
+console.warn = function () {
+  if (window.cresta && window.cresta.logger) {
+    window.cresta.logger.warn.apply(window.cresta.logger, arguments);
+  } else {
+    consoleLogFns.warn.apply(console, arguments);
+  }
+};
+
+console.error = function () {
+  if (window.cresta && window.cresta.logger) {
+    window.cresta.logger.error.apply(window.cresta.logger, arguments);
+    consoleLogFns.error.apply(console, arguments);
+  }
+};
+
+console.debug = function () {
+  if (window.cresta && window.cresta.logger) {
+    window.cresta.logger.verbose.apply(window.cresta.logger, arguments);
+  } else {
+    consoleLogFns.debug.apply(console, arguments);
+  }
+};
 
 // ____________
 // RecordRTC.js
@@ -50,7 +98,7 @@ function RecordRTC(mediaStream, config) {
 
     function startRecording(config2) {
         if (!config.disableLogs) {
-            console.log('RecordRTC version: ', self.version);
+            console.log('[screen-recorder-client][recordrtc][RecordRTC] RecordRTC version: ' + self.version);
         }
 
         if (!!config2) {
@@ -60,7 +108,7 @@ function RecordRTC(mediaStream, config) {
         }
 
         if (!config.disableLogs) {
-            console.log('started recording ' + config.type + ' stream.');
+            console.log('[screen-recorder-client][recordrtc][RecordRTC] started recording ' + config.type + ' stream.');
         }
 
         if (mediaRecorder) {
@@ -100,7 +148,7 @@ function RecordRTC(mediaStream, config) {
         setState('recording');
 
         if (!config.disableLogs) {
-            console.log('Initialized recorderType:', mediaRecorder.constructor.name, 'for output-type:', config.type);
+            console.log('[screen-recorder-client][recordrtc][RecordRTC] Initialized recorderType: ' + mediaRecorder.constructor.name + ' for output-type: ' + config.type);
         }
     }
 
@@ -122,11 +170,11 @@ function RecordRTC(mediaStream, config) {
         }
 
         if (self.state !== 'recording' && !config.disableLogs) {
-            console.warn('Recording state should be: "recording", however current state is: ', self.state);
+            console.warn('[screen-recorder-client][recordrtc][RecordRTC] Recording state should be: "recording", however current state is: ' + self.state);
         }
 
         if (!config.disableLogs) {
-            console.log('Stopped recording ' + config.type + ' stream.');
+            console.log('[screen-recorder-client][recordrtc][RecordRTC] Stopped recording ' + config.type + ' stream.');
         }
 
         if (config.type !== 'gif') {
@@ -167,7 +215,7 @@ function RecordRTC(mediaStream, config) {
             }
 
             if (blob && !config.disableLogs) {
-                console.log(blob.type, '->', bytesToSize(blob.size));
+                console.log('[screen-recorder-client][recordrtc][RecordRTC] ' + blob.type + '->' + bytesToSize(blob.size));
             }
 
             if (callback) {
@@ -204,7 +252,7 @@ function RecordRTC(mediaStream, config) {
 
         if (self.state !== 'recording') {
             if (!config.disableLogs) {
-                console.warn('Unable to pause the recording. Recording state: ', self.state);
+                console.warn('[screen-recorder-client][recordrtc][RecordRTC] Unable to pause the recording. Recording state: ' + self.state);
             }
             return;
         }
@@ -214,7 +262,7 @@ function RecordRTC(mediaStream, config) {
         mediaRecorder.pause();
 
         if (!config.disableLogs) {
-            console.log('Paused recording.');
+            console.log('[screen-recorder-client][recordrtc][RecordRTC] Paused recording.');
         }
     }
 
@@ -226,7 +274,7 @@ function RecordRTC(mediaStream, config) {
 
         if (self.state !== 'paused') {
             if (!config.disableLogs) {
-                console.warn('Unable to resume the recording. Recording state: ', self.state);
+                console.warn('[screen-recorder-client][recordrtc][RecordRTC] Unable to resume the recording. Recording state: ' + self.state);
             }
             return;
         }
@@ -237,7 +285,7 @@ function RecordRTC(mediaStream, config) {
         mediaRecorder.resume();
 
         if (!config.disableLogs) {
-            console.log('Resumed recording.');
+            console.log('[screen-recorder-client][recordrtc][RecordRTC] Resumed recording.');
         }
     }
 
@@ -254,7 +302,7 @@ function RecordRTC(mediaStream, config) {
 
         if (!blob) {
             if (!config.disableLogs) {
-                console.warn('Blob encoder did not finish its job yet.');
+                console.warn('[screen-recorder-client][recordrtc][RecordRTC] Blob encoder did not finish its job yet.');
             }
 
             setTimeout(function() {
@@ -341,7 +389,7 @@ function RecordRTC(mediaStream, config) {
             return;
         }
 
-        console.warn(WARNING);
+        console.warn('[screen-recorder-client][recordrtc][RecordRTC] ' + WARNING);
     }
 
     var mediaRecorder;
@@ -464,7 +512,7 @@ function RecordRTC(mediaStream, config) {
             mediaRecorder.clearRecordedData();
 
             if (!config.disableLogs) {
-                console.log('Cleared old recorded data.');
+                console.log('[screen-recorder-client][recordrtc][RecordRTC] Cleared old recorded data.');
             }
         },
 
@@ -686,7 +734,7 @@ function RecordRTC(mediaStream, config) {
          */
         reset: function() {
             if (self.state === 'recording' && !config.disableLogs) {
-                console.warn('Stop an active recorder.');
+                console.warn('[screen-recorder-client][recordrtc][RecordRTC] Stop an active recorder.');
             }
 
             if (mediaRecorder && typeof mediaRecorder.clearRecordedData === 'function') {
@@ -710,7 +758,7 @@ function RecordRTC(mediaStream, config) {
          */
         onStateChanged: function(state) {
             if (!config.disableLogs) {
-                console.log('Recorder state changed:', state);
+                console.log('[screen-recorder-client][recordrtc][RecordRTC] Recorder state changed: ' + state);
             }
         },
 
@@ -768,7 +816,7 @@ function RecordRTC(mediaStream, config) {
             config.disableLogs = disableLogsCache;
 
             if (!config.disableLogs) {
-                console.log('RecordRTC is destroyed.');
+                console.log('[screen-recorder-client][recordrtc][RecordRTC] RecordRTC is destroyed.');
             }
         },
 
@@ -781,7 +829,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.6.4'
+        version: '5.6.5'
     };
 
     if (!this) {
@@ -799,7 +847,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.6.4';
+RecordRTC.version = '5.6.5';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -816,7 +864,7 @@ RecordRTC.getFromDisk = function(type, callback) {
         throw 'callback is mandatory.';
     }
 
-    console.log('Getting recorded ' + (type === 'all' ? 'blobs' : type + ' blob ') + ' from disk!');
+    console.log('[screen-recorder-client][recordrtc][RecordRTC.IndexedDB] Getting recorded ' + (type === 'all' ? 'blobs' : type + ' blob ') + ' from disk!');
     DiskStorage.Fetch(function(dataURL, _type) {
         if (type !== 'all' && _type === type + 'Blob' && callback) {
             callback(dataURL);
@@ -841,7 +889,7 @@ RecordRTC.getFromDisk = function(type, callback) {
  * });
  */
 RecordRTC.writeToDisk = function(options) {
-    console.log('Writing recorded blob(s) to disk!');
+    console.log('[screen-recorder-client][recordrtc][RecordRTC.IndexedDB] Writing recorded blob(s) to disk!');
     options = options || {};
     if (options.audio && options.video && options.gif) {
         options.audio.getDataURL(function(audioDataURL) {
@@ -1054,7 +1102,7 @@ function GetRecorderType(mediaStream, config) {
     }
 
     if (!config.disableLogs && !!recorder && !!recorder.name) {
-        console.log('Using recorderType:', recorder.name || recorder.constructor.name);
+        console.log('[screen-recorder-client][recordrtc][GetRecorderType] Using recorderType: ' + (recorder.name || recorder.constructor.name));
     }
 
     if (!recorder && isSafari) {
@@ -2104,7 +2152,7 @@ function MediaStreamRecorder(mediaStream, config) {
         var recorderHints = config;
 
         if (!config.disableLogs) {
-            console.log('Passing following config over MediaRecorder API.', recorderHints);
+            console.log('[screen-recorder-client][recordrtc][MediaStreamRecorder] Passing following config over MediaRecorder API: ' + recorderHints);
         }
 
         if (mediaRecorder) {
@@ -2120,7 +2168,7 @@ function MediaStreamRecorder(mediaStream, config) {
         if (typeof MediaRecorder.isTypeSupported === 'function' && recorderHints.mimeType) {
             if (!MediaRecorder.isTypeSupported(recorderHints.mimeType)) {
                 if (!config.disableLogs) {
-                    console.warn('MediaRecorder API seems unable to record mimeType:', recorderHints.mimeType);
+                    console.warn('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder API seems unable to record mimeType: ' + recorderHints.mimeType);
                 }
 
                 recorderHints.mimeType = config.type === 'audio' ? 'audio/webm' : 'video/webm';
@@ -2141,7 +2189,7 @@ function MediaStreamRecorder(mediaStream, config) {
         // old hack?
         if (recorderHints.mimeType && !MediaRecorder.isTypeSupported && 'canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(recorderHints.mimeType) === false) {
             if (!config.disableLogs) {
-                console.warn('MediaRecorder API seems unable to record mimeType:', recorderHints.mimeType);
+                console.warn('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder API seems unable to record mimeType: ' + recorderHints.mimeType);
             }
         }
 
@@ -2219,24 +2267,24 @@ function MediaStreamRecorder(mediaStream, config) {
             if (!config.disableLogs) {
                 // via: https://w3c.github.io/mediacapture-record/MediaRecorder.html#exception-summary
                 if (error.name.toString().toLowerCase().indexOf('invalidstate') !== -1) {
-                    console.error('The MediaRecorder is not in a state in which the proposed operation is allowed to be executed.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] The MediaRecorder is not in a state in which the proposed operation is allowed to be executed: ' + error);
                 } else if (error.name.toString().toLowerCase().indexOf('notsupported') !== -1) {
-                    console.error('MIME type (', recorderHints.mimeType, ') is not supported.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] MIME type (' + recorderHints.mimeType + ') is not supported: ' + error);
                 } else if (error.name.toString().toLowerCase().indexOf('security') !== -1) {
-                    console.error('MediaRecorder security error', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder security error: ' + error);
                 }
 
                 // older code below
                 else if (error.name === 'OutOfMemory') {
-                    console.error('The UA has exhaused the available memory. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] The UA has exhaused the available memory. User agents SHOULD provide as much additional information as possible in the message attribute: ' + error);
                 } else if (error.name === 'IllegalStreamModification') {
-                    console.error('A modification to the stream has occurred that makes it impossible to continue recording. An example would be the addition of a Track while recording is occurring. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] A modification to the stream has occurred that makes it impossible to continue recording. An example would be the addition of a Track while recording is occurring. User agents SHOULD provide as much additional information as possible in the message attribute: ' + error);
                 } else if (error.name === 'OtherRecordingError') {
-                    console.error('Used for an fatal error other than those listed above. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] Used for an fatal error other than those listed above. User agents SHOULD provide as much additional information as possible in the message attribute: ' + error);
                 } else if (error.name === 'GenericError') {
-                    console.error('The UA cannot provide the codec or recording option that has been requested.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] The UA cannot provide the codec or recording option that has been requested: ' + error);
                 } else {
-                    console.error('MediaRecorder Error', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder Error: ' + error);
                 }
             }
 
@@ -2479,7 +2527,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         if (isMediaStreamActive() === false) {
             if (!config.disableLogs) {
-                console.log('MediaStream seems stopped.');
+                console.log('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaStream seems stopped.');
             }
             self.stop();
             return;
@@ -2569,7 +2617,7 @@ function StereoAudioRecorder(mediaStream, config) {
     }
 
     if (!config.disableLogs) {
-        console.log('StereoAudioRecorder is set to record number of channels: ' + numberOfAudioChannels);
+        console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] StereoAudioRecorder is set to record number of channels: ' + numberOfAudioChannels);
     }
 
     // if any Track within the MediaStream is muted or not enabled at any time, 
@@ -2941,7 +2989,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
     if (legalBufferValues.indexOf(bufferSize) === -1) {
         if (!config.disableLogs) {
-            console.log('Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
+            console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
         }
     }
 
@@ -2982,13 +3030,13 @@ function StereoAudioRecorder(mediaStream, config) {
     if (sampleRate < 22050 || sampleRate > 96000) {
         // Ref: http://stackoverflow.com/a/26303918/552182
         if (!config.disableLogs) {
-            console.log('sample-rate must be under range 22050 and 96000.');
+            console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] sample-rate must be under range 22050 and 96000.');
         }
     }
 
     if (!config.disableLogs) {
         if (config.desiredSampRate) {
-            console.log('Desired sample-rate: ' + config.desiredSampRate);
+            console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] Desired sample-rate: ' + config.desiredSampRate);
         }
     }
 
@@ -3018,7 +3066,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (!recording) {
             if (!config.disableLogs) {
-                console.log('Seems recording has been restarted.');
+                console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] Seems recording has been restarted.');
             }
             this.record();
             return;
@@ -3097,7 +3145,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (isMediaStreamActive() === false) {
             if (!config.disableLogs) {
-                console.log('MediaStream seems stopped.');
+                console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] MediaStream seems stopped.');
             }
             jsAudioNode.disconnect();
             recording = false;
@@ -3277,7 +3325,7 @@ function CanvasRecorder(htmlElement, config) {
 
     if (isCanvasSupportsStreamCapturing) {
         if (!config.disableLogs) {
-            console.log('Your browser supports both MediRecorder API and canvas.captureStream!');
+            console.log('[screen-recorder-client][recordrtc][CanvasRecorder] Your browser supports both MediRecorder API and canvas.captureStream!');
         }
 
         if (htmlElement instanceof HTMLCanvasElement) {
@@ -3289,7 +3337,7 @@ function CanvasRecorder(htmlElement, config) {
         }
     } else if (!!navigator.mozGetUserMedia) {
         if (!config.disableLogs) {
-            console.error('Canvas recording is NOT supported in Firefox.');
+            console.error('[screen-recorder-client][recordrtc][CanvasRecorder] Canvas recording is NOT supported in Firefox.');
         }
     }
 
@@ -3353,7 +3401,7 @@ function CanvasRecorder(htmlElement, config) {
         whammy.frames.forEach(function(frame, idx) {
             var framesRemaining = framesLength - idx;
             if (!config.disableLogs) {
-                console.log(framesRemaining + '/' + framesLength + ' frames remaining');
+                console.log('[screen-recorder-client][recordrtc][CanvasRecorder] ' + framesRemaining + '/' + framesLength + ' frames remaining');
             }
 
             if (config.onEncodingCallback) {
@@ -3365,7 +3413,7 @@ function CanvasRecorder(htmlElement, config) {
         });
 
         if (!config.disableLogs) {
-            console.log('Generating WebM');
+            console.log('[screen-recorder-client][recordrtc][CanvasRecorder] Generating WebM');
         }
 
         callback();
@@ -3402,7 +3450,7 @@ function CanvasRecorder(htmlElement, config) {
              */
             whammy.compile(function(blob) {
                 if (!config.disableLogs) {
-                    console.log('Recording finished!');
+                    console.log('[screen-recorder-client][recordrtc][CanvasRecorder] Recording finished!');
                 }
 
                 that.blob = blob;
@@ -3586,7 +3634,7 @@ function WhammyRecorder(mediaStream, config) {
     }
 
     if (!config.disableLogs) {
-        console.log('Using frames-interval:', config.frameInterval);
+        console.log('[screen-recorder-client][recordrtc][WhammyRecorder] Using frames-interval: ' + config.frameInterval);
     }
 
     /**
@@ -3653,8 +3701,8 @@ function WhammyRecorder(mediaStream, config) {
         whammy = new Whammy.Video();
 
         if (!config.disableLogs) {
-            console.log('canvas resolutions', canvas.width, '*', canvas.height);
-            console.log('video width/height', video.width || canvas.width, '*', video.height || canvas.height);
+            console.log('[screen-recorder-client][recordrtc][WhammyRecorder] canvas resolutions ' + canvas.width + '*' + canvas.height);
+            console.log('[screen-recorder-client][recordrtc][WhammyRecorder] video width/height ' + (video.width || canvas.width) + '*' + (video.height || canvas.height));
         }
 
         drawFrames(config.frameInterval);
@@ -4345,7 +4393,7 @@ var Whammy = (function() {
 
         webWorker.onmessage = function(event) {
             if (event.data.error) {
-                console.error(event.data.error);
+                console.error('[screen-recorder-client][recordrtc][Whammy] ' + event.data.error);
                 return;
             }
             callback(event.data);
@@ -4415,7 +4463,7 @@ var DiskStorage = {
         var self = this;
 
         if (typeof indexedDB === 'undefined' || typeof indexedDB.open === 'undefined') {
-            console.error('IndexedDB API are not available in this browser.');
+            console.error('[screen-recorder-client][recordrtc][DiskStorage] IndexedDB API are not available in this browser.');
             return;
         }
 
@@ -4530,7 +4578,7 @@ var DiskStorage = {
      * };
      */
     onError: function(error) {
-        console.error(JSON.stringify(error, null, '\t'));
+        console.error('[screen-recorder-client][recordrtc][DiskStorage] ' + JSON.stringify(error, null, '\t'));
     },
 
     /**
@@ -5206,7 +5254,7 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
         } else if ('mozCaptureStream' in canvas) {
             capturedStream = canvas.mozCaptureStream();
         } else if (!self.disableLogs) {
-            console.error('Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
+            console.error('[screen-recorder-client][recordrtc][MultiStreamsMixer] Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
         }
 
         var videoStream = new MediaStream();
@@ -5925,7 +5973,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @example
      * alert(recorder.version);
      */
-    this.version = '5.6.4';
+    this.version = '5.6.5';
 }
 
 if (typeof RecordRTC !== 'undefined') {
@@ -5957,7 +6005,7 @@ function WebAssemblyRecorder(stream, config) {
 
     if (typeof ReadableStream === 'undefined' || typeof WritableStream === 'undefined') {
         // because it fixes readable/writable streams issues
-        console.error('Following polyfill is strongly recommended: https://unpkg.com/@mattiasbuelens/web-streams-polyfill/dist/polyfill.min.js');
+        console.error('[screen-recorder-client][recordrtc][WebAssemblyRecorder] Following polyfill is strongly recommended: https://unpkg.com/@mattiasbuelens/web-streams-polyfill/dist/polyfill.min.js');
     }
 
     config = config || {};
@@ -6046,7 +6094,7 @@ function WebAssemblyRecorder(stream, config) {
         }
 
         if (!config.workerPath) {
-            console.error('workerPath parameter is missing.');
+            console.error('[screen-recorder-client][recordrtc][WebAssemblyRecorder] workerPath parameter is missing.');
         }
 
         worker = new Worker(config.workerPath);
@@ -6065,7 +6113,7 @@ function WebAssemblyRecorder(stream, config) {
                 cameraStream().pipeTo(new WritableStream({
                     write: function(image) {
                         if (finished) {
-                            console.error('Got image, but recorder is finished!');
+                            console.error('[screen-recorder-client][recordrtc][WebAssemblyRecorder] Got image, but recorder is finished!');
                             return;
                         }
 

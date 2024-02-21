@@ -1,6 +1,6 @@
 {
   "name": "@cresta/recordrtc",
-  "version": "5.6.4",
+  "version": "5.6.5",
   "repository": "https://github.com/cresta/RecordRTC.git",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/cresta"

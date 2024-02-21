@@ -109,6 +109,7 @@ function RecordRTC(mediaStream, config) {
 
         if (!mediaRecorder) {
             warningLog();
+            callback();
             return;
         }
 
@@ -118,6 +119,7 @@ function RecordRTC(mediaStream, config) {
             setTimeout(function() {
                 stopRecording(callback);
             }, 1);
+            callback();
             return;
         }
 

@@ -34,6 +34,7 @@ module.exports = function(grunt) {
             },
             dist: {
                 src: [
+                    'dev/console.js',
                     'dev/RecordRTC.js',
                     'dev/RecordRTC.IndexedDB.js',
                     'dev/RecordRTC-Configuration.js',

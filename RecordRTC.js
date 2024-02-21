@@ -1,9 +1,9 @@
 'use strict';
 
-// Last time updated: 2024-01-03 12:51:19 PM UTC
+// Last time updated: 2024-02-21 10:42:52 PM UTC
 
 // ________________
-// RecordRTC v5.6.3
+// RecordRTC v5.6.4
 
 // Open-Sourced: https://github.com/muaz-khan/RecordRTC
 
@@ -781,7 +781,7 @@ function RecordRTC(mediaStream, config) {
          * @example
          * alert(recorder.version);
          */
-        version: '5.6.3'
+        version: '5.6.4'
     };
 
     if (!this) {
@@ -799,7 +799,7 @@ function RecordRTC(mediaStream, config) {
     return returnObject;
 }
 
-RecordRTC.version = '5.6.3';
+RecordRTC.version = '5.6.4';
 
 if (typeof module !== 'undefined' /* && !!module.exports*/ ) {
     module.exports = RecordRTC;
@@ -5925,7 +5925,7 @@ function RecordRTCPromisesHandler(mediaStream, options) {
      * @example
      * alert(recorder.version);
      */
-    this.version = '5.6.3';
+    this.version = '5.6.4';
 }
 
 if (typeof RecordRTC !== 'undefined') {

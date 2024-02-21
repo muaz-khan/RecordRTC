@@ -1,7 +1,11 @@
 {
-  "name": "recordrtc",
+  "name": "@cresta/recordrtc",
+  "version": "5.6.4",
+  "repository": "https://github.com/cresta/RecordRTC.git",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/cresta"
+  },
   "preferGlobal": false,
-  "version": "5.6.3",
   "author": {
     "name": "Muaz Khan",
     "email": "muazkh@gmail.com",
@@ -13,10 +17,6 @@
     "test": "./node_modules/.bin/protractor test/browserstack.config.js"
   },
   "main": "RecordRTC.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/muaz-khan/RecordRTC.git"
-  },
   "keywords": [
     "webrtc",
     "recordrtc",

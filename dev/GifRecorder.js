@@ -2,7 +2,7 @@
 // GifRecorder.js
 
 /**
- * GifRecorder is standalone calss used by {@link RecordRTC} to record video or canvas into animated gif.
+ * GifRecorder is standalone class used by {@link RecordRTC} to record video or canvas into animated gif.
  * @license {@link https://github.com/muaz-khan/RecordRTC/blob/master/LICENSE|MIT}
  * @author {@link https://MuazKhan.com|Muaz Khan}
  * @typedef GifRecorder

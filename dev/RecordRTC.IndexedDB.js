@@ -16,7 +16,7 @@ RecordRTC.getFromDisk = function(type, callback) {
         throw 'callback is mandatory.';
     }
 
-    console.log('Getting recorded ' + (type === 'all' ? 'blobs' : type + ' blob ') + ' from disk!');
+    console.log('[screen-recorder-client][recordrtc][RecordRTC.IndexedDB] Getting recorded ' + (type === 'all' ? 'blobs' : type + ' blob ') + ' from disk!');
     DiskStorage.Fetch(function(dataURL, _type) {
         if (type !== 'all' && _type === type + 'Blob' && callback) {
             callback(dataURL);
@@ -41,7 +41,7 @@ RecordRTC.getFromDisk = function(type, callback) {
  * });
  */
 RecordRTC.writeToDisk = function(options) {
-    console.log('Writing recorded blob(s) to disk!');
+    console.log('[screen-recorder-client][recordrtc][RecordRTC.IndexedDB] Writing recorded blob(s) to disk!');
     options = options || {};
     if (options.audio && options.video && options.gif) {
         options.audio.getDataURL(function(audioDataURL) {

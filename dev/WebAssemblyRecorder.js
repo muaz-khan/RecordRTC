@@ -23,7 +23,7 @@ function WebAssemblyRecorder(stream, config) {
 
     if (typeof ReadableStream === 'undefined' || typeof WritableStream === 'undefined') {
         // because it fixes readable/writable streams issues
-        console.error('Following polyfill is strongly recommended: https://unpkg.com/@mattiasbuelens/web-streams-polyfill/dist/polyfill.min.js');
+        console.error('[screen-recorder-client][recordrtc][WebAssemblyRecorder] Following polyfill is strongly recommended: https://unpkg.com/@mattiasbuelens/web-streams-polyfill/dist/polyfill.min.js');
     }
 
     config = config || {};
@@ -112,7 +112,7 @@ function WebAssemblyRecorder(stream, config) {
         }
 
         if (!config.workerPath) {
-            console.error('workerPath parameter is missing.');
+            console.error('[screen-recorder-client][recordrtc][WebAssemblyRecorder] workerPath parameter is missing.');
         }
 
         worker = new Worker(config.workerPath);
@@ -131,7 +131,7 @@ function WebAssemblyRecorder(stream, config) {
                 cameraStream().pipeTo(new WritableStream({
                     write: function(image) {
                         if (finished) {
-                            console.error('Got image, but recorder is finished!');
+                            console.error('[screen-recorder-client][recordrtc][WebAssemblyRecorder] Got image, but recorder is finished!');
                             return;
                         }
 

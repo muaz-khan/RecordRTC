@@ -41,7 +41,7 @@ var DiskStorage = {
         var self = this;
 
         if (typeof indexedDB === 'undefined' || typeof indexedDB.open === 'undefined') {
-            console.error('IndexedDB API are not available in this browser.');
+            console.error('[screen-recorder-client][recordrtc][DiskStorage] IndexedDB API are not available in this browser.');
             return;
         }
 
@@ -156,7 +156,7 @@ var DiskStorage = {
      * };
      */
     onError: function(error) {
-        console.error(JSON.stringify(error, null, '\t'));
+        console.error('[screen-recorder-client][recordrtc][DiskStorage] ' + JSON.stringify(error, null, '\t'));
     },
 
     /**

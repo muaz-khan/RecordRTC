@@ -68,7 +68,7 @@ function StereoAudioRecorder(mediaStream, config) {
     }
 
     if (!config.disableLogs) {
-        console.log('StereoAudioRecorder is set to record number of channels: ' + numberOfAudioChannels);
+        console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] StereoAudioRecorder is set to record number of channels: ' + numberOfAudioChannels);
     }
 
     // if any Track within the MediaStream is muted or not enabled at any time, 
@@ -440,7 +440,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
     if (legalBufferValues.indexOf(bufferSize) === -1) {
         if (!config.disableLogs) {
-            console.log('Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
+            console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] Legal values for buffer-size are ' + JSON.stringify(legalBufferValues, null, '\t'));
         }
     }
 
@@ -481,13 +481,13 @@ function StereoAudioRecorder(mediaStream, config) {
     if (sampleRate < 22050 || sampleRate > 96000) {
         // Ref: http://stackoverflow.com/a/26303918/552182
         if (!config.disableLogs) {
-            console.log('sample-rate must be under range 22050 and 96000.');
+            console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] sample-rate must be under range 22050 and 96000.');
         }
     }
 
     if (!config.disableLogs) {
         if (config.desiredSampRate) {
-            console.log('Desired sample-rate: ' + config.desiredSampRate);
+            console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] Desired sample-rate: ' + config.desiredSampRate);
         }
     }
 
@@ -517,7 +517,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (!recording) {
             if (!config.disableLogs) {
-                console.log('Seems recording has been restarted.');
+                console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] Seems recording has been restarted.');
             }
             this.record();
             return;
@@ -596,7 +596,7 @@ function StereoAudioRecorder(mediaStream, config) {
 
         if (isMediaStreamActive() === false) {
             if (!config.disableLogs) {
-                console.log('MediaStream seems stopped.');
+                console.log('[screen-recorder-client][recordrtc][StereoAudioRecorder] MediaStream seems stopped.');
             }
             jsAudioNode.disconnect();
             recording = false;

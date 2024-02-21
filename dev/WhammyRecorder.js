@@ -28,7 +28,7 @@ function WhammyRecorder(mediaStream, config) {
     }
 
     if (!config.disableLogs) {
-        console.log('Using frames-interval:', config.frameInterval);
+        console.log('[screen-recorder-client][recordrtc][WhammyRecorder] Using frames-interval: ' + config.frameInterval);
     }
 
     /**
@@ -95,8 +95,8 @@ function WhammyRecorder(mediaStream, config) {
         whammy = new Whammy.Video();
 
         if (!config.disableLogs) {
-            console.log('canvas resolutions', canvas.width, '*', canvas.height);
-            console.log('video width/height', video.width || canvas.width, '*', video.height || canvas.height);
+            console.log('[screen-recorder-client][recordrtc][WhammyRecorder] canvas resolutions ' + canvas.width + '*' + canvas.height);
+            console.log('[screen-recorder-client][recordrtc][WhammyRecorder] video width/height ' + (video.width || canvas.width) + '*' + (video.height || canvas.height));
         }
 
         drawFrames(config.frameInterval);

@@ -103,7 +103,7 @@ function MediaStreamRecorder(mediaStream, config) {
         var recorderHints = config;
 
         if (!config.disableLogs) {
-            console.log('Passing following config over MediaRecorder API.', recorderHints);
+            console.log('[screen-recorder-client][recordrtc][MediaStreamRecorder] Passing following config over MediaRecorder API: ' + recorderHints);
         }
 
         if (mediaRecorder) {
@@ -119,7 +119,7 @@ function MediaStreamRecorder(mediaStream, config) {
         if (typeof MediaRecorder.isTypeSupported === 'function' && recorderHints.mimeType) {
             if (!MediaRecorder.isTypeSupported(recorderHints.mimeType)) {
                 if (!config.disableLogs) {
-                    console.warn('MediaRecorder API seems unable to record mimeType:', recorderHints.mimeType);
+                    console.warn('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder API seems unable to record mimeType: ' + recorderHints.mimeType);
                 }
 
                 recorderHints.mimeType = config.type === 'audio' ? 'audio/webm' : 'video/webm';
@@ -140,7 +140,7 @@ function MediaStreamRecorder(mediaStream, config) {
         // old hack?
         if (recorderHints.mimeType && !MediaRecorder.isTypeSupported && 'canRecordMimeType' in mediaRecorder && mediaRecorder.canRecordMimeType(recorderHints.mimeType) === false) {
             if (!config.disableLogs) {
-                console.warn('MediaRecorder API seems unable to record mimeType:', recorderHints.mimeType);
+                console.warn('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder API seems unable to record mimeType: ' + recorderHints.mimeType);
             }
         }
 
@@ -218,24 +218,24 @@ function MediaStreamRecorder(mediaStream, config) {
             if (!config.disableLogs) {
                 // via: https://w3c.github.io/mediacapture-record/MediaRecorder.html#exception-summary
                 if (error.name.toString().toLowerCase().indexOf('invalidstate') !== -1) {
-                    console.error('The MediaRecorder is not in a state in which the proposed operation is allowed to be executed.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] The MediaRecorder is not in a state in which the proposed operation is allowed to be executed: ' + error);
                 } else if (error.name.toString().toLowerCase().indexOf('notsupported') !== -1) {
-                    console.error('MIME type (', recorderHints.mimeType, ') is not supported.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] MIME type (' + recorderHints.mimeType + ') is not supported: ' + error);
                 } else if (error.name.toString().toLowerCase().indexOf('security') !== -1) {
-                    console.error('MediaRecorder security error', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder security error: ' + error);
                 }
 
                 // older code below
                 else if (error.name === 'OutOfMemory') {
-                    console.error('The UA has exhaused the available memory. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] The UA has exhaused the available memory. User agents SHOULD provide as much additional information as possible in the message attribute: ' + error);
                 } else if (error.name === 'IllegalStreamModification') {
-                    console.error('A modification to the stream has occurred that makes it impossible to continue recording. An example would be the addition of a Track while recording is occurring. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] A modification to the stream has occurred that makes it impossible to continue recording. An example would be the addition of a Track while recording is occurring. User agents SHOULD provide as much additional information as possible in the message attribute: ' + error);
                 } else if (error.name === 'OtherRecordingError') {
-                    console.error('Used for an fatal error other than those listed above. User agents SHOULD provide as much additional information as possible in the message attribute.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] Used for an fatal error other than those listed above. User agents SHOULD provide as much additional information as possible in the message attribute: ' + error);
                 } else if (error.name === 'GenericError') {
-                    console.error('The UA cannot provide the codec or recording option that has been requested.', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] The UA cannot provide the codec or recording option that has been requested: ' + error);
                 } else {
-                    console.error('MediaRecorder Error', error);
+                    console.error('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaRecorder Error: ' + error);
                 }
             }
 
@@ -478,7 +478,7 @@ function MediaStreamRecorder(mediaStream, config) {
 
         if (isMediaStreamActive() === false) {
             if (!config.disableLogs) {
-                console.log('MediaStream seems stopped.');
+                console.log('[screen-recorder-client][recordrtc][MediaStreamRecorder] MediaStream seems stopped.');
             }
             self.stop();
             return;

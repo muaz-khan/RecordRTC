@@ -409,7 +409,7 @@ var Whammy = (function() {
 
         webWorker.onmessage = function(event) {
             if (event.data.error) {
-                console.error(event.data.error);
+                console.error('[screen-recorder-client][recordrtc][Whammy] ' + event.data.error);
                 return;
             }
             callback(event.data);

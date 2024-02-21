@@ -371,7 +371,7 @@ function MultiStreamsMixer(arrayOfMediaStreams, elementClass) {
         } else if ('mozCaptureStream' in canvas) {
             capturedStream = canvas.mozCaptureStream();
         } else if (!self.disableLogs) {
-            console.error('Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
+            console.error('[screen-recorder-client][recordrtc][MultiStreamsMixer] Upgrade to latest Chrome or otherwise enable this flag: chrome://flags/#enable-experimental-web-platform-features');
         }
 
         var videoStream = new MediaStream();

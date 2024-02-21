@@ -57,7 +57,7 @@ function CanvasRecorder(htmlElement, config) {
 
     if (isCanvasSupportsStreamCapturing) {
         if (!config.disableLogs) {
-            console.log('Your browser supports both MediRecorder API and canvas.captureStream!');
+            console.log('[screen-recorder-client][recordrtc][CanvasRecorder] Your browser supports both MediRecorder API and canvas.captureStream!');
         }
 
         if (htmlElement instanceof HTMLCanvasElement) {
@@ -69,7 +69,7 @@ function CanvasRecorder(htmlElement, config) {
         }
     } else if (!!navigator.mozGetUserMedia) {
         if (!config.disableLogs) {
-            console.error('Canvas recording is NOT supported in Firefox.');
+            console.error('[screen-recorder-client][recordrtc][CanvasRecorder] Canvas recording is NOT supported in Firefox.');
         }
     }
 
@@ -133,7 +133,7 @@ function CanvasRecorder(htmlElement, config) {
         whammy.frames.forEach(function(frame, idx) {
             var framesRemaining = framesLength - idx;
             if (!config.disableLogs) {
-                console.log(framesRemaining + '/' + framesLength + ' frames remaining');
+                console.log('[screen-recorder-client][recordrtc][CanvasRecorder] ' + framesRemaining + '/' + framesLength + ' frames remaining');
             }
 
             if (config.onEncodingCallback) {
@@ -145,7 +145,7 @@ function CanvasRecorder(htmlElement, config) {
         });
 
         if (!config.disableLogs) {
-            console.log('Generating WebM');
+            console.log('[screen-recorder-client][recordrtc][CanvasRecorder] Generating WebM');
         }
 
         callback();
@@ -182,7 +182,7 @@ function CanvasRecorder(htmlElement, config) {
              */
             whammy.compile(function(blob) {
                 if (!config.disableLogs) {
-                    console.log('Recording finished!');
+                    console.log('[screen-recorder-client][recordrtc][CanvasRecorder] Recording finished!');
                 }
 
                 that.blob = blob;
